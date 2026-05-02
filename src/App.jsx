@@ -167,16 +167,25 @@ export default function App() {
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@700&family=Playfair+Display:wght@700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;height:100vh;overflow:hidden}
-.app{max-width:480px;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:#0a0e14;position:relative}
+.app{max-width:100%;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:#0a0e14;position:relative}
+@media (min-width: 769px) {
+  .app{max-width:1400px}
+}
 
 .hdr{padding:10px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(10,14,20,0.95);backdrop-filter:blur(20px);z-index:100;min-height:60px}
 .logo{display:flex;align-items:center;gap:10px}
-.logo-text{font-family:'Space Mono',monospace;font-weight:700;font-size:18px;background:linear-gradient(135deg,#00E676,#69F0AE);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
-.logo-tag{font-size:8px;letter-spacing:2.5px;color:#00E676;font-weight:700;margin-top:2px}
+.logo-text{font-family:'Inter','SF Pro Display',-apple-system,system-ui,sans-serif;font-weight:900;font-size:20px;color:#FFFFFF;line-height:1;letter-spacing:-0.02em}
+.logo-tag{font-size:8px;letter-spacing:2.5px;color:#00E676;font-weight:700;margin-top:2px;font-family:'Inter',sans-serif}
 .hb{background:none;border:none;color:#8899A6;cursor:pointer;padding:6px;border-radius:10px;font-size:18px}
 
 .mc{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .mc::-webkit-scrollbar{width:3px}.mc::-webkit-scrollbar-thumb{background:#556677;border-radius:3px}
+
+@media (min-width: 769px) {
+  .mc{padding:20px}
+  .posts-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:20px;max-width:1200px;margin:0 auto}
+  .post{margin:0!important}
+}
 
 /* POST CARD */
 .post{background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:18px;margin:0 16px 14px;overflow:hidden}
@@ -369,7 +378,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         <div className="mc">
           {/* ====== HOME FEED ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
-            <>
+            <div className="posts-grid">
               {POSTS.map(p => (
                 <div key={p.id} className="post">
                   <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
@@ -394,7 +403,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   </div>
                 </div>
               ))}
-            </>
+            </div>
           )}
 
           {/* ====== POST DETAIL WITH COMMENTS ====== */}
