@@ -70,6 +70,13 @@ const V = <svg width="14" height="14" viewBox="0 0 24 24" fill="#00C853"><path d
 
 export default function App() {
   const [tab, setTab] = useState("home");
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 769);
+  
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 769);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [viewPost, setViewPost] = useState(null);
   const [viewProfile, setViewProfile] = useState(null);
   const [chatOpen, setChatOpen] = useState(null);
@@ -89,6 +96,8 @@ export default function App() {
   const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState(false);
   const aiEnd = useRef(null);
+  const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(true);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
   const [likes, setLikes] = useState({});
   const [follows, setFollows] = useState({});
@@ -170,6 +179,17 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .app{max-width:100%;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:#0a0e14;position:relative}
 @media (min-width: 769px) {
   .app{max-width:1400px}
+  .hdr{padding:16px 40px}
+  .logo-text{font-size:24px}
+  
+  /* Desktop Hero */
+  .desktop-hero{background:linear-gradient(135deg,rgba(0,230,118,0.03),rgba(0,200,83,0.01));padding:80px 40px 60px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .hero-title{font-size:52px;font-weight:900;background:linear-gradient(135deg,#00E676,#69F0AE);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px;font-family:'Inter',sans-serif;line-height:1.1}
+  .hero-subtitle{font-size:22px;color:#8899A6;margin-bottom:32px;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.4}
+  .hero-stats{display:flex;gap:40px;justify-content:center;margin-top:24px}
+  .hero-stat{text-align:center}
+  .hero-stat-value{font-size:36px;font-weight:900;color:#00E676;font-family:'Space Mono',monospace}
+  .hero-stat-label{font-size:13px;color:#556677;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
 }
 
 .hdr{padding:10px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(10,14,20,0.95);backdrop-filter:blur(20px);z-index:100;min-height:60px}
@@ -308,7 +328,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .ai-send{width:40px;height:40px;border-radius:12px;background:${aiInput.trim()?'#00E676':'#121820'};border:none;color:${aiInput.trim()?'#0a0e14':'#556677'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:bold}
 
 /* NEW POST MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;display:${showNewPost?'flex':'none'};align-items:flex-start;padding-top:60px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;display:${showNewPost || (showHealthDisclaimer && tab==='coach' && !disclaimerAccepted)?'flex':'none'};align-items:flex-start;padding-top:60px}
 .modal{background:#121820;border-radius:20px;width:90%;max-width:420px;margin:0 auto;padding:20px;border:1px solid rgba(255,255,255,0.08)}
 .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 .modal-title{font-weight:700;font-size:18px}
@@ -318,6 +338,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .modal-btn{flex:1;padding:10px;border-radius:10px;border:none;font-weight:700;font-size:14px;cursor:pointer;font-family:'Outfit'}
 .modal-btn.pri{background:#00E676;color:#0a0e14}
 .modal-btn.sec{background:rgba(255,255,255,0.05);color:#ECEFF4}
+
+/* HEALTH DISCLAIMER */
+.disclaimer-icon{font-size:48px;text-align:center;margin-bottom:16px}
+.disclaimer-text{font-size:14px;line-height:1.6;color:#ECEFF4;margin-bottom:16px}
+.disclaimer-list{list-style:none;padding-left:0;margin:12px 0}
+.disclaimer-list li{padding:6px 0;padding-left:24px;position:relative;font-size:13px;color:#ECEFF4}
+.disclaimer-list li::before{content:'•';position:absolute;left:8px;color:#00E676;font-weight:bold}
+.disclaimer-emergency{background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.3);border-radius:12px;padding:12px;margin:16px 0;font-size:13px;line-height:1.5}
 
 /* NAV */
 .bnav{display:flex;justify-content:space-around;align-items:center;padding:6px 0 calc(6px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,0.06);background:rgba(10,14,20,0.97);backdrop-filter:blur(20px);flex-shrink:0}
@@ -372,6 +400,31 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
             </div>
             <button className="hb">🔔</button>
+          </div>
+        )}
+
+        {/* DESKTOP HERO SECTION */}
+        {isDesktop && tab === "home" && !viewPost && !viewProfile && (
+          <div className="desktop-hero">
+            <h1 className="hero-title">Talento sin fronteras</h1>
+            <p className="hero-subtitle">
+              La red social donde jóvenes futbolistas de todo el mundo comparten su pasión, 
+              conectan con su comunidad y desarrollan su carrera con AI Coach 24/7
+            </p>
+            <div className="hero-stats">
+              <div className="hero-stat">
+                <div className="hero-stat-value">20</div>
+                <div className="hero-stat-label">Jugadores</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-value">15</div>
+                <div className="hero-stat-label">Posts activos</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-value">8</div>
+                <div className="hero-stat-label">Países</div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -504,6 +557,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {currentAgent === "psicologia" && (
                 <div className="safety-banner"><span>🔒</span><div><strong>Espacio seguro.</strong> Lo que hablemos es confidencial.</div></div>
               )}
+              
+              {currentAgent === "nutricion" && (
+                <div className="safety-banner" style={{background:'rgba(255,183,77,0.08)',borderColor:'rgba(255,183,77,0.2)'}}><span>⚠️</span><div><strong>Consejo nutricional general.</strong> Para planes personalizados o condiciones médicas específicas, consulta un nutricionista certificado.</div></div>
+              )}
 
               <div className="ai-msgs">
                 {aiMessages.map(m => {
@@ -592,6 +649,40 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         {tab === "home" && !viewPost && !viewProfile && (
           <button className="fab" onClick={() => setShowNewPost(true)}>+</button>
         )}
+
+        {/* HEALTH DISCLAIMER MODAL */}
+        <div className="modal-bg" onClick={() => showHealthDisclaimer && setShowHealthDisclaimer(false)}>
+          {showHealthDisclaimer && tab === 'coach' && !disclaimerAccepted && (
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <div className="disclaimer-icon">⚕️</div>
+              <div className="modal-title" style={{textAlign:'center',marginBottom:'12px'}}>Aviso Importante sobre AI Coach</div>
+              <div className="disclaimer-text">
+                El AI Coach es una herramienta de <strong>orientación general</strong> diseñada para apoyar tu desarrollo deportivo.
+              </div>
+              <div className="disclaimer-text" style={{fontSize:'13px',color:'#FF9800'}}>
+                <strong>NO reemplaza atención médica, psicológica o nutricional profesional.</strong>
+              </div>
+              <div className="disclaimer-text">
+                Por favor consulta con un profesional de la salud si experimentas:
+              </div>
+              <ul className="disclaimer-list">
+                <li>Problemas de salud física o mental</li>
+                <li>Lesiones deportivas</li>
+                <li>Síntomas que persisten</li>
+                <li>Crisis emocional o pensamientos de hacerte daño</li>
+              </ul>
+              <div className="disclaimer-emergency">
+                <strong>🚨 En caso de emergencia:</strong><br/>
+                Contacta servicios de urgencia o líneas de ayuda en tu país inmediatamente.
+              </div>
+              <div className="modal-actions">
+                <button className="modal-btn pri" onClick={() => {setDisclaimerAccepted(true); setShowHealthDisclaimer(false);}}>
+                  Entiendo y acepto
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* NEW POST MODAL */}
         <div className="modal-bg" onClick={() => setShowNewPost(false)}>
