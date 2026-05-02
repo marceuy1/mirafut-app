@@ -96,7 +96,7 @@ export default function App() {
   const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState(false);
   const aiEnd = useRef(null);
-  const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(true);
+  const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
   const [likes, setLikes] = useState({});
@@ -118,6 +118,14 @@ export default function App() {
 
   const sendAI = (text) => {
     if (!text.trim()) return;
+    
+    // Show disclaimer on first interaction
+    if (!disclaimerAccepted) {
+      setShowHealthDisclaimer(true);
+      setAiInput(text); // Save the message to send after accepting
+      return;
+    }
+    
     const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
     setAiMessages(m => [...m, { id:Date.now(), from:"me", type:"text", text, time:now }]);
     setAiInput("");
@@ -328,8 +336,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .ai-send{width:40px;height:40px;border-radius:12px;background:${aiInput.trim()?'#00E676':'#121820'};border:none;color:${aiInput.trim()?'#0a0e14':'#556677'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:bold}
 
 /* NEW POST MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;display:${showNewPost || (showHealthDisclaimer && tab==='coach' && !disclaimerAccepted)?'flex':'none'};align-items:flex-start;padding-top:60px}
-.modal{background:#121820;border-radius:20px;width:90%;max-width:420px;margin:0 auto;padding:20px;border:1px solid rgba(255,255,255,0.08)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:${showNewPost || (showHealthDisclaimer && tab==='coach' && !disclaimerAccepted)?'flex':'none'};align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal{background:#121820;border-radius:20px;width:90%;max-width:500px;margin:0 auto;padding:24px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 20px 60px rgba(0,0,0,0.5);position:relative;z-index:10000}
 .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 .modal-title{font-weight:700;font-size:18px}
 .modal-close{background:none;border:none;color:#8899A6;cursor:pointer;font-size:24px;padding:4px 8px}
@@ -651,8 +659,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         )}
 
         {/* HEALTH DISCLAIMER MODAL */}
-        <div className="modal-bg" onClick={() => showHealthDisclaimer && setShowHealthDisclaimer(false)}>
-          {showHealthDisclaimer && tab === 'coach' && !disclaimerAccepted && (
+        <div className="modal-bg" onClick={() => setShowHealthDisclaimer(false)}>
+          {showHealthDisclaimer && (
             <div className="modal" onClick={e => e.stopPropagation()}>
               <div className="disclaimer-icon">⚕️</div>
               <div className="modal-title" style={{textAlign:'center',marginBottom:'12px'}}>Aviso Importante sobre AI Coach</div>
@@ -676,7 +684,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 Contacta servicios de urgencia o líneas de ayuda en tu país inmediatamente.
               </div>
               <div className="modal-actions">
-                <button className="modal-btn pri" onClick={() => {setDisclaimerAccepted(true); setShowHealthDisclaimer(false);}}>
+                <button className="modal-btn pri" onClick={() => {
+                  setDisclaimerAccepted(true); 
+                  setShowHealthDisclaimer(false);
+                  // Send the saved message if there was one
+                  if (aiInput.trim()) {
+                    sendAI(aiInput);
+                  }
+                }}>
                   Entiendo y acepto
                 </button>
               </div>
