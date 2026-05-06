@@ -184,7 +184,7 @@ export default function App() {
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@700&family=Playfair+Display:wght@700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;height:100vh;overflow:hidden}
-.app{max-width:100%;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:#0a0e14;position:relative}
+.app{max-width:480px;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:#0a0e14;position:relative}
 @media (min-width: 769px) {
   .app{max-width:1400px}
   .hdr{padding:16px 40px}
@@ -335,10 +335,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .ai-mic{width:40px;height:40px;border-radius:12px;background:${recording?'#FF5252':'#121820'};border:1px solid ${recording?'#FF5252':'rgba(255,255,255,0.06)'};color:${recording?'white':'#8899A6'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .ai-send{width:40px;height:40px;border-radius:12px;background:${aiInput.trim()?'#00E676':'#121820'};border:none;color:${aiInput.trim()?'#0a0e14':'#556677'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:bold}
 
+/* HEALTH DISCLAIMER MODAL */
+.disclaimer-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+.disclaimer-modal-bg.show{display:flex}
+
 /* NEW POST MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
 .modal-bg.show{display:flex}
-.modal{background:#121820;border-radius:20px;width:90%;max-width:500px;margin:0 auto;padding:24px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 20px 60px rgba(0,0,0,0.5);position:relative;z-index:10000}
+.modal{background:#121820;border-radius:20px;width:90%;max-width:500px;margin:0 auto;padding:24px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 20px 60px rgba(0,0,0,0.5);position:relative}
 .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 .modal-title{font-weight:700;font-size:18px}
 .modal-close{background:none;border:none;color:#8899A6;cursor:pointer;font-size:24px;padding:4px 8px}
@@ -660,7 +664,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         )}
 
         {/* HEALTH DISCLAIMER MODAL */}
-        <div className={`modal-bg ${showHealthDisclaimer ? 'show' : ''}`} onClick={() => setShowHealthDisclaimer(false)}>
+        <div className={`disclaimer-modal-bg ${showHealthDisclaimer ? 'show' : ''}`} onClick={() => setShowHealthDisclaimer(false)}>
           {showHealthDisclaimer && (
             <div className="modal" onClick={e => e.stopPropagation()}>
               <div className="disclaimer-icon">⚕️</div>
