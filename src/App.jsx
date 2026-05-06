@@ -361,7 +361,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .disclaimer-emergency{background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.3);border-radius:12px;padding:12px;margin:16px 0;font-size:13px;line-height:1.5}
 
 /* NAV */
-.bnav{display:flex;justify-content:space-around;align-items:center;padding:6px 0 calc(6px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,0.06);background:rgba(10,14,20,0.97);backdrop-filter:blur(20px);flex-shrink:0}
+.bnav{display:flex;justify-content:space-around;align-items:center;padding:6px 0 calc(6px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,0.06);background:rgba(10,14,20,0.97);backdrop-filter:blur(20px);flex-shrink:0;position:sticky;bottom:0;z-index:100}
 .ni{display:flex;flex-direction:column;align-items:center;gap:1px;background:none;border:none;color:#556677;cursor:pointer;padding:5px 10px;font-size:9px;font-family:'Outfit';font-weight:500;position:relative}
 .ni.on{color:#00E676}
 .ni.on::before{content:'';position:absolute;top:-6px;width:20px;height:2px;background:#00E676;border-radius:0 0 2px 2px}
@@ -721,14 +721,12 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         </div>
 
         {/* BOTTOM NAV */}
-        {!chatOpen && (
-          <nav className="bnav">
-            <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);}}><span className="ni-emoji">🏠</span><span>Inicio</span></button>
-            <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>setTab('coach')}><span className="ni-emoji">⚽</span><span>Coach</span></button>
-            <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{setTab('chat');setChatOpen(null);}}><span className="ni-emoji">💬</span><span>Chat</span>{CHATS.reduce((s,c)=>s+c.unread,0)>0 && <span className="nbg">{CHATS.reduce((s,c)=>s+c.unread,0)}</span>}</button>
-            <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{setTab('profile');setViewPost(null);setViewProfile(null);}}><span className="ni-emoji">👤</span><span>Perfil</span></button>
-          </nav>
-        )}
+        <nav className="bnav">
+          <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">🏠</span><span>Inicio</span></button>
+          <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{setTab('coach');setChatOpen(null);}}><span className="ni-emoji">⚽</span><span>Coach</span></button>
+          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{setTab('chat');setChatOpen(null);}}><span className="ni-emoji">💬</span><span>Chat</span>{CHATS.reduce((s,c)=>s+c.unread,0)>0 && <span className="nbg">{CHATS.reduce((s,c)=>s+c.unread,0)}</span>}</button>
+          <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>Perfil</span></button>
+        </nav>
       </div>
     </>
   );
