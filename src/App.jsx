@@ -1,6 +1,6 @@
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect } from "react";
-import { supabase } from './lib/supabase';
+import { supabase } from './supabaseClient';
 import Auth from './Auth';
 
 export default function App() {
