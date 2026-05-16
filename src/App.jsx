@@ -793,3 +793,4 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
     </>
   );
 }
+export default App;
