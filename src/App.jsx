@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect } from "react";
 
@@ -71,6 +72,31 @@ const QUICK_PROMPTS = {
 const V = <svg width="14" height="14" viewBox="0 0 24 24" fill="#00C853"><path d="M12 2L3.5 6.5v5c0 4.83 3.6 9.36 8.5 10.5 4.9-1.14 8.5-5.67 8.5-10.5v-5L12 2zm-1 14.59l-3.29-3.3 1.41-1.41L11 13.76l4.88-4.88 1.41 1.41L11 16.59z"/></svg>;
 
 export default function App() {
+  const [session, setSession] = useState(null);
+     const [loading, setLoading] = useState(true);
+
+     useEffect(() => {
+       supabase.auth.getSession().then(({ data: { session } }) => {
+         setSession(session);
+         setLoading(false);
+       });
+
+       const {
+         data: { subscription },
+       } = supabase.auth.onAuthStateChange((_event, session) => {
+         setSession(session);
+       });
+
+       return () => subscription.unsubscribe();
+     }, []);
+
+     if (loading) {
+       return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
+     }
+
+     if (!session) {
+       return <Auth onSuccess={() => window.location.reload()} />;
+     }
   const [tab, setTab] = useState("home");
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 769);
   
