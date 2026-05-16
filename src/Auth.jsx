@@ -36,6 +36,7 @@ export default function Auth({ onSuccess }) {
             .insert([
               {
                 id: data.user.id,
+                username: email.split('@')[0],
                 email: data.user.email,
                 full_name: fullName,
                 avatar_url: null,
