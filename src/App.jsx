@@ -72,48 +72,21 @@ const QUICK_PROMPTS = {
 const V = <svg width="14" height="14" viewBox="0 0 24 24" fill="#00C853"><path d="M12 2L3.5 6.5v5c0 4.83 3.6 9.36 8.5 10.5 4.9-1.14 8.5-5.67 8.5-10.5v-5L12 2zm-1 14.59l-3.29-3.3 1.41-1.41L11 13.76l4.88-4.88 1.41 1.41L11 16.59z"/></svg>;
 
 export default function App() {
+  // Auth state
   const [session, setSession] = useState(null);
-     const [loading, setLoading] = useState(true);
-
-     useEffect(() => {
-       supabase.auth.getSession().then(({ data: { session } }) => {
-         setSession(session);
-         setLoading(false);
-       });
-
-       const {
-         data: { subscription },
-       } = supabase.auth.onAuthStateChange((_event, session) => {
-         setSession(session);
-       });
-
-       return () => subscription.unsubscribe();
-     }, []);
-
-     if (loading) {
-       return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
-     }
-
-     if (!session) {
-       return <Auth onSuccess={() => window.location.reload()} />;
-     }
+  const [loading, setLoading] = useState(true);
+  
+  // App state - TODOS los useState ANTES de los useEffect
   const [tab, setTab] = useState("home");
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 769);
-  
-  useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth >= 769);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
   const [viewPost, setViewPost] = useState(null);
   const [viewProfile, setViewProfile] = useState(null);
   const [chatOpen, setChatOpen] = useState(null);
   const [chatMsg, setChatMsg] = useState("");
-  const [chatMsgs, setChatMsgs] = useState([
+  
     {id:1,text:"Vi tu último video, increíble",from:"them",time:"10:30"},
     {id:2,text:"¡Muchas gracias!",from:"me",time:"10:32"},
   ]);
-  
   const [currentAgent, setCurrentAgent] = useState("coach");
   const [aiMessages, setAiMessages] = useState([
     { id:1, from:"coach", type:"text", text:"Hola 👋 ¿Cómo estás hoy?", time:"14:20" },
@@ -126,11 +99,74 @@ export default function App() {
   const aiEnd = useRef(null);
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-
   const [likes, setLikes] = useState({});
   const [follows, setFollows] = useState({});
   const [newPost, setNewPost] = useState("");
   const [showNewPost, setShowNewPost] = useState(false);
+
+  // Auth effect
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Resize effect
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 769);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (loading) {
+    return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
+  }
+
+  if (!session) {
+    return <Auth onSuccess={() => window.location.reload()} />;
+  }
+     }
+  const [tab, setTab] = useState("home");
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 769);
+  
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 769);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+ 
+ 
+  
+    {id:1,text:"Vi tu último video, increíble",from:"them",time:"10:30"},
+    {id:2,text:"¡Muchas gracias!",from:"me",time:"10:32"},
+  ]);
+  
+ 
+ 
+    { id:1, from:"coach", type:"text", text:"Hola 👋 ¿Cómo estás hoy?", time:"14:20" },
+    { id:2, from:"coach", type:"suggestions", options:["Todo bien","Nervioso/a","Necesito consejo","Vengo de entrenar"], time:"14:20" },
+  ]);
+ 
+  
+  
+  
+  const aiEnd = useRef(null);
+  
+
+ 
+
+ 
+ 
 
   const agent = SPECIALISTS.find(s => s.id === currentAgent);
 
