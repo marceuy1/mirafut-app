@@ -66,7 +66,10 @@ export default function Auth({ onSuccess }) {
         
         if (onSuccess) onSuccess()
       }
-    } catch (error) {
+   } catch (error) {
+      console.log('ERROR COMPLETO:', JSON.stringify(error))
+      console.log('ERROR MESSAGE:', error.message)
+      console.log('ERROR STATUS:', error.status)
       setError(error.message)
     } finally {
       setLoading(false)
