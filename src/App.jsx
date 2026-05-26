@@ -84,7 +84,6 @@ export default function App() {
   const [chatOpen, setChatOpen] = useState(null);
  const [chatMsg, setChatMsg] = useState("");
 const [chatMsgs, setChatMsgs] = useState([
- 
   {id:1,text:"Vi tu último video, increíble",from:"them",time:"10:30"},
   {id:2,text:"¡Muchas gracias!",from:"me",time:"10:32"},
 ]);
