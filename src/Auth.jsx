@@ -70,7 +70,7 @@ export default function Auth({ onSuccess }) {
       console.log('ERROR COMPLETO:', JSON.stringify(error))
       console.log('ERROR MESSAGE:', error.message)
       console.log('ERROR STATUS:', error.status)
-      setError(error.message)
+      setError(JSON.stringify(error) + ' | ' + error.message + ' | status: ' + error.status)
     } finally {
       setLoading(false)
     }
