@@ -147,15 +147,6 @@ const [chatMsgs, setChatMsgs] = useState([
  
  
   
-    {id:1,text:"Vi tu último video, increíble",from:"them",time:"10:30"},
-    {id:2,text:"¡Muchas gracias!",from:"me",time:"10:32"},
-  ]);
-  
- 
- 
-    { id:1, from:"coach", type:"text", text:"Hola 👋 ¿Cómo estás hoy?", time:"14:20" },
-    { id:2, from:"coach", type:"suggestions", options:["Todo bien","Nervioso/a","Necesito consejo","Vengo de entrenar"], time:"14:20" },
-  ]);
  
   
   
