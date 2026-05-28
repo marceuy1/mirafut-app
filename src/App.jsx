@@ -134,31 +134,6 @@ const [chatMsgs, setChatMsgs] = useState([
   if (!session) {
     return <Auth onSuccess={() => window.location.reload()} />;
   }
-     }
-  const [tab, setTab] = useState("home");
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 769);
-  
-  useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth >= 769);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
- 
- 
-  
- 
-  
-  
-  
-  const aiEnd = useRef(null);
-  
-
- 
-
- 
- 
-
   const agent = SPECIALISTS.find(s => s.id === currentAgent);
 
   useEffect(() => {
