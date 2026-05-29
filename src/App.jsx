@@ -127,6 +127,12 @@ const [chatMsgs, setChatMsgs] = useState([
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const agent = SPECIALISTS.find(s => s.id === currentAgent);
+
+  useEffect(() => {
+    if (tab === "coach") aiEnd.current?.scrollIntoView({ behavior: "smooth" });
+  }, [aiMessages, thinking, tab]);
+
   if (loading) {
     return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
   }
@@ -134,12 +140,6 @@ const [chatMsgs, setChatMsgs] = useState([
   if (!session) {
     return <Auth onSuccess={() => window.location.reload()} />;
   }
-  const agent = SPECIALISTS.find(s => s.id === currentAgent);
-
-  useEffect(() => {
-    if (tab === "coach") aiEnd.current?.scrollIntoView({ behavior: "smooth" });
-  }, [aiMessages, thinking, tab]);
-
   const sendChat = () => {
     if (!chatMsg.trim()) return;
     setChatMsgs([...chatMsgs, {id:Date.now(),text:chatMsg,from:"me",time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}]);
