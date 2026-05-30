@@ -524,7 +524,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <button className="poab">🔗 Compartir</button>
                   </div>
                 </div>
-              ))}
+              )))}
             </div>
           )}
 
