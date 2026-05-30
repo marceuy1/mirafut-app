@@ -103,8 +103,6 @@ const [chatMsgs, setChatMsgs] = useState([
   const [follows, setFollows] = useState({});
   const [newPost, setNewPost] = useState("");
   const [showNewPost, setShowNewPost] = useState(false);
-  const [realPosts, setRealPosts] = useState([]);
-  // Auth effect
  // Auth effect
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -116,7 +114,6 @@ const [chatMsgs, setChatMsgs] = useState([
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-    loadRealPosts();
     return () => subscription.unsubscribe();
   }, []);
 
@@ -192,28 +189,11 @@ const [chatMsgs, setChatMsgs] = useState([
 
   const toggleLike = (postId) => setLikes(l => ({...l, [postId]: !l[postId]}));
   const toggleFollow = (userId) => setFollows(f => ({...f, [userId]: !f[userId]}));
-const loadRealPosts = async () => {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error && data) setRealPosts(data);
-  };
- const createPost = async () => {
+ const createPost = () => {
     if (!newPost.trim()) return;
-    const { error } = await supabase
-      .from('posts')
-      .insert([{ 
-        user_id: user.id, 
-        content: newPost 
-      }]);
-    if (error) {
-      alert("Error al crear el post: " + error.message);
-    } else {
-      setNewPost("");
+    setNewPost("");
       setShowNewPost(false);
-      loadRealPosts();
-    }
+     alert("Post creado! (en producción se guardaría en la base de datos)");
   };
   return (
     <>
@@ -488,20 +468,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {/* ====== HOME FEED ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
             <div className="posts-grid">
-              {[...realPosts.map(p => ({
-                  id: 'real-' + p.id,
-                  userId: p.user_id,
-                  name: "Usuario",
-                  av: "U",
-                  verified: false,
-                  time: "ahora",
-                  text: p.content,
-                  image: null,
-                  likes: 0,
-                  comments: 0,
-                  liked: false,
-                  commentList: []
-                })), ...POSTS].map(p =>(
+             {POSTS.map(p => (
                 <div key={p.id} className="post">
                   <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
                     <div className="poav">{p.av}</div>
@@ -524,7 +491,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <button className="poab">🔗 Compartir</button>
                   </div>
                 </div>
-              )))}
+              ))}
             </div>
           )}
 
