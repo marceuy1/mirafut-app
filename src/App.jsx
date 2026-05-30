@@ -501,7 +501,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   comments: 0,
                   liked: false,
                   commentList: []
-                })), ...POSTS].map(p => (p => (
+                })), ...POSTS].map(p =>(
                 <div key={p.id} className="post">
                   <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
                     <div className="poav">{p.av}</div>
