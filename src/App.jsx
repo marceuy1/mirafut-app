@@ -103,17 +103,20 @@ const [chatMsgs, setChatMsgs] = useState([
   const [follows, setFollows] = useState({});
   const [newPost, setNewPost] = useState("");
   const [showNewPost, setShowNewPost] = useState(false);
- // Auth effect
+
+  // Auth effect
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
+
     return () => subscription.unsubscribe();
   }, []);
 
@@ -189,12 +192,15 @@ const [chatMsgs, setChatMsgs] = useState([
 
   const toggleLike = (postId) => setLikes(l => ({...l, [postId]: !l[postId]}));
   const toggleFollow = (userId) => setFollows(f => ({...f, [userId]: !f[userId]}));
- const createPost = () => {
+
+  const createPost = () => {
     if (!newPost.trim()) return;
+    // En producción: enviar a backend
     setNewPost("");
-      setShowNewPost(false);
-     alert("Post creado! (en producción se guardaría en la base de datos)");
+    setShowNewPost(false);
+    alert("Post creado! (en producción se guardaría en la base de datos)");
   };
+
   return (
     <>
       <style>{`
@@ -468,7 +474,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {/* ====== HOME FEED ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
             <div className="posts-grid">
-             {POSTS.map(p => (
+              {POSTS.map(p => (
                 <div key={p.id} className="post">
                   <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
                     <div className="poav">{p.av}</div>
