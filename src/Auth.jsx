@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { supabase } from './supabaseClient'
 
-export default function Auth({ onSuccess }) {
+export default function Auth({ onSuccess, onExplore, initialMode }) {
   const [loading, setLoading] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(false)
+  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup' ? true : false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -16,47 +16,40 @@ export default function Auth({ onSuccess }) {
 
     try {
       if (isSignUp) {
-        // Registro
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: {
-              full_name: fullName,
-            }
+            data: { full_name: fullName }
           }
         })
         
         if (signUpError) throw signUpError
 
-        // Crear perfil del usuario
         if (data.user) {
           const { error: profileError } = await supabase
             .from('profiles')
-            .insert([
-              {
-                id: data.user.id,
-                username: email.split('@')[0],
-                email: data.user.email,
-                full_name: fullName,
-                avatar_url: null,
-                bio: '',
-                age: null,
-                country: '',
-                city: '',
-                position: '',
-                verified: false,
-                followers_count: 0,
-                following_count: 0,
-              }
-            ])
+            .insert([{
+              id: data.user.id,
+              username: email.split('@')[0],
+              email: data.user.email,
+              full_name: fullName,
+              avatar_url: null,
+              bio: '',
+              age: null,
+              country: '',
+              city: '',
+              position: '',
+              verified: false,
+              followers_count: 0,
+              following_count: 0,
+            }])
           
           if (profileError) throw profileError
           
           alert('¡Cuenta creada! Revisa tu email para confirmar.')
         }
       } else {
-        // Login
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -66,11 +59,8 @@ export default function Auth({ onSuccess }) {
         
         if (onSuccess) onSuccess()
       }
-   } catch (error) {
-      console.log('ERROR COMPLETO:', JSON.stringify(error))
-      console.log('ERROR MESSAGE:', error.message)
-      console.log('ERROR STATUS:', error.status)
-      setError(JSON.stringify(error) + ' | ' + error.message + ' | status: ' + error.status)
+    } catch (error) {
+      setError(error.message || 'Ocurrió un error. Intenta de nuevo.')
     } finally {
       setLoading(false)
     }
@@ -121,15 +111,9 @@ export default function Auth({ onSuccess }) {
                 onChange={(e) => setFullName(e.target.value)}
                 required={isSignUp}
                 style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: '#0a0e14',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '10px',
-                  color: '#ECEFF4',
-                  fontSize: '14px',
-                  outline: 'none',
-                  fontFamily: 'Outfit, sans-serif'
+                  width: '100%', padding: '12px', background: '#0a0e14',
+                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px',
+                  color: '#ECEFF4', fontSize: '14px', outline: 'none', fontFamily: 'Outfit, sans-serif'
                 }}
                 placeholder="Tu nombre"
               />
@@ -146,15 +130,9 @@ export default function Auth({ onSuccess }) {
               onChange={(e) => setEmail(e.target.value)}
               required
               style={{
-                width: '100%',
-                padding: '12px',
-                background: '#0a0e14',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '10px',
-                color: '#ECEFF4',
-                fontSize: '14px',
-                outline: 'none',
-                fontFamily: 'Outfit, sans-serif'
+                width: '100%', padding: '12px', background: '#0a0e14',
+                border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px',
+                color: '#ECEFF4', fontSize: '14px', outline: 'none', fontFamily: 'Outfit, sans-serif'
               }}
               placeholder="tu@email.com"
             />
@@ -171,15 +149,9 @@ export default function Auth({ onSuccess }) {
               required
               minLength={6}
               style={{
-                width: '100%',
-                padding: '12px',
-                background: '#0a0e14',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '10px',
-                color: '#ECEFF4',
-                fontSize: '14px',
-                outline: 'none',
-                fontFamily: 'Outfit, sans-serif'
+                width: '100%', padding: '12px', background: '#0a0e14',
+                border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px',
+                color: '#ECEFF4', fontSize: '14px', outline: 'none', fontFamily: 'Outfit, sans-serif'
               }}
               placeholder="Mínimo 6 caracteres"
             />
@@ -187,13 +159,9 @@ export default function Auth({ onSuccess }) {
 
           {error && (
             <div style={{
-              padding: '12px',
-              background: 'rgba(255,82,82,0.1)',
-              border: '1px solid rgba(255,82,82,0.3)',
-              borderRadius: '10px',
-              color: '#FF5252',
-              fontSize: '13px',
-              marginBottom: '16px'
+              padding: '12px', background: 'rgba(255,82,82,0.1)',
+              border: '1px solid rgba(255,82,82,0.3)', borderRadius: '10px',
+              color: '#FF5252', fontSize: '13px', marginBottom: '16px'
             }}>
               {error}
             </div>
@@ -203,15 +171,10 @@ export default function Auth({ onSuccess }) {
             type="submit"
             disabled={loading}
             style={{
-              width: '100%',
-              padding: '14px',
+              width: '100%', padding: '14px',
               background: loading ? '#556677' : 'linear-gradient(135deg,#00E676,#00C853)',
-              border: 'none',
-              borderRadius: '12px',
-              color: '#0a0e14',
-              fontSize: '16px',
-              fontWeight: '700',
-              cursor: loading ? 'not-allowed' : 'pointer',
+              border: 'none', borderRadius: '12px', color: '#0a0e14',
+              fontSize: '16px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer',
               fontFamily: 'Outfit, sans-serif'
             }}
           >
@@ -219,21 +182,32 @@ export default function Auth({ onSuccess }) {
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '24px' }}>
+        <div style={{ textAlign: 'center', marginTop: '16px' }}>
           <button
             onClick={() => setIsSignUp(!isSignUp)}
             style={{
-              background: 'none',
-              border: 'none',
-              color: '#00E676',
-              fontSize: '14px',
-              cursor: 'pointer',
-              fontFamily: 'Outfit, sans-serif'
+              background: 'none', border: 'none', color: '#00E676',
+              fontSize: '14px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif'
             }}
           >
             {isSignUp ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
           </button>
         </div>
+
+        {onExplore && (
+          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+            <button
+              onClick={onExplore}
+              style={{
+                background: 'none', border: 'none', color: '#556677',
+                fontSize: '13px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
+                textDecoration: 'underline'
+              }}
+            >
+              Explorar sin cuenta →
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
