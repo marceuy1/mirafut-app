@@ -82,11 +82,11 @@ export default function App() {
   const [viewPost, setViewPost] = useState(null);
   const [viewProfile, setViewProfile] = useState(null);
   const [chatOpen, setChatOpen] = useState(null);
- const [chatMsg, setChatMsg] = useState("");
-const [chatMsgs, setChatMsgs] = useState([
-  {id:1,text:"Vi tu último video, increíble",from:"them",time:"10:30"},
-  {id:2,text:"¡Muchas gracias!",from:"me",time:"10:32"},
-]);
+  const [chatMsg, setChatMsg] = useState("");
+  const [chatMsgs, setChatMsgs] = useState([
+    {id:1,text:"Vi tu último video, increíble",from:"them",time:"10:30"},
+    {id:2,text:"¡Muchas gracias!",from:"me",time:"10:32"},
+  ]);
   const [currentAgent, setCurrentAgent] = useState("coach");
   const [aiMessages, setAiMessages] = useState([
     { id:1, from:"coach", type:"text", text:"Hola 👋 ¿Cómo estás hoy?", time:"14:20" },
@@ -103,6 +103,15 @@ const [chatMsgs, setChatMsgs] = useState([
   const [follows, setFollows] = useState({});
   const [newPost, setNewPost] = useState("");
   const [showNewPost, setShowNewPost] = useState(false);
+  const [realPosts, setRealPosts] = useState([]);
+
+  const loadRealPosts = async () => {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (!error && data) setRealPosts(data);
+  };
 
   // Auth effect
   useEffect(() => {
@@ -116,6 +125,8 @@ const [chatMsgs, setChatMsgs] = useState([
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
+
+    loadRealPosts();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -140,6 +151,7 @@ const [chatMsgs, setChatMsgs] = useState([
   if (!session) {
     return <Auth onSuccess={() => window.location.reload()} />;
   }
+
   const sendChat = () => {
     if (!chatMsg.trim()) return;
     setChatMsgs([...chatMsgs, {id:Date.now(),text:chatMsg,from:"me",time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}]);
@@ -193,13 +205,40 @@ const [chatMsgs, setChatMsgs] = useState([
   const toggleLike = (postId) => setLikes(l => ({...l, [postId]: !l[postId]}));
   const toggleFollow = (userId) => setFollows(f => ({...f, [userId]: !f[userId]}));
 
-  const createPost = () => {
+  const createPost = async () => {
     if (!newPost.trim()) return;
-    // En producción: enviar a backend
-    setNewPost("");
-    setShowNewPost(false);
-    alert("Post creado! (en producción se guardaría en la base de datos)");
+    const { data, error } = await supabase
+      .from('posts')
+      .insert([{ user_id: session.user.id, content: newPost }])
+      .select()
+      .single();
+    if (error) {
+      alert("Error al crear el post: " + error.message);
+    } else {
+      setNewPost("");
+      setShowNewPost(false);
+      loadRealPosts();
+    }
   };
+
+  // Merge real posts (from Supabase) at top, then hardcoded posts
+  const allPosts = [
+    ...realPosts.map(p => ({
+      id: 'real-' + p.id,
+      userId: p.user_id,
+      name: session.user.email.split('@')[0],
+      av: session.user.email.substring(0,2).toUpperCase(),
+      verified: false,
+      time: "ahora",
+      text: p.content,
+      image: null,
+      likes: 0,
+      comments: 0,
+      liked: false,
+      commentList: []
+    })),
+    ...POSTS
+  ];
 
   return (
     <>
@@ -459,7 +498,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="hero-stat-label">Jugadores</div>
               </div>
               <div className="hero-stat">
-                <div className="hero-stat-value">15</div>
+                <div className="hero-stat-value">{allPosts.length}</div>
                 <div className="hero-stat-label">Posts activos</div>
               </div>
               <div className="hero-stat">
@@ -474,7 +513,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {/* ====== HOME FEED ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
             <div className="posts-grid">
-              {POSTS.map(p => (
+              {allPosts.map(p => (
                 <div key={p.id} className="post">
                   <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
                     <div className="poav">{p.av}</div>
@@ -679,7 +718,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{CURRENT_USER.followers}</div><div className="prof-stat-l">Seguidores</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{CURRENT_USER.following}</div><div className="prof-stat-l">Siguiendo</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">0</div><div className="prof-stat-l">Posts</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{realPosts.length}</div><div className="prof-stat-l">Posts</div></div>
               </div>
               <button className="prof-btn pri">Editar perfil</button>
               <button className="prof-btn sec">⚙️ Configuración</button>
@@ -721,7 +760,6 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <button className="modal-btn pri" onClick={() => {
                   setDisclaimerAccepted(true); 
                   setShowHealthDisclaimer(false);
-                  // Send the saved message if there was one
                   if (aiInput.trim()) {
                     sendAI(aiInput);
                   }
