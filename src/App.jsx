@@ -144,12 +144,27 @@ export default function App() {
     if (tab === "coach") aiEnd.current?.scrollIntoView({ behavior: "smooth" });
   }, [aiMessages, thinking, tab]);
 
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+
+  const requireAuth = () => {
+    if (!session) {
+      setShowAuthPrompt(true);
+      return true;
+    }
+    return false;
+  };
+
   if (loading) {
     return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
   }
 
-  if (!session) {
-    return <Auth onSuccess={() => window.location.reload()} />;
+  if (showAuthPrompt) {
+    return <Auth onSuccess={() => { setShowAuthPrompt(false); window.location.reload(); }} onExplore={() => setShowAuthPrompt(false)} initialMode={authMode} />;
+  }
+
+  if (!session && tab === 'chat') {
+    setTab('home');
   }
 
   const sendChat = () => {
@@ -159,6 +174,7 @@ export default function App() {
   };
 
   const sendAI = async (text) => {
+    if (requireAuth()) return;
     if (!text.trim()) return;
 
     if (!disclaimerAccepted) {
@@ -202,10 +218,17 @@ export default function App() {
     setAiMessages(m => [...m, { id:Date.now(), from:id, type:"handoff", text:a.intro, time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
   };
 
-  const toggleLike = (postId) => setLikes(l => ({...l, [postId]: !l[postId]}));
-  const toggleFollow = (userId) => setFollows(f => ({...f, [userId]: !f[userId]}));
+  const toggleLike = (postId) => {
+    if (requireAuth()) return;
+    setLikes(l => ({...l, [postId]: !l[postId]}));
+  };
+  const toggleFollow = (userId) => {
+    if (requireAuth()) return;
+    setFollows(f => ({...f, [userId]: !f[userId]}));
+  };
 
   const createPost = async () => {
+    if (requireAuth()) return;
     if (!newPost.trim()) return;
     const { data, error } = await supabase
       .from('posts')
@@ -728,7 +751,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
         {/* FLOATING ACTION BUTTON */}
         {tab === "home" && !viewPost && !viewProfile && (
-          <button className="fab" onClick={() => setShowNewPost(true)}>+</button>
+          <button className="fab" onClick={() => { if (requireAuth()) return; setShowNewPost(true); }}>+</button>
         )}
 
         {/* HEALTH DISCLAIMER MODAL */}
@@ -790,9 +813,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         {/* BOTTOM NAV */}
         <nav className="bnav">
           <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">🏠</span><span>Inicio</span></button>
-          <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{setTab('coach');setChatOpen(null);}}><span className="ni-emoji">⚽</span><span>Coach</span></button>
-          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{setTab('chat');setChatOpen(null);}}><span className="ni-emoji">💬</span><span>Chat</span>{CHATS.reduce((s,c)=>s+c.unread,0)>0 && <span className="nbg">{CHATS.reduce((s,c)=>s+c.unread,0)}</span>}</button>
-          <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>Perfil</span></button>
+          <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('coach');setChatOpen(null);}}><span className="ni-emoji">⚽</span><span>Coach</span></button>
+          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);}}><span className="ni-emoji">💬</span><span>Chat</span>{CHATS.reduce((s,c)=>s+c.unread,0)>0 && <span className="nbg">{CHATS.reduce((s,c)=>s+c.unread,0)}</span>}</button>
+          <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>Perfil</span></button>
         </nav>
       </div>
     </>
