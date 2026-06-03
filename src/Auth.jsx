@@ -195,16 +195,20 @@ export default function Auth({ onSuccess, onExplore, initialMode }) {
         </div>
 
         {onExplore && (
-          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <div style={{ color: '#556677', fontSize: '12px', marginBottom: '10px' }}>— o —</div>
             <button
               onClick={onExplore}
               style={{
-                background: 'none', border: 'none', color: '#556677',
-                fontSize: '13px', cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
-                textDecoration: 'underline'
+                width: '100%', padding: '12px',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '12px', color: '#ECEFF4',
+                fontSize: '14px', fontWeight: '600',
+                cursor: 'pointer', fontFamily: 'Outfit, sans-serif'
               }}
             >
-              Explorar sin cuenta →
+              👀 Explorar sin cuenta
             </button>
           </div>
         )}
