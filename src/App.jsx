@@ -71,6 +71,68 @@ const QUICK_PROMPTS = {
 
 const V = <svg width="14" height="14" viewBox="0 0 24 24" fill="#00C853"><path d="M12 2L3.5 6.5v5c0 4.83 3.6 9.36 8.5 10.5 4.9-1.14 8.5-5.67 8.5-10.5v-5L12 2zm-1 14.59l-3.29-3.3 1.41-1.41L11 13.76l4.88-4.88 1.41 1.41L11 16.59z"/></svg>;
 
+function AuthInline({ onSuccess, onClose }) {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      if (isSignUp) {
+        const { data, error: err } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+        if (err) throw err;
+        if (data.user) {
+          await supabase.from('profiles').insert([{ id: data.user.id, username: email.split('@')[0], email, full_name: fullName, avatar_url: null, bio: '', age: null, country: '', city: '', position: '', verified: false, followers_count: 0, following_count: 0 }]);
+          onSuccess();
+        }
+      } else {
+        const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+        if (err) throw err;
+        onSuccess();
+      }
+    } catch (err) {
+      setError(err.message || 'Error. Intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inp = { width:'100%', padding:'10px 12px', background:'#0a0e14', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'10px', color:'#ECEFF4', fontSize:'14px', outline:'none', fontFamily:'Outfit, sans-serif', marginBottom:'12px' };
+
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
+        <div>
+          <div style={{fontSize:'20px',fontWeight:'900',color:'#00E676'}}>MiraFut</div>
+          <div style={{fontSize:'13px',color:'#8899A6'}}>{isSignUp ? 'Crear cuenta' : 'Iniciar sesión'}</div>
+        </div>
+        <button onClick={onClose} style={{background:'none',border:'none',color:'#8899A6',fontSize:'22px',cursor:'pointer'}}>×</button>
+      </div>
+      <form onSubmit={handleAuth}>
+        {isSignUp && <input type="text" placeholder="Nombre completo" value={fullName} onChange={e=>setFullName(e.target.value)} required style={inp} />}
+        <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required style={inp} />
+        <input type="password" placeholder="Contraseña (mín. 6 caracteres)" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6} style={inp} />
+        {error && <div style={{color:'#FF5252',fontSize:'12px',marginBottom:'10px'}}>{error}</div>}
+        <button type="submit" disabled={loading} style={{width:'100%',padding:'12px',background:loading?'#556677':'linear-gradient(135deg,#00E676,#00C853)',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'10px'}}>
+          {loading ? 'Cargando...' : isSignUp ? 'Crear cuenta' : 'Iniciar sesión'}
+        </button>
+      </form>
+      <button onClick={() => setIsSignUp(!isSignUp)} style={{width:'100%',background:'none',border:'none',color:'#00E676',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>
+        {isSignUp ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
+      </button>
+      <button onClick={onClose} style={{width:'100%',background:'none',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit, sans-serif'}}>
+        Seguir explorando →
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
   // Auth state
   const [session, setSession] = useState(null);
@@ -825,29 +887,13 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         {showAuthPrompt && (
           <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',padding:'20px',backdropFilter:'blur(4px)'}}>
             <div style={{background:'#121820',borderRadius:'20px',padding:'32px',maxWidth:'400px',width:'100%',border:'1px solid rgba(255,255,255,0.08)'}}>
-              <div style={{textAlign:'center',marginBottom:'24px'}}>
-                <div style={{fontSize:'36px',marginBottom:'8px'}}>⚽</div>
-                <h2 style={{fontSize:'22px',fontWeight:'900',color:'#ECEFF4',marginBottom:'8px'}}>Únete a MiraFut</h2>
-                <p style={{color:'#8899A6',fontSize:'14px'}}>Crea una cuenta para dar likes, comentar y usar el AI Coach</p>
-              </div>
-              <button
-                onClick={() => { setShowAuthPrompt(false); window.location.href = '/?signup=true'; }}
-                style={{width:'100%',padding:'14px',background:'linear-gradient(135deg,#00E676,#00C853)',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'16px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'10px'}}
-              >
-                Crear cuenta gratis
-              </button>
-              <button
-                onClick={() => { setShowAuthPrompt(false); window.location.href = `/?login=true&next=${postAuthTab}`; }}
-                style={{width:'100%',padding:'14px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'10px'}}
-              >
-                Iniciar sesión
-              </button>
-              <button
-                onClick={() => setShowAuthPrompt(false)}
-                style={{width:'100%',padding:'10px',background:'none',border:'none',color:'#556677',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit, sans-serif'}}
-              >
-                Seguir explorando →
-              </button>
+              <AuthInline 
+                onSuccess={() => {
+                  setShowAuthPrompt(false);
+                  setTab(postAuthTab);
+                }}
+                onClose={() => setShowAuthPrompt(false)}
+              />
             </div>
           </div>
         )}
