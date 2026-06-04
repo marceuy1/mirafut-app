@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { supabase } from './supabaseClient'
 
 export default function Auth({ onSuccess, onExplore, initialMode }) {
+  const params = new URLSearchParams(window.location.search);
+  const nextTab = params.get('next') || 'home';
   const [loading, setLoading] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup' ? true : false)
+  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup' || params.get('signup') ? true : false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -57,7 +59,7 @@ export default function Auth({ onSuccess, onExplore, initialMode }) {
         
         if (signInError) throw signInError
         
-        if (onSuccess) onSuccess()
+        if (onSuccess) onSuccess(nextTab)
       }
     } catch (error) {
       setError(error.message || 'Ocurrió un error. Intenta de nuevo.')
