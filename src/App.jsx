@@ -192,10 +192,10 @@ export default function App() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
-        const savedTab = localStorage.getItem('postLoginTab');
+        const savedTab = sessionStorage.getItem('activeTab');
         if (savedTab) {
+          sessionStorage.removeItem('activeTab');
           setTab(savedTab);
-          localStorage.removeItem('postLoginTab');
         }
       }
     });
@@ -895,7 +895,6 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <AuthInline 
                 onSuccess={() => {
                   setShowAuthPrompt(false);
-                  setTab(postAuthTab);
                 }}
                 onClose={() => setShowAuthPrompt(false)}
                 postLoginTab={postAuthTab}
