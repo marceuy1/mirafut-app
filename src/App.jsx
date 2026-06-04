@@ -124,6 +124,13 @@ export default function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) {
+        const savedTab = localStorage.getItem('postLoginTab');
+        if (savedTab) {
+          setTab(savedTab);
+          localStorage.removeItem('postLoginTab');
+        }
+      }
     });
 
     loadRealPosts();
@@ -150,6 +157,7 @@ export default function App() {
 
   const requireAuth = (redirectTab = 'home') => {
     if (!session) {
+      localStorage.setItem('postLoginTab', redirectTab);
       setPostAuthTab(redirectTab);
       setShowAuthPrompt(true);
       return true;
