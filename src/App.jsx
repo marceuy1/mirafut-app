@@ -146,9 +146,11 @@ export default function App() {
 
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [authMode, setAuthMode] = useState('login');
+  const [postAuthTab, setPostAuthTab] = useState('home');
 
-  const requireAuth = () => {
+  const requireAuth = (redirectTab = 'home') => {
     if (!session) {
+      setPostAuthTab(redirectTab);
       setShowAuthPrompt(true);
       return true;
     }
@@ -157,6 +159,11 @@ export default function App() {
 
   if (loading) {
     return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('login') && !session) {
+    return <Auth onSuccess={(nextTab) => { window.history.replaceState({}, '', '/'); setTab(nextTab || 'home'); }} onExplore={() => window.history.replaceState({}, '', '/')} />;
   }
 
   if (!session && tab === 'chat') {
@@ -822,7 +829,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 Crear cuenta gratis
               </button>
               <button
-                onClick={() => { setShowAuthPrompt(false); window.location.href = '/'; }}
+                onClick={() => { setShowAuthPrompt(false); window.location.href = `/?login=true&next=${postAuthTab}`; }}
                 style={{width:'100%',padding:'14px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'10px'}}
               >
                 Iniciar sesión
@@ -842,7 +849,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">🏠</span><span>Inicio</span></button>
           <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('coach');setChatOpen(null);}}><span className="ni-emoji">⚽</span><span>Coach</span></button>
           <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);}}><span className="ni-emoji">💬</span><span>Chat</span>{CHATS.reduce((s,c)=>s+c.unread,0)>0 && <span className="nbg">{CHATS.reduce((s,c)=>s+c.unread,0)}</span>}</button>
-          <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>Perfil</span></button>
+          <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{ if(!session){requireAuth('profile');return;} setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>Perfil</span></button>
         </nav>
       </div>
     </>
