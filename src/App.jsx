@@ -1,4 +1,4 @@
-cfimport { supabase } from './supabaseClient';
+import { supabase } from './supabaseClient';
 import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect } from "react";
