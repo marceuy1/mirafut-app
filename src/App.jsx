@@ -3,7 +3,7 @@ import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect } from "react";
 
-// ============ SIMULATED DATA  ============
+// ============ SIMULATED DATA ============
 const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasionado", followers: 45, following: 67, verified: false };
 
 const USERS = [
@@ -191,12 +191,9 @@ export default function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) {
-        const savedTab = sessionStorage.getItem('activeTab');
-        if (savedTab) {
-          sessionStorage.removeItem('activeTab');
-          setTab(savedTab);
-        }
+      if (session && pendingTabRef.current && pendingTabRef.current !== 'home') {
+        setTab(pendingTabRef.current);
+        pendingTabRef.current = 'home';
       }
     });
 
@@ -221,10 +218,11 @@ export default function App() {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [postAuthTab, setPostAuthTab] = useState('home');
+  const pendingTabRef = useRef('home');
 
   const requireAuth = (redirectTab = 'home') => {
     if (!session) {
-      localStorage.setItem('postLoginTab', redirectTab);
+      pendingTabRef.current = redirectTab;
       setPostAuthTab(redirectTab);
       setShowAuthPrompt(true);
       return true;
