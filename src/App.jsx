@@ -4,7 +4,6 @@ import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect } from "react";
 
 // ============ SIMULATED DATA  ============
-
 const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasionado", followers: 45, following: 67, verified: false };
 
 const USERS = [
