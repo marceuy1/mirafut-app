@@ -294,7 +294,23 @@ export default function App() {
     setAiMessages(m => [...m, { id:Date.now(), from:id, type:"handoff", text:a.intro, time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
   };
 
-  const toggleLike = (postId) => {
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
+  const [editLoading, setEditLoading] = useState(false);
+
+  const openEditProfile = async () => {
+    if (!session) return;
+    const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+    if (data) setEditForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', age: data.age || '', country: data.country || '', city: data.city || '', position: data.position || '' });
+    setShowEditProfile(true);
+  };
+
+  const saveProfile = async () => {
+    setEditLoading(true);
+    const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, age: editForm.age ? parseInt(editForm.age) : null, country: editForm.country, city: editForm.city, position: editForm.position }).eq('id', session.user.id);
+    setEditLoading(false);
+    if (error) { alert('Error: ' + error.message); } else { setShowEditProfile(false); alert('¡Perfil actualizado!'); }
+  };
     if (requireAuth()) return;
     setLikes(l => ({...l, [postId]: !l[postId]}));
   };
@@ -819,7 +835,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="prof-stat"><div className="prof-stat-v">{CURRENT_USER.following}</div><div className="prof-stat-l">Siguiendo</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{realPosts.length}</div><div className="prof-stat-l">Posts</div></div>
               </div>
-              <button className="prof-btn pri">Editar perfil</button>
+              <button className="prof-btn pri" onClick={openEditProfile}>Editar perfil</button>
               <button className="prof-btn sec">⚙️ Configuración</button>
             </div>
           )}
@@ -885,6 +901,50 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
           </div>
         </div>
+
+        {/* EDIT PROFILE MODAL */}
+        {showEditProfile && (
+          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',padding:'20px',backdropFilter:'blur(4px)',overflowY:'auto'}}>
+            <div style={{background:'#121820',borderRadius:'20px',padding:'28px',maxWidth:'440px',width:'100%',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
+                <div style={{fontWeight:'700',fontSize:'18px'}}>Editar perfil</div>
+                <button onClick={() => setShowEditProfile(false)} style={{background:'none',border:'none',color:'#8899A6',fontSize:'22px',cursor:'pointer'}}>×</button>
+              </div>
+              {[
+                { label: 'Nombre completo', key: 'full_name', placeholder: 'Tu nombre' },
+                { label: 'Usuario', key: 'username', placeholder: '@usuario' },
+                { label: 'Biografía', key: 'bio', placeholder: 'Cuéntanos sobre ti' },
+                { label: 'Edad', key: 'age', placeholder: 'Tu edad', type: 'number' },
+                { label: 'País', key: 'country', placeholder: 'Tu país' },
+                { label: 'Ciudad', key: 'city', placeholder: 'Tu ciudad' },
+              ].map(f => (
+                <div key={f.key} style={{marginBottom:'14px'}}>
+                  <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>{f.label}</label>
+                  <input
+                    type={f.type || 'text'}
+                    value={editForm[f.key]}
+                    onChange={e => setEditForm(prev => ({...prev, [f.key]: e.target.value}))}
+                    placeholder={f.placeholder}
+                    style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}}
+                  />
+                </div>
+              ))}
+              <div style={{marginBottom:'20px'}}>
+                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Posición</label>
+                <select value={editForm.position} onChange={e => setEditForm(prev => ({...prev, position: e.target.value}))} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}}>
+                  <option value="">Selecciona tu posición</option>
+                  <option value="POR">Portero</option>
+                  <option value="DEF">Defensa</option>
+                  <option value="MED">Mediocampista</option>
+                  <option value="DEL">Delantero</option>
+                </select>
+              </div>
+              <button onClick={saveProfile} disabled={editLoading} style={{width:'100%',padding:'13px',background:editLoading?'#556677':'linear-gradient(135deg,#00E676,#00C853)',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit, sans-serif'}}>
+                {editLoading ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* AUTH PROMPT MODAL */}
         {showAuthPrompt && (
