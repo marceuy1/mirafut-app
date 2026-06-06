@@ -230,6 +230,10 @@ export default function App() {
     return false;
   };
 
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
+  const [editLoading, setEditLoading] = useState(false);
+
   if (loading) {
     return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
   }
@@ -293,10 +297,6 @@ export default function App() {
     const a = SPECIALISTS.find(s => s.id === id);
     setAiMessages(m => [...m, { id:Date.now(), from:id, type:"handoff", text:a.intro, time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
   };
-
-  const [showEditProfile, setShowEditProfile] = useState(false);
-  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
-  const [editLoading, setEditLoading] = useState(false);
 
   const openEditProfile = async () => {
     if (!session) return;
