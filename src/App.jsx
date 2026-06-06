@@ -190,6 +190,7 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
+      if (session) loadUserProfile(session.user.id);
     });
 
     const {
