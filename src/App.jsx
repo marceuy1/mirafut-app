@@ -172,6 +172,11 @@ export default function App() {
   const [showNewPost, setShowNewPost] = useState(false);
   const [realPosts, setRealPosts] = useState([]);
 
+  const loadUserProfile = async (userId) => {
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (data) setUserProfile(data);
+  };
+
   const loadRealPosts = async () => {
     const { data, error } = await supabase
       .from('posts')
@@ -231,6 +236,7 @@ export default function App() {
   };
 
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
   const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
   const [editLoading, setEditLoading] = useState(false);
 
@@ -829,8 +835,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {/* ====== MY PROFILE ====== */}
           {tab === "profile" && (
             <div className="profile">
-              <div className="prof-av">TU</div>
-              <div className="prof-name">Tu nombre</div>
+              <div className="prof-av">{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : 'TU'}</div>
+              <div className="prof-name">{userProfile?.full_name || 'Tu nombre'}</div>
               <div className="prof-meta">Completa tu perfil para conectar con la comunidad</div>
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{CURRENT_USER.followers}</div><div className="prof-stat-l">Seguidores</div></div>
