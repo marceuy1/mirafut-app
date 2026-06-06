@@ -311,6 +311,8 @@ export default function App() {
     setEditLoading(false);
     if (error) { alert('Error: ' + error.message); } else { setShowEditProfile(false); alert('¡Perfil actualizado!'); }
   };
+
+  const toggleLike = (postId) => {
     if (requireAuth()) return;
     setLikes(l => ({...l, [postId]: !l[postId]}));
   };
