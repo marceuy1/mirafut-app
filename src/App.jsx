@@ -171,9 +171,6 @@ export default function App() {
   const [newPost, setNewPost] = useState("");
   const [showNewPost, setShowNewPost] = useState(false);
   const [realPosts, setRealPosts] = useState([]);
-  const [showEditProfile, setShowEditProfile] = useState(false);
-  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
-  const [editLoading, setEditLoading] = useState(false);
 
   const loadRealPosts = async () => {
     const { data, error } = await supabase
@@ -295,7 +292,7 @@ export default function App() {
     setShowSpecialists(false);
     const a = SPECIALISTS.find(s => s.id === id);
     setAiMessages(m => [...m, { id:Date.now(), from:id, type:"handoff", text:a.intro, time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
-  
+  };
 
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
