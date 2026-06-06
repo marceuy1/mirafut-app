@@ -197,6 +197,7 @@ export default function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) loadUserProfile(session.user.id);
       if (session && pendingTabRef.current && pendingTabRef.current !== 'home') {
         setTab(pendingTabRef.current);
         pendingTabRef.current = 'home';
