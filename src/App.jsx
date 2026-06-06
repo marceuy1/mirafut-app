@@ -171,6 +171,9 @@ export default function App() {
   const [newPost, setNewPost] = useState("");
   const [showNewPost, setShowNewPost] = useState(false);
   const [realPosts, setRealPosts] = useState([]);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
+  const [editLoading, setEditLoading] = useState(false);
 
   const loadRealPosts = async () => {
     const { data, error } = await supabase
