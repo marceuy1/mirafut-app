@@ -966,6 +966,28 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           </div>
         )}
 
+        {/* NOTIFICATIONS PANEL */}
+        {showNotifications && (
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:99999,display:"flex",alignItems:"flex-start",justifyContent:"flex-end",padding:"70px 20px 20px",backdropFilter:"blur(4px)"}} onClick={()=>setShowNotifications(false)}>
+            <div style={{background:"#121820",borderRadius:"20px",padding:"20px",width:"320px",border:"1px solid rgba(255,255,255,0.08)",maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
+                <div style={{fontWeight:"700",fontSize:"16px"}}>Notificaciones</div>
+                <button onClick={()=>setShowNotifications(false)} style={{background:"none",border:"none",color:"#8899A6",fontSize:"20px",cursor:"pointer"}}>×</button>
+              </div>
+              {notifications.length === 0 ? (
+                <div style={{color:"#556677",fontSize:"14px",textAlign:"center",padding:"20px"}}>No tienes notificaciones</div>
+              ) : (
+                notifications.map(n => (
+                  <div key={n.id} style={{padding:"12px",borderRadius:"12px",background:n.read?"transparent":"rgba(0,230,118,0.05)",border:"1px solid",borderColor:n.read?"rgba(255,255,255,0.04)":"rgba(0,230,118,0.15)",marginBottom:"8px"}}>
+                    <div style={{fontSize:"13px",color:"#ECEFF4"}}>{n.message}</div>
+                    <div style={{fontSize:"11px",color:"#556677",marginTop:"4px"}}>{new Date(n.created_at).toLocaleDateString()}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
         {/* AUTH PROMPT MODAL */}
         {showAuthPrompt && (
           <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',padding:'20px',backdropFilter:'blur(4px)'}}>
