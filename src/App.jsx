@@ -172,6 +172,19 @@ export default function App() {
   const [showNewPost, setShowNewPost] = useState(false);
   const [realPosts, setRealPosts] = useState([]);
 
+  const loadComments = async (postId) => {
+    const realPostId = postId.toString().replace('real-', '');
+    const { data } = await supabase.from('comments').select('*, profiles(full_name, avatar_url)').eq('post_id', realPostId).order('created_at', { ascending: true });
+    if (data) setPostComments(data);
+  };
+
+  const addComment = async (postId) => {
+    if (!newComment.trim() || !session) return;
+    const realPostId = postId.toString().replace('real-', '');
+    const { error } = await supabase.from('comments').insert([{ user_id: session.user.id, post_id: realPostId, content: newComment }]);
+    if (!error) { setNewComment(''); loadComments(postId); }
+  };
+
   const loadNotifications = async (userId) => {
     const { data } = await supabase.from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false });
     if (data) setNotifications(data);
@@ -246,6 +259,8 @@ export default function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [postComments, setPostComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
   const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
   const [editLoading, setEditLoading] = useState(false);
 
@@ -676,7 +691,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <button className={`poab lk ${(likes[p.id] || p.liked)?'on':''}`} onClick={() => toggleLike(p.id)}>
                       {(likes[p.id] || p.liked) ? '❤️' : '🤍'} {p.likes + (likes[p.id] && !p.liked ? 1 : likes[p.id]===false && p.liked ? -1 : 0)}
                     </button>
-                    <button className="poab" onClick={() => setViewPost(p)}>💬 {p.comments}</button>
+                    <button className="poab" onClick={() => { setViewPost(p); loadComments(p.id); }}>💬 {p.comments}</button>
                     <button className="poab">🔗 Compartir</button>
                   </div>
                 </div>
@@ -711,7 +726,16 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
                 <div className="comments">
                   <div className="com-title">Comentarios</div>
-                  {viewPost.commentList.map((c,i) => (
+                  {postComments.length === 0 && viewPost.commentList.length === 0 && <div style={{color:'#556677',fontSize:'13px',padding:'8px 0'}}>No hay comentarios aún. ¡Sé el primero!</div>}
+                  {postComments.length > 0 ? postComments.map((c,i) => (
+                    <div key={i} className="com-item">
+                      <div className="com-av">{c.profiles?.full_name ? c.profiles.full_name.substring(0,2).toUpperCase() : 'U'}</div>
+                      <div className="com-content">
+                        <div className="com-name">{c.profiles?.full_name || 'Usuario'}</div>
+                        <div className="com-text">{c.content}</div>
+                      </div>
+                    </div>
+                  )) : viewPost.commentList.map((c,i) => (
                     <div key={i} className="com-item">
                       <div className="com-av">{c.u.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
                       <div className="com-content">
@@ -720,6 +744,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       </div>
                     </div>
                   ))}
+                  {session && <div style={{display:'flex',gap:'8px',marginTop:'12px'}}>
+                    <input value={newComment} onChange={e=>setNewComment(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addComment(viewPost.id)} placeholder="Escribe un comentario..." style={{flex:1,background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',padding:'8px 12px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
+                    <button onClick={()=>addComment(viewPost.id)} style={{padding:'8px 14px',background:'#00E676',border:'none',borderRadius:'10px',color:'#0a0e14',fontWeight:'700',cursor:'pointer',fontSize:'13px'}}>→</button>
+                  </div>}
                 </div>
               </div>
             </div>
