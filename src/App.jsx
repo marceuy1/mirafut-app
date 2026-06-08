@@ -179,7 +179,7 @@ export default function App() {
 
   const loadUserProfile = async (userId) => {
     const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (data) setUserProfile(data);
+    if (data) { setUserProfile(data); loadRealPosts(); }
   };
 
   const loadRealPosts = async () => {
