@@ -744,7 +744,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       </div>
                     </div>
                   ))}
-                  {session && <div style={{display:'flex',gap:'8px',marginTop:'12px'}}>
+                  {session && viewPost.id.toString().startsWith('real-') && <div style={{display:'flex',gap:'8px',marginTop:'12px'}}>
                     <input value={newComment} onChange={e=>setNewComment(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addComment(viewPost.id)} placeholder="Escribe un comentario..." style={{flex:1,background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',padding:'8px 12px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
                     <button onClick={()=>addComment(viewPost.id)} style={{padding:'8px 14px',background:'#00E676',border:'none',borderRadius:'10px',color:'#0a0e14',fontWeight:'700',cursor:'pointer',fontSize:'13px'}}>→</button>
                   </div>}
