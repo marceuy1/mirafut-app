@@ -172,6 +172,11 @@ export default function App() {
   const [showNewPost, setShowNewPost] = useState(false);
   const [realPosts, setRealPosts] = useState([]);
 
+  const loadNotifications = async (userId) => {
+    const { data } = await supabase.from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+    if (data) setNotifications(data);
+  };
+
   const loadUserProfile = async (userId) => {
     const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
     if (data) setUserProfile(data);
@@ -190,14 +195,14 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      if (session) loadUserProfile(session.user.id);
+      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) loadUserProfile(session.user.id);
+      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); }
       if (session && pendingTabRef.current && pendingTabRef.current !== 'home') {
         setTab(pendingTabRef.current);
         pendingTabRef.current = 'home';
@@ -239,6 +244,8 @@ export default function App() {
 
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
   const [editLoading, setEditLoading] = useState(false);
 
@@ -605,7 +612,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="logo-tag">TALENTO SIN FRONTERAS</div>
               </div>
             </div>
-            <button className="hb">🔔</button>
+            <button className="hb" onClick={() => setShowNotifications(true)} style={{position:"relative"}}>
+                🔔
+                {notifications.filter(n => !n.read).length > 0 && <span style={{position:"absolute",top:"-2px",right:"-2px",background:"#FF5252",color:"white",fontSize:"9px",fontWeight:"700",minWidth:"16px",height:"16px",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 3px"}}>{notifications.filter(n => !n.read).length}</span>}
+              </button>
           </div>
         )}
 
