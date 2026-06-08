@@ -208,14 +208,14 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); }
+      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); }
+      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); }
       if (session && pendingTabRef.current && pendingTabRef.current !== 'home') {
         setTab(pendingTabRef.current);
         pendingTabRef.current = 'home';
@@ -349,6 +349,26 @@ export default function App() {
     const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, age: editForm.age ? parseInt(editForm.age) : null, country: editForm.country, city: editForm.city, position: editForm.position }).eq('id', session.user.id);
     setEditLoading(false);
     if (error) { alert('Error: ' + error.message); } else { setShowEditProfile(false); alert('¡Perfil actualizado!'); }
+  };
+
+  const [followingList, setFollowingList] = useState([]);
+
+  const loadFollowing = async () => {
+    if (!session) return;
+    const { data } = await supabase.from('follows').select('following_id').eq('follower_id', session.user.id);
+    if (data) setFollowingList(data.map(f => f.following_id));
+  };
+
+  const toggleFollowUser = async (userId) => {
+    if (requireAuth()) return;
+    const isFollowing = followingList.includes(userId);
+    if (isFollowing) {
+      await supabase.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', userId);
+      setFollowingList(prev => prev.filter(id => id !== userId));
+    } else {
+      await supabase.from('follows').insert([{ follower_id: session.user.id, following_id: userId }]);
+      setFollowingList(prev => [...prev, userId]);
+    }
   };
 
   const toggleLike = (postId) => {
@@ -765,8 +785,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="prof-stat"><div className="prof-stat-v">{viewProfile.following}</div><div className="prof-stat-l">Siguiendo</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{POSTS.filter(p=>p.userId===viewProfile.id).length}</div><div className="prof-stat-l">Posts</div></div>
               </div>
-              <button className={`prof-btn ${follows[viewProfile.id]?'sec':'pri'}`} onClick={() => toggleFollow(viewProfile.id)}>
-                {follows[viewProfile.id] ? 'Siguiendo ✓' : '+ Seguir'}
+              <button className={`prof-btn ${followingList.includes(viewProfile.id) || follows[viewProfile.id] ? 'sec' : 'pri'}`} onClick={() => toggleFollowUser(viewProfile.id)}>
+                {followingList.includes(viewProfile.id) || follows[viewProfile.id] ? 'Siguiendo ✓' : '+ Seguir'}
               </button>
               <button className="prof-btn sec" onClick={() => setChatOpen(1)}>💬 Mensaje</button>
             </div>
