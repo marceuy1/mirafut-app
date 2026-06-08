@@ -598,7 +598,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           </div>
         ) : (
           <div className="hdr">
-            <div className="logo">
+            <div className="logo" onClick={()=>{setTab("home");setViewPost(null);setViewProfile(null);setChatOpen(null);}} style={{cursor:"pointer"}}>
               <svg width="36" height="36" viewBox="0 0 64 64">
                 <rect width="64" height="64" rx="14" fill="#00E676"/>
                 <path d="M8,32 Q32,6 56,32 Q32,58 8,32 Z" fill="#0a0e14"/>
@@ -857,6 +857,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
               <button className="prof-btn pri" onClick={openEditProfile}>Editar perfil</button>
               <button className="prof-btn sec">⚙️ Configuración</button>
+              {realPosts.length > 0 && <div style={{width:"100%",marginTop:"20px",textAlign:"left"}}><div style={{fontSize:"11px",color:"#556677",letterSpacing:"1px",textTransform:"uppercase",fontWeight:"600",marginBottom:"12px"}}>Mis posts</div>{realPosts.map(p => <div key={p.id} style={{background:"#0a0e14",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"14px",padding:"12px",marginBottom:"10px"}}><div style={{fontSize:"14px",color:"#ECEFF4"}}>{p.content}</div><div style={{fontSize:"11px",color:"#556677",marginTop:"6px"}}>{new Date(p.created_at).toLocaleDateString()}</div></div>)}</div>}
             </div>
           )}
         </div>
