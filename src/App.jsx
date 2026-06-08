@@ -866,6 +866,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
               <button className="prof-btn pri" onClick={openEditProfile}>Editar perfil</button>
               <button className="prof-btn sec">⚙️ Configuración</button>
+              <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>🚪 Cerrar sesión</button>
               {realPosts.length > 0 && <div style={{width:"100%",marginTop:"20px",textAlign:"left"}}><div style={{fontSize:"11px",color:"#556677",letterSpacing:"1px",textTransform:"uppercase",fontWeight:"600",marginBottom:"12px"}}>Mis posts</div>{realPosts.map(p => <div key={p.id} style={{background:"#0a0e14",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"14px",padding:"12px",marginBottom:"10px"}}><div style={{fontSize:"14px",color:"#ECEFF4"}}>{p.content}</div><div style={{fontSize:"11px",color:"#556677",marginTop:"6px"}}>{new Date(p.created_at).toLocaleDateString()}</div></div>)}</div>}
             </div>
           )}
