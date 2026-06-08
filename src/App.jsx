@@ -358,8 +358,8 @@ export default function App() {
     ...realPosts.map(p => ({
       id: 'real-' + p.id,
       userId: p.user_id,
-      name: session ? session.user.email.split('@')[0] : 'Usuario',
-      av: session ? session.user.email.substring(0,2).toUpperCase() : 'U',
+      name: userProfile?.full_name || (session ? session.user.email.split('@')[0] : 'Usuario'),
+      av: userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : (session ? session.user.email.substring(0,2).toUpperCase() : 'U'),
       verified: false,
       time: "ahora",
       text: p.content,
