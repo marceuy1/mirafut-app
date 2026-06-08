@@ -174,7 +174,7 @@ export default function App() {
 
   const loadNotifications = async (userId) => {
     const { data } = await supabase.from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false });
-    console.log("notif:", data); if (data) setNotifications(data);
+    if (data) setNotifications(data);
   };
 
   const loadUserProfile = async (userId) => {
