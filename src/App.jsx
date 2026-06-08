@@ -978,7 +978,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{color:"#556677",fontSize:"14px",textAlign:"center",padding:"20px"}}>No tienes notificaciones</div>
               ) : (
                 notifications.map(n => (
-                  <div key={n.id} style={{padding:"12px",borderRadius:"12px",background:n.read?"transparent":"rgba(0,230,118,0.05)",border:"1px solid",borderColor:n.read?"rgba(255,255,255,0.04)":"rgba(0,230,118,0.15)",marginBottom:"8px"}}>
+                  <div key={n.id} onClick={() => { if(n.post_id) { setShowNotifications(false); setViewPost(allPosts.find(p => p.id === "real-"+n.post_id) || null); setTab("home"); } }} style={{padding:"12px",borderRadius:"12px",background:n.read?"transparent":"rgba(0,230,118,0.05)",border:"1px solid",borderColor:n.read?"rgba(255,255,255,0.04)":"rgba(0,230,118,0.15)",marginBottom:"8px",cursor:n.post_id?"pointer":"default"}}>
                     <div style={{fontSize:"13px",color:"#ECEFF4"}}>{n.message}</div>
                     <div style={{fontSize:"11px",color:"#556677",marginTop:"4px"}}>{new Date(n.created_at).toLocaleDateString()}</div>
                   </div>
