@@ -936,6 +936,13 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         {showEditProfile && (
           <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',padding:'20px',backdropFilter:'blur(4px)',overflowY:'auto'}}>
             <div style={{background:'#121820',borderRadius:'20px',padding:'28px',maxWidth:'440px',width:'100%',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <div style={{textAlign:'center',marginBottom:'20px'}}>
+                {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:'80px',height:'80px',borderRadius:'22px',objectFit:'cover',marginBottom:'8px',display:'block',margin:'0 auto 8px'}} /> : <div style={{width:'80px',height:'80px',borderRadius:'22px',background:'linear-gradient(135deg,#00E676,#00C853)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px',fontWeight:'800',color:'#0a0e14',margin:'0 auto 8px'}}>{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : 'TU'}</div>}
+                <label style={{cursor:'pointer',color:'#00E676',fontSize:'13px',fontWeight:'600'}}>
+                  📷 Cambiar foto
+                  <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files[0] && uploadAvatar(e.target.files[0])} />
+                </label>
+              </div>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
                 <div style={{fontWeight:'700',fontSize:'18px'}}>Editar perfil</div>
                 <button onClick={() => setShowEditProfile(false)} style={{background:'none',border:'none',color:'#8899A6',fontSize:'22px',cursor:'pointer'}}>×</button>
