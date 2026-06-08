@@ -313,6 +313,15 @@ export default function App() {
     setAiMessages(m => [...m, { id:Date.now(), from:id, type:"handoff", text:a.intro, time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
   };
 
+  const uploadAvatar = async (file) => {
+    const ext = file.name.split('.').pop();
+    const path = session.user.id + '/avatar.' + ext;
+    const { error: uploadError } = await supabase.storage.from('Avatars').upload(path, file, { upsert: true });
+    if (uploadError) { alert('Error subiendo foto: ' + uploadError.message); return; }
+    const { data: urlData } = supabase.storage.from('Avatars').getPublicUrl(path);
+    const { error: updateError } = await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('id', session.user.id);
+  };
+
   const openEditProfile = async () => {
     if (!session) return;
     const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
@@ -847,7 +856,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {/* ====== MY PROFILE ====== */}
           {tab === "profile" && (
             <div className="profile">
-              <div className="prof-av">{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : 'TU'}</div>
+              {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover"}} /> : <div className="prof-av">{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : "TU"}</div>}
               <div className="prof-name">{userProfile?.full_name || 'Tu nombre'}</div>
               <div className="prof-meta">Completa tu perfil para conectar con la comunidad</div>
               <div className="prof-stats">
