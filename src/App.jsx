@@ -373,6 +373,7 @@ export default function App() {
       await supabase.from('likes').insert([{ user_id: session.user.id, post_id: realPostId }]);
       setLikedPosts(prev => [...prev, realPostId]);
     }
+    loadRealPosts();
   };
 
   const loadFollowing = async () => {
