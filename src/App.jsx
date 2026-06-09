@@ -256,6 +256,8 @@ export default function App() {
   };
 
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [followingList, setFollowingList] = useState([]);
+  const [likedPosts, setLikedPosts] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -351,8 +353,7 @@ export default function App() {
     if (error) { alert('Error: ' + error.message); } else { setShowEditProfile(false); alert('¡Perfil actualizado!'); }
   };
 
-  const [followingList, setFollowingList] = useState([]);
-  const [likedPosts, setLikedPosts] = useState([]);
+
 
   const loadLikes = async () => {
     if (!session) return;
