@@ -208,7 +208,7 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); }
+      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadLikes(); }
     });
 
     const {
@@ -352,6 +352,27 @@ export default function App() {
   };
 
   const [followingList, setFollowingList] = useState([]);
+  const [likedPosts, setLikedPosts] = useState([]);
+
+  const loadLikes = async () => {
+    if (!session) return;
+    const { data } = await supabase.from('likes').select('post_id').eq('user_id', session.user.id);
+    if (data) setLikedPosts(data.map(l => l.post_id));
+  };
+
+  const toggleRealLike = async (postId) => {
+    if (requireAuth()) return;
+    const realPostId = postId.toString().replace('real-', '');
+    if (!postId.toString().startsWith('real-')) return;
+    const isLiked = likedPosts.includes(realPostId);
+    if (isLiked) {
+      await supabase.from('likes').delete().eq('user_id', session.user.id).eq('post_id', realPostId);
+      setLikedPosts(prev => prev.filter(id => id !== realPostId));
+    } else {
+      await supabase.from('likes').insert([{ user_id: session.user.id, post_id: realPostId }]);
+      setLikedPosts(prev => [...prev, realPostId]);
+    }
+  };
 
   const loadFollowing = async () => {
     if (!session) return;
@@ -708,8 +729,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     </div>
                   )}
                   <div className="poa">
-                    <button className={`poab lk ${(likes[p.id] || p.liked)?'on':''}`} onClick={() => toggleLike(p.id)}>
-                      {(likes[p.id] || p.liked) ? '❤️' : '🤍'} {p.likes + (likes[p.id] && !p.liked ? 1 : likes[p.id]===false && p.liked ? -1 : 0)}
+                    <button className={`poab lk ${(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : (likes[p.id] || p.liked)) ? 'on' : ''}`} onClick={() => p.id.toString().startsWith('real-') ? toggleRealLike(p.id) : toggleLike(p.id)}>
+                      {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : (likes[p.id] || p.liked)) ? '❤️' : '🤍'} {p.likes + (likedPosts.includes(p.id.toString().replace('real-','')) ? 1 : 0)}
                     </button>
                     <button className="poab" onClick={() => { setViewPost(p); loadComments(p.id); }}>💬 {p.comments}</button>
                     <button className="poab">🔗 Compartir</button>
