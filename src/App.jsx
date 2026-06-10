@@ -283,6 +283,7 @@ export default function App() {
   const [postImage, setPostImage] = useState(null);
   const [postImageUrl, setPostImageUrl] = useState(null);
   const [followingList, setFollowingList] = useState([]);
+  const [followerCount, setFollowerCount] = useState(0);
   const [likedPosts, setLikedPosts] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [notifications, setNotifications] = useState([]);
@@ -404,8 +405,12 @@ export default function App() {
 
   const loadFollowing = async () => {
     if (!session) return;
-    const { data } = await supabase.from('follows').select('following_id').eq('follower_id', session.user.id);
-    if (data) setFollowingList(data.map(f => f.following_id));
+    const [followingRes, followersRes] = await Promise.all([
+      supabase.from('follows').select('following_id').eq('follower_id', session.user.id),
+      supabase.from('follows').select('follower_id', { count: 'exact' }).eq('following_id', session.user.id)
+    ]);
+    if (followingRes.data) setFollowingList(followingRes.data.map(f => f.following_id));
+    if (followersRes.count !== null) setFollowerCount(followersRes.count);
   };
 
   const toggleFollowUser = async (userId) => {
@@ -1012,8 +1017,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div className="prof-name">{userProfile?.full_name || 'Tu nombre'}</div>
               <div className="prof-meta">Completa tu perfil para conectar con la comunidad</div>
               <div className="prof-stats">
-                <div className="prof-stat"><div className="prof-stat-v">{CURRENT_USER.followers}</div><div className="prof-stat-l">Seguidores</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">{CURRENT_USER.following}</div><div className="prof-stat-l">Siguiendo</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">Seguidores</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{followingList.length}</div><div className="prof-stat-l">Siguiendo</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{realPosts.length}</div><div className="prof-stat-l">Posts</div></div>
               </div>
               <button className="prof-btn pri" onClick={openEditProfile}>Editar perfil</button>
