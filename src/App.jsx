@@ -69,6 +69,17 @@ const QUICK_PROMPTS = {
   carrera:["¿Cómo llamo scouts?","¿Qué es un contrato juvenil?","Becas disponibles","¿Mi perfil está listo?"],
 };
 
+const timeAgo = (dateStr) => {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diff = Math.floor((now - date) / 1000);
+  if (diff < 60) return 'ahora';
+  if (diff < 3600) return `hace ${Math.floor(diff/60)}m`;
+  if (diff < 86400) return `hace ${Math.floor(diff/3600)}h`;
+  if (diff < 604800) return `hace ${Math.floor(diff/86400)}d`;
+  return date.toLocaleDateString();
+};
+
 const V = <svg width="14" height="14" viewBox="0 0 24 24" fill="#00C853"><path d="M12 2L3.5 6.5v5c0 4.83 3.6 9.36 8.5 10.5 4.9-1.14 8.5-5.67 8.5-10.5v-5L12 2zm-1 14.59l-3.29-3.3 1.41-1.41L11 13.76l4.88-4.88 1.41 1.41L11 16.59z"/></svg>;
 
 function AuthInline({ onSuccess, onClose, postLoginTab }) {
@@ -428,7 +439,7 @@ export default function App() {
       name: userProfile?.full_name || (session ? session.user.email.split('@')[0] : 'Usuario'),
       av: userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : (session ? session.user.email.substring(0,2).toUpperCase() : 'U'),
       verified: false,
-      time: "ahora",
+      time: timeAgo(p.created_at),
       text: p.content,
       image: null,
       likes: p.likes?.[0]?.count || 0,
