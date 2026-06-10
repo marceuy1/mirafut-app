@@ -816,7 +816,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div className="poc">{p.text}</div>
                   {p.image && (
                     <div className="pov">
-                      {p.image.startsWith('http') ? <img src={p.image} style={{width:'100%',height:'200px',objectFit:'cover'}} /> : <div className="pov-label">📷 {p.image === 'game' ? 'Foto del partido' : p.image === 'training' ? 'Entrenamiento' : 'Celebración del gol'}</div>}
+                      {p.image === 'game' ? <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image === 'training' ? <img src="https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600&q=80" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image === 'goal' ? <img src="https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&q=80" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image.startsWith('http') ? <img src={p.image} style={{width:'100%',height:'200px',objectFit:'cover'}} /> : null}
                     </div>
                   )}
                   <div className="poa">
