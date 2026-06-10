@@ -182,7 +182,7 @@ export default function App() {
     if (!newComment.trim() || !session) return;
     const realPostId = postId.toString().replace('real-', '');
     const { error } = await supabase.from('comments').insert([{ user_id: session.user.id, post_id: realPostId, content: newComment }]);
-    if (!error) { setNewComment(''); loadComments(postId); }
+    if (!error) { setNewComment(''); loadComments(postId); loadRealPosts(); }
   };
 
   const loadNotifications = async (userId) => {
