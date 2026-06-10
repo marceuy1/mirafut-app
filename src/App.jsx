@@ -420,6 +420,23 @@ export default function App() {
     }
   };
 
+  const sharePost = async (post) => {
+    const url = window.location.origin + '?post=' + post.id;
+    const text = post.text || post.content || '';
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'MiraFut — ' + (post.name || 'Post'),
+          text: text.substring(0, 100),
+          url: url
+        });
+      } catch (e) {}
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert('Link copiado al portapapeles!');
+    }
+  };
+
   const toggleLike = (postId) => {
     if (requireAuth()) return;
     setLikes(l => ({...l, [postId]: !l[postId]}));
@@ -799,7 +816,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : (likes[p.id] || p.liked)) ? '❤️' : '🤍'} {p.likes + (likedPosts.includes(p.id.toString().replace('real-','')) ? 1 : 0)}
                     </button>
                     <button className="poab" onClick={() => { setViewPost(p); loadComments(p.id); }}>💬 {p.comments}</button>
-                    <button className="poab">🔗 Compartir</button>
+                    <button className="poab" onClick={() => sharePost(p)}>🔗 Compartir</button>
                   </div>
                 </div>
               ))}
@@ -829,7 +846,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     {(likes[viewPost.id] || viewPost.liked) ? '❤️' : '🤍'} {viewPost.likes + (likes[viewPost.id] && !viewPost.liked ? 1 : 0)}
                   </button>
                   <button className="poab">💬 {viewPost.comments}</button>
-                  <button className="poab">🔗 Compartir</button>
+                  <button className="poab" onClick={() => sharePost(p)}>🔗 Compartir</button>
                 </div>
                 <div className="comments">
                   <div className="com-title">Comentarios</div>
