@@ -215,7 +215,6 @@ export default function App() {
   };
 
   const markNotificationsRead = async () => {
-    console.log('marking read, session:', session?.user?.id);
     if (!session || !session.user) return;
     await supabase.from('notifications').update({ read: true }).eq('user_id', session.user.id).eq('read', false);
     setNotifications(prev => prev.map(n => ({...n, read: true})));
