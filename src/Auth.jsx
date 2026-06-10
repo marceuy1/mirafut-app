@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { supabase } from './supabaseClient'
 
 export default function Auth({ onSuccess, onExplore, initialMode }) {
+  const [loading, setLoading] = useState(false)
+  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup' ? true : false)
   const params = new URLSearchParams(window.location.search);
   const nextTab = params.get('next') || 'home';
-  const [loading, setLoading] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup' || params.get('signup') ? true : false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
