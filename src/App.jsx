@@ -1020,12 +1020,15 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className="modal-close" onClick={() => setShowNewPost(false)}>×</button>
             </div>
             <textarea className="modal-textarea" placeholder="¿Qué está pasando?" value={newPost} onChange={e => setNewPost(e.target.value)}/>
+            {postImageUrl && <div style={{marginTop:'10px',borderRadius:'12px',overflow:'hidden',position:'relative'}}>
+              <img src={postImageUrl} style={{width:'100%',maxHeight:'200px',objectFit:'cover',borderRadius:'12px'}} />
+              <button onClick={()=>{setPostImage(null);setPostImageUrl(null);}} style={{position:'absolute',top:'8px',right:'8px',background:'rgba(0,0,0,0.6)',border:'none',color:'white',borderRadius:'50%',width:'24px',height:'24px',cursor:'pointer',fontSize:'14px'}}>×</button>
+            </div>}
             <div className="modal-actions">
-              <label className="modal-btn sec" style={{cursor:'pointer'}}>
+              <label className="modal-btn sec" style={{cursor:'pointer',flex:'0 0 auto'}}>
                 📷 Foto
                 <input type="file" accept="image/*" style={{display:'none'}} onChange={e => { if(e.target.files[0]) { setPostImage(e.target.files[0]); setPostImageUrl(URL.createObjectURL(e.target.files[0])); } }} />
               </label>
-              {postImageUrl && <div style={{marginTop:'10px',borderRadius:'12px',overflow:'hidden'}}><img src={postImageUrl} style={{width:'100%',maxHeight:'200px',objectFit:'cover'}} /></div>}
               <button className="modal-btn pri" onClick={createPost}>Publicar</button>
             </div>
           </div>
