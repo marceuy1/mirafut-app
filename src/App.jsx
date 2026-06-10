@@ -267,6 +267,8 @@ export default function App() {
   };
 
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [postImage, setPostImage] = useState(null);
+  const [postImageUrl, setPostImageUrl] = useState(null);
   const [followingList, setFollowingList] = useState([]);
   const [likedPosts, setLikedPosts] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
@@ -413,9 +415,6 @@ export default function App() {
     if (requireAuth()) return;
     setFollows(f => ({...f, [userId]: !f[userId]}));
   };
-
-  const [postImage, setPostImage] = useState(null);
-  const [postImageUrl, setPostImageUrl] = useState(null);
 
   const uploadPostImage = async (file) => {
     if (!session || !file) return null;
