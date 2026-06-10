@@ -106,6 +106,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab }) {
         const { error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) throw err;
         sessionStorage.setItem('activeTab', postLoginTab || 'home');
+        onClose();
         onSuccess();
       }
     } catch (err) {
