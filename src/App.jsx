@@ -773,7 +773,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
               )}
             </div>
-            <button onClick={toggleLang} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",color:"#8899A6",cursor:"pointer",padding:"4px 8px",borderRadius:"8px",fontSize:"11px",fontWeight:"600",fontFamily:"Outfit,sans-serif",marginRight:"6px"}}>{lang === "es" ? "🇺🇸" : "🇪🇸"}</button>
+            <button onClick={toggleLang} style={{background:"none",border:"none",cursor:"pointer",padding:"4px",fontSize:"22px",marginRight:"4px",lineHeight:"1"}}>{lang === "es" ? "🇺🇸" : "🇪🇸"}</button>
             <button className="hb" onClick={() => setShowNotifications(true)} style={{position:"relative"}}>
                 🔔
                 {notifications.filter(n => !n.read).length > 0 && <span style={{position:"absolute",top:"-2px",right:"-2px",background:"#FF5252",color:"white",fontSize:"9px",fontWeight:"700",minWidth:"16px",height:"16px",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 3px"}}>{notifications.filter(n => !n.read).length}</span>}
