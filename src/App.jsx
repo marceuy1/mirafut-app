@@ -109,7 +109,9 @@ function AuthInline({ onSuccess, onClose, postLoginTab }) {
         onSuccess();
       }
     } catch (err) {
-      setError(err.message || 'Error. Intenta de nuevo.');
+      if (err.message && !err.message.toLowerCase().includes('uninitialized')) {
+        setError(err.message || 'Error. Intenta de nuevo.');
+      }
     } finally {
       setLoading(false);
     }
