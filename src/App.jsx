@@ -414,18 +414,32 @@ export default function App() {
     setFollows(f => ({...f, [userId]: !f[userId]}));
   };
 
+  const [postImage, setPostImage] = useState(null);
+  const [postImageUrl, setPostImageUrl] = useState(null);
+
+  const uploadPostImage = async (file) => {
+    if (!session || !file) return null;
+    const ext = file.name.split('.').pop();
+    const path = session.user.id + '/' + Date.now() + '.' + ext;
+    const { error } = await supabase.storage.from('posts').upload(path, file);
+    if (error) return null;
+    const { data } = supabase.storage.from('posts').getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   const createPost = async () => {
     if (requireAuth()) return;
     if (!newPost.trim()) return;
+    const imageUrl = postImage ? await uploadPostImage(postImage) : null;
     const { data, error } = await supabase
       .from('posts')
-      .insert([{ user_id: session.user.id, content: newPost }])
+      .insert([{ user_id: session.user.id, content: newPost, image_url: imageUrl }])
       .select()
       .single();
     if (error) {
       alert("Error al crear el post: " + error.message);
     } else {
-      setNewPost("");
+      setNewPost(""); setPostImage(null); setPostImageUrl(null);
       setShowNewPost(false);
       loadRealPosts();
     }
@@ -441,7 +455,7 @@ export default function App() {
       verified: false,
       time: timeAgo(p.created_at),
       text: p.content,
-      image: null,
+      image: p.image_url || null,
       likes: p.likes?.[0]?.count || 0,
       comments: p.comments?.[0]?.count || 0,
       liked: false,
@@ -738,7 +752,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div className="poc">{p.text}</div>
                   {p.image && (
                     <div className="pov">
-                      <div className="pov-label">📷 {p.image === 'game' ? 'Foto del partido' : p.image === 'training' ? 'Entrenamiento' : 'Celebración del gol'}</div>
+                      {p.image.startsWith('http') ? <img src={p.image} style={{width:'100%',height:'200px',objectFit:'cover'}} /> : <div className="pov-label">📷 {p.image === 'game' ? 'Foto del partido' : p.image === 'training' ? 'Entrenamiento' : 'Celebración del gol'}</div>}
                     </div>
                   )}
                   <div className="poa">
@@ -1008,8 +1022,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
             <textarea className="modal-textarea" placeholder="¿Qué está pasando?" value={newPost} onChange={e => setNewPost(e.target.value)}/>
             <div className="modal-actions">
-              <button className="modal-btn sec">📷 Foto</button>
-              <button className="modal-btn sec">🎥 Video</button>
+              <label className="modal-btn sec" style={{cursor:'pointer'}}>
+                📷 Foto
+                <input type="file" accept="image/*" style={{display:'none'}} onChange={e => { if(e.target.files[0]) { setPostImage(e.target.files[0]); setPostImageUrl(URL.createObjectURL(e.target.files[0])); } }} />
+              </label>
+              {postImageUrl && <div style={{marginTop:'10px',borderRadius:'12px',overflow:'hidden'}}><img src={postImageUrl} style={{width:'100%',maxHeight:'200px',objectFit:'cover'}} /></div>}
               <button className="modal-btn pri" onClick={createPost}>Publicar</button>
             </div>
           </div>
