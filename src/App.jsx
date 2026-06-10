@@ -277,13 +277,13 @@ export default function App() {
   };
 
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
   const [showSearch, setShowSearch] = useState(false);
   const [postImage, setPostImage] = useState(null);
   const [postImageUrl, setPostImageUrl] = useState(null);
   const [followingList, setFollowingList] = useState([]);
-  const [followerCount, setFollowerCount] = useState(0);
   const [likedPosts, setLikedPosts] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [notifications, setNotifications] = useState([]);
