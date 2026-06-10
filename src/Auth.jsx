@@ -49,7 +49,12 @@ export default function Auth({ onSuccess, onExplore, initialMode }) {
           
           if (profileError) throw profileError
           
-          alert('¡Cuenta creada! Revisa tu email para confirmar.')
+          fetch('/api/send-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ to: email, name: fullName || email.split('@')[0] })
+            });
+          alert('¡Cuenta creada! Te enviamos un email de bienvenida.')
         }
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
