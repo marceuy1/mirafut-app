@@ -84,7 +84,7 @@ const timeAgo = (dateStr) => {
 const V = <svg width="14" height="14" viewBox="0 0 24 24" fill="#00C853"><path d="M12 2L3.5 6.5v5c0 4.83 3.6 9.36 8.5 10.5 4.9-1.14 8.5-5.67 8.5-10.5v-5L12 2zm-1 14.59l-3.29-3.3 1.41-1.41L11 13.76l4.88-4.88 1.41 1.41L11 16.59z"/></svg>;
 
 function AuthInline({ onSuccess, onClose, postLoginTab }) {
-  const tl = translations[getLanguage()];
+  const tl = translations['es'];
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
