@@ -214,6 +214,12 @@ export default function App() {
     setSearchResults({ users: usersRes.data || [], posts: postsRes.data || [] });
   };
 
+  const markNotificationsRead = async () => {
+    if (!session) return;
+    await supabase.from('notifications').update({ read: true }).eq('user_id', session.user.id).eq('read', false);
+    setNotifications(prev => prev.map(n => ({...n, read: true})));
+  };
+
   const loadNotifications = async (userId) => {
     const { data } = await supabase.from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false });
     if (data) setNotifications(data);
@@ -774,7 +780,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               )}
             </div>
             <button onClick={toggleLang} style={{background:"none",border:"none",cursor:"pointer",padding:"4px",fontSize:"22px",marginRight:"4px",lineHeight:"1"}}>{lang === "es" ? "🇺🇸" : "🇪🇸"}</button>
-            <button className="hb" onClick={() => setShowNotifications(true)} style={{position:"relative"}}>
+            <button className="hb" onClick={() => { setShowNotifications(true); markNotificationsRead(); }} style={{position:"relative"}}>
                 🔔
                 {notifications.filter(n => !n.read).length > 0 && <span style={{position:"absolute",top:"-2px",right:"-2px",background:"#FF5252",color:"white",fontSize:"9px",fontWeight:"700",minWidth:"16px",height:"16px",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 3px"}}>{notifications.filter(n => !n.read).length}</span>}
               </button>
