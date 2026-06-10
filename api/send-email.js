@@ -19,7 +19,7 @@ export default async function handler(req, res) {
         <h2 style="font-size:24px;margin-bottom:16px">¡Hola ${name}! 👋</h2>
         <p style="font-size:16px;line-height:1.6;margin-bottom:24px">Bienvenido a MiraFut, la red social para jóvenes futbolistas de todo el mundo.</p>
         <p style="font-size:16px;line-height:1.6;margin-bottom:32px">Ya puedes acceder a tu AI Coach 24/7, conectar con otros jugadores y compartir tu talento.</p>
-        <a href="https://www.mirafut.com" style="background:#00E676;color:#0a0e14;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px">Ir a MiraFut →</a>
+        <a href="https://www.mirafut.com" style="background:#00E676;color:#0a0e14;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;white-space:nowrap">Ir a MiraFut →</a>
         <p style="color:#556677;font-size:12px;margin-top:40px">© 2026 MiraFut. Todos los derechos reservados.</p>
       </div>`
     })
