@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { translations, getLanguage } from './translations';
 import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect } from "react";
@@ -83,6 +84,7 @@ const timeAgo = (dateStr) => {
 const V = <svg width="14" height="14" viewBox="0 0 24 24" fill="#00C853"><path d="M12 2L3.5 6.5v5c0 4.83 3.6 9.36 8.5 10.5 4.9-1.14 8.5-5.67 8.5-10.5v-5L12 2zm-1 14.59l-3.29-3.3 1.41-1.41L11 13.76l4.88-4.88 1.41 1.41L11 16.59z"/></svg>;
 
 function AuthInline({ onSuccess, onClose, postLoginTab }) {
+  const tl = translations[getLanguage()];
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -135,7 +137,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab }) {
         <input type="password" placeholder="Contraseña (mín. 6 caracteres)" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6} style={inp} />
         {error && <div style={{color:'#FF5252',fontSize:'12px',marginBottom:'10px'}}>{error}</div>}
         <button type="submit" disabled={loading} style={{width:'100%',padding:'12px',background:loading?'#556677':'linear-gradient(135deg,#00E676,#00C853)',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'10px'}}>
-          {loading ? 'Cargando...' : isSignUp ? 'Crear cuenta' : 'Iniciar sesión'}
+          {loading ? t.loading : isSignUp ? 'Crear cuenta' : 'Iniciar sesión'}
         </button>
       </form>
       <button onClick={() => setIsSignUp(!isSignUp)} style={{width:'100%',background:'none',border:'none',color:'#00E676',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>
@@ -150,6 +152,9 @@ function AuthInline({ onSuccess, onClose, postLoginTab }) {
 
 export default function App() {
   // Auth state
+  const [lang, setLang] = useState(getLanguage);
+  const t = translations[lang];
+  const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   
@@ -739,7 +744,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </svg>
               <div>
                 <div className="logo-text">MiraFut</div>
-                <div className="logo-tag">TALENTO SIN FRONTERAS</div>
+                <div className="logo-tag">{t.tagline}</div>
               </div>
             </div>
             <div style={{flex:1,margin:"0 12px",position:"relative"}}>
@@ -747,7 +752,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 value={searchQuery}
                 onChange={e => { handleSearch(e.target.value); setShowSearch(true); }}
                 onFocus={() => setShowSearch(true)}
-                placeholder="🔍 Buscar..."
+                placeholder={t.search}
                 style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",padding:"7px 12px",color:"#ECEFF4",fontSize:"13px",outline:"none",fontFamily:"Outfit, sans-serif"}}
               />
               {showSearch && searchQuery && (searchResults.users.length > 0 || searchResults.posts.length > 0) && (
@@ -768,6 +773,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
               )}
             </div>
+            <button onClick={toggleLang} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",color:"#8899A6",cursor:"pointer",padding:"4px 8px",borderRadius:"8px",fontSize:"11px",fontWeight:"600",fontFamily:"Outfit,sans-serif",marginRight:"6px"}}>{lang === "es" ? "EN" : "ES"}</button>
             <button className="hb" onClick={() => setShowNotifications(true)} style={{position:"relative"}}>
                 🔔
                 {notifications.filter(n => !n.read).length > 0 && <span style={{position:"absolute",top:"-2px",right:"-2px",background:"#FF5252",color:"white",fontSize:"9px",fontWeight:"700",minWidth:"16px",height:"16px",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 3px"}}>{notifications.filter(n => !n.read).length}</span>}
@@ -778,10 +784,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         {/* DESKTOP HERO SECTION */}
         {isDesktop && tab === "home" && !viewPost && !viewProfile && (
           <div className="desktop-hero">
-            <h1 className="hero-title">Talento sin fronteras</h1>
+            <h1 className="hero-title">{t.heroTitle}</h1>
             <p className="hero-subtitle">
-              La red social donde jóvenes futbolistas de todo el mundo comparten su pasión, 
-              conectan con su comunidad y desarrollan su carrera con AI Coach 24/7
+              {t.heroSubtitle}
             </p>
             <div className="hero-stats">
               <div className="hero-stat">
@@ -824,7 +829,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : (likes[p.id] || p.liked)) ? '❤️' : '🤍'} {p.likes + (likedPosts.includes(p.id.toString().replace('real-','')) ? 1 : 0)}
                     </button>
                     <button className="poab" onClick={() => { setViewPost(p); loadComments(p.id); }}>💬 {p.comments}</button>
-                    <button className="poab" onClick={() => sharePost(p)}>🔗 Compartir</button>
+                    <button className="poab" onClick={() => sharePost(p)}>{t.share}</button>
                   </div>
                 </div>
               ))}
@@ -834,7 +839,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {/* ====== POST DETAIL WITH COMMENTS ====== */}
           {viewPost && (
             <div style={{padding:'0 0 20px'}}>
-              <button className="hb" style={{margin:'10px 16px'}} onClick={() => setViewPost(null)}>← Volver al feed</button>
+              <button className="hb" style={{margin:'10px 16px'}} onClick={() => setViewPost(null)}>{t.backToFeed}</button>
               <div className="post" style={{margin:'0 16px 14px'}}>
                 <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===viewPost.userId))}>
                   <div className="poav">{viewPost.av}</div>
@@ -854,10 +859,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     {(likes[viewPost.id] || viewPost.liked) ? '❤️' : '🤍'} {viewPost.likes + (likes[viewPost.id] && !viewPost.liked ? 1 : 0)}
                   </button>
                   <button className="poab">💬 {viewPost.comments}</button>
-                  <button className="poab" onClick={() => sharePost(p)}>🔗 Compartir</button>
+                  <button className="poab" onClick={() => sharePost(p)}>{t.share}</button>
                 </div>
                 <div className="comments">
-                  <div className="com-title">Comentarios</div>
+                  <div className="com-title">{t.comments}</div>
                   {postComments.length === 0 && viewPost.commentList.length === 0 && <div style={{color:'#556677',fontSize:'13px',padding:'8px 0'}}>No hay comentarios aún. ¡Sé el primero!</div>}
                   {postComments.length > 0 ? postComments.map((c,i) => (
                     <div key={i} className="com-item">
@@ -877,7 +882,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     </div>
                   ))}
                   {session && viewPost.id.toString().startsWith('real-') && <div style={{display:'flex',gap:'8px',marginTop:'12px'}}>
-                    <input value={newComment} onChange={e=>setNewComment(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addComment(viewPost.id)} placeholder="Escribe un comentario..." style={{flex:1,background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',padding:'8px 12px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
+                    <input value={newComment} onChange={e=>setNewComment(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addComment(viewPost.id)} placeholder={t.writeComment} style={{flex:1,background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',padding:'8px 12px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
                     <button onClick={()=>addComment(viewPost.id)} style={{padding:'8px 14px',background:'#00E676',border:'none',borderRadius:'10px',color:'#0a0e14',fontWeight:'700',cursor:'pointer',fontSize:'13px'}}>→</button>
                   </div>}
                 </div>
@@ -1024,10 +1029,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="prof-stat"><div className="prof-stat-v">{followingList.length}</div><div className="prof-stat-l">Siguiendo</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{realPosts.length}</div><div className="prof-stat-l">Posts</div></div>
               </div>
-              <button className="prof-btn pri" onClick={openEditProfile}>Editar perfil</button>
-              <button className="prof-btn sec">⚙️ Configuración</button>
-              <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>🚪 Cerrar sesión</button>
-              {realPosts.length > 0 && <div style={{width:"100%",marginTop:"20px",textAlign:"left"}}><div style={{fontSize:"11px",color:"#556677",letterSpacing:"1px",textTransform:"uppercase",fontWeight:"600",marginBottom:"12px"}}>Mis posts</div>{realPosts.map(p => <div key={p.id} style={{background:"#0a0e14",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"14px",padding:"12px",marginBottom:"10px"}}><div style={{fontSize:"14px",color:"#ECEFF4"}}>{p.content}</div><div style={{fontSize:"11px",color:"#556677",marginTop:"6px"}}>{new Date(p.created_at).toLocaleDateString()}</div></div>)}</div>}
+              <button className="prof-btn pri" onClick={openEditProfile}>{t.editProfile}</button>
+              <button className="prof-btn sec">{t.settings}</button>
+              <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
+              {realPosts.length > 0 && <div style={{width:"100%",marginTop:"20px",textAlign:"left"}}><div style={{fontSize:"11px",color:"#556677",letterSpacing:"1px",textTransform:"uppercase",fontWeight:"600",marginBottom:"12px"}}>{t.myPosts}</div>{realPosts.map(p => <div key={p.id} style={{background:"#0a0e14",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"14px",padding:"12px",marginBottom:"10px"}}><div style={{fontSize:"14px",color:"#ECEFF4"}}>{p.content}</div><div style={{fontSize:"11px",color:"#556677",marginTop:"6px"}}>{new Date(p.created_at).toLocaleDateString()}</div></div>)}</div>}
             </div>
           )}
         </div>
@@ -1081,10 +1086,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         <div className={`modal-bg ${showNewPost ? 'show' : ''}`} onClick={() => setShowNewPost(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-hdr">
-              <div className="modal-title">Nuevo post</div>
+              <div className="modal-title">{t.newPost}</div>
               <button className="modal-close" onClick={() => setShowNewPost(false)}>×</button>
             </div>
-            <textarea className="modal-textarea" placeholder="¿Qué está pasando?" value={newPost} onChange={e => setNewPost(e.target.value)}/>
+            <textarea className="modal-textarea" placeholder={t.whatsHappening} value={newPost} onChange={e => setNewPost(e.target.value)}/>
             {postImageUrl && <div style={{marginTop:'10px',borderRadius:'12px',overflow:'hidden',position:'relative'}}>
               <img src={postImageUrl} style={{width:'100%',maxHeight:'200px',objectFit:'cover',borderRadius:'12px'}} />
               <button onClick={()=>{setPostImage(null);setPostImageUrl(null);}} style={{position:'absolute',top:'8px',right:'8px',background:'rgba(0,0,0,0.6)',border:'none',color:'white',borderRadius:'50%',width:'24px',height:'24px',cursor:'pointer',fontSize:'14px'}}>×</button>
@@ -1094,7 +1099,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 📷 Foto
                 <input type="file" accept="image/*" style={{display:'none'}} onChange={e => { if(e.target.files[0]) { setPostImage(e.target.files[0]); setPostImageUrl(URL.createObjectURL(e.target.files[0])); } }} />
               </label>
-              <button className="modal-btn pri" onClick={createPost}>Publicar</button>
+              <button className="modal-btn pri" onClick={createPost}>{t.publish}</button>
             </div>
           </div>
         </div>
@@ -1111,7 +1116,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </label>
               </div>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
-                <div style={{fontWeight:'700',fontSize:'18px'}}>Editar perfil</div>
+                <div style={{fontWeight:'700',fontSize:'18px'}}>{t.editProfile}</div>
                 <button onClick={() => setShowEditProfile(false)} style={{background:'none',border:'none',color:'#8899A6',fontSize:'22px',cursor:'pointer'}}>×</button>
               </div>
               {[
@@ -1155,11 +1160,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:99999,display:"flex",alignItems:"flex-start",justifyContent:"flex-end",padding:"70px 20px 20px",backdropFilter:"blur(4px)"}} onClick={()=>setShowNotifications(false)}>
             <div style={{background:"#121820",borderRadius:"20px",padding:"20px",width:"320px",border:"1px solid rgba(255,255,255,0.08)",maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
-                <div style={{fontWeight:"700",fontSize:"16px"}}>Notificaciones</div>
+                <div style={{fontWeight:"700",fontSize:"16px"}}>{t.notifications}</div>
                 <button onClick={()=>setShowNotifications(false)} style={{background:"none",border:"none",color:"#8899A6",fontSize:"20px",cursor:"pointer"}}>×</button>
               </div>
               {notifications.length === 0 ? (
-                <div style={{color:"#556677",fontSize:"14px",textAlign:"center",padding:"20px"}}>No tienes notificaciones</div>
+                <div style={{color:"#556677",fontSize:"14px",textAlign:"center",padding:"20px"}}>{t.noNotifications}</div>
               ) : (
                 notifications.map(n => (
                   <div key={n.id} onClick={() => { if(n.post_id) { setShowNotifications(false); setViewPost(allPosts.find(p => p.id === "real-"+n.post_id) || null); setTab("home"); } }} style={{padding:"12px",borderRadius:"12px",background:n.read?"transparent":"rgba(0,230,118,0.05)",border:"1px solid",borderColor:n.read?"rgba(255,255,255,0.04)":"rgba(0,230,118,0.15)",marginBottom:"8px",cursor:n.post_id?"pointer":"default"}}>
@@ -1189,10 +1194,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
         {/* BOTTOM NAV */}
         <nav className="bnav">
-          <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">🏠</span><span>Inicio</span></button>
-          <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('coach');setChatOpen(null);}}><span className="ni-emoji">⚽</span><span>Coach</span></button>
-          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);}}><span className="ni-emoji">💬</span><span>Chat</span>{CHATS.reduce((s,c)=>s+c.unread,0)>0 && <span className="nbg">{CHATS.reduce((s,c)=>s+c.unread,0)}</span>}</button>
-          <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{ if(!session){requireAuth('profile');return;} setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>Perfil</span></button>
+          <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">🏠</span><span>{t.home}</span></button>
+          <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('coach');setChatOpen(null);}}><span className="ni-emoji">⚽</span><span>{t.coach}</span></button>
+          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);}}><span className="ni-emoji">💬</span><span>{t.chat}</span>{CHATS.reduce((s,c)=>s+c.unread,0)>0 && <span className="nbg">{CHATS.reduce((s,c)=>s+c.unread,0)}</span>}</button>
+          <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{ if(!session){requireAuth('profile');return;} setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>{t.profile}</span></button>
         </nav>
       </div>
     </>
