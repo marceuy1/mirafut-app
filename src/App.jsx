@@ -196,6 +196,16 @@ export default function App() {
     if (!error) { setNewComment(''); loadComments(postId); loadRealPosts(); }
   };
 
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+    if (!query.trim()) { setSearchResults({ users: [], posts: [] }); return; }
+    const [usersRes, postsRes] = await Promise.all([
+      supabase.from('profiles').select('id, full_name, username, avatar_url, position, country').ilike('full_name', '%' + query + '%').limit(5),
+      supabase.from('posts').select('id, content, created_at').ilike('content', '%' + query + '%').limit(5)
+    ]);
+    setSearchResults({ users: usersRes.data || [], posts: postsRes.data || [] });
+  };
+
   const loadNotifications = async (userId) => {
     const { data } = await supabase.from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false });
     if (data) setNotifications(data);
@@ -267,6 +277,9 @@ export default function App() {
   };
 
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
+  const [showSearch, setShowSearch] = useState(false);
   const [postImage, setPostImage] = useState(null);
   const [postImageUrl, setPostImageUrl] = useState(null);
   const [followingList, setFollowingList] = useState([]);
@@ -703,6 +716,32 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="logo-text">MiraFut</div>
                 <div className="logo-tag">TALENTO SIN FRONTERAS</div>
               </div>
+            </div>
+            <div style={{flex:1,margin:"0 12px",position:"relative"}}>
+              <input
+                value={searchQuery}
+                onChange={e => { handleSearch(e.target.value); setShowSearch(true); }}
+                onFocus={() => setShowSearch(true)}
+                placeholder="🔍 Buscar..."
+                style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",padding:"7px 12px",color:"#ECEFF4",fontSize:"13px",outline:"none",fontFamily:"Outfit, sans-serif"}}
+              />
+              {showSearch && searchQuery && (searchResults.users.length > 0 || searchResults.posts.length > 0) && (
+                <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",marginTop:"4px",zIndex:1000,maxHeight:"300px",overflowY:"auto"}}>
+                  {searchResults.users.length > 0 && <div style={{padding:"8px 12px 4px",fontSize:"10px",color:"#556677",textTransform:"uppercase",letterSpacing:"1px"}}>Usuarios</div>}
+                  {searchResults.users.map(u => (
+                    <div key={u.id} onClick={() => { setViewProfile({id:u.id,name:u.full_name,avatar:u.avatar_url?null:u.full_name?.substring(0,2).toUpperCase(),avatarUrl:u.avatar_url,position:u.position||'',country:u.country||'',city:'',age:'',bio:'',verified:false,followers:0,following:0}); setShowSearch(false); setSearchQuery(''); setTab('home'); }} style={{display:"flex",alignItems:"center",gap:"10px",padding:"8px 12px",cursor:"pointer"}}>
+                      {u.avatar_url ? <img src={u.avatar_url} style={{width:"32px",height:"32px",borderRadius:"9px",objectFit:"cover"}} /> : <div style={{width:"32px",height:"32px",borderRadius:"9px",background:"rgba(0,230,118,0.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",fontWeight:"700",color:"#00E676"}}>{u.full_name?.substring(0,2).toUpperCase()}</div>}
+                      <div><div style={{fontSize:"13px",fontWeight:"600",color:"#ECEFF4"}}>{u.full_name}</div><div style={{fontSize:"11px",color:"#556677"}}>{u.position} {u.country}</div></div>
+                    </div>
+                  ))}
+                  {searchResults.posts.length > 0 && <div style={{padding:"8px 12px 4px",fontSize:"10px",color:"#556677",textTransform:"uppercase",letterSpacing:"1px",borderTop:"1px solid rgba(255,255,255,0.04)"}}>Posts</div>}
+                  {searchResults.posts.map(p => (
+                    <div key={p.id} onClick={() => { setShowSearch(false); setSearchQuery(''); }} style={{padding:"8px 12px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                      <div style={{fontSize:"13px",color:"#ECEFF4",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.content}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <button className="hb" onClick={() => setShowNotifications(true)} style={{position:"relative"}}>
                 🔔
