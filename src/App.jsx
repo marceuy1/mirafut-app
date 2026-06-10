@@ -458,7 +458,8 @@ export default function App() {
       likes: p.likes?.[0]?.count || 0,
       comments: p.comments?.[0]?.count || 0,
       liked: false,
-      commentList: []
+      commentList: [],
+      avatar_url: userProfile?.avatar_url || null
     })),
     ...POSTS
   ];
@@ -742,7 +743,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {allPosts.map(p => (
                 <div key={p.id} className="post">
                   <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
-                    <div className="poav">{p.av}</div>
+                    {p.avatar_url ? <img src={p.avatar_url} style={{width:"38px",height:"38px",borderRadius:"11px",objectFit:"cover",flexShrink:0}} /> : <div className="poav">{p.av}</div>}
                     <div className="poi">
                       <div className="pon">{p.name} {p.verified && V}</div>
                       <div className="pot">{p.time}</div>
