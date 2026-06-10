@@ -729,7 +729,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",marginTop:"4px",zIndex:1000,maxHeight:"300px",overflowY:"auto"}}>
                   {searchResults.users.length > 0 && <div style={{padding:"8px 12px 4px",fontSize:"10px",color:"#556677",textTransform:"uppercase",letterSpacing:"1px"}}>Usuarios</div>}
                   {searchResults.users.map(u => (
-                    <div key={u.id} onClick={() => { setViewProfile({id:u.id,name:u.full_name,avatar:u.avatar_url?null:u.full_name?.substring(0,2).toUpperCase(),avatarUrl:u.avatar_url,position:u.position||'',country:u.country||'',city:'',age:'',bio:'',verified:false,followers:0,following:0}); setShowSearch(false); setSearchQuery(''); setTab('home'); }} style={{display:"flex",alignItems:"center",gap:"10px",padding:"8px 12px",cursor:"pointer"}}>
+                    <div key={u.id} onClick={() => { setViewProfile({id:u.id,name:u.full_name,avatar:u.full_name?.substring(0,2).toUpperCase(),avatar_url:u.avatar_url,position:u.position||'',country:u.country||'',city:'',age:'',bio:'',verified:false,followers:0,following:0}); setShowSearch(false); setSearchQuery(''); setTab('home'); }} style={{display:"flex",alignItems:"center",gap:"10px",padding:"8px 12px",cursor:"pointer"}}>
                       {u.avatar_url ? <img src={u.avatar_url} style={{width:"32px",height:"32px",borderRadius:"9px",objectFit:"cover"}} /> : <div style={{width:"32px",height:"32px",borderRadius:"9px",background:"rgba(0,230,118,0.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",fontWeight:"700",color:"#00E676"}}>{u.full_name?.substring(0,2).toUpperCase()}</div>}
                       <div><div style={{fontSize:"13px",fontWeight:"600",color:"#ECEFF4"}}>{u.full_name}</div><div style={{fontSize:"11px",color:"#556677"}}>{u.position} {u.country}</div></div>
                     </div>
@@ -863,7 +863,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {/* ====== PROFILE VIEW ====== */}
           {viewProfile && (
             <div className="profile">
-              <div className="prof-av">{viewProfile.avatar}</div>
+              {viewProfile.avatar_url ? <img src={viewProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover",margin:"0 auto 12px",display:"block"}} /> : <div className="prof-av">{viewProfile.avatar}</div>}
               <div className="prof-name">{viewProfile.name} {viewProfile.verified && V}</div>
               <div className="prof-meta">📍 {viewProfile.city}, {viewProfile.country} · {viewProfile.age} años · {viewProfile.position}</div>
               <div className="prof-bio">{viewProfile.bio}</div>
