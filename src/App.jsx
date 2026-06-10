@@ -198,7 +198,7 @@ export default function App() {
   const loadRealPosts = async () => {
     const { data, error } = await supabase
       .from('posts')
-      .select('*, likes(count)')
+      .select('*, likes(count), comments(count)')
       .order('created_at', { ascending: false });
     if (!error && data) setRealPosts(data);
   };
@@ -432,7 +432,7 @@ export default function App() {
       text: p.content,
       image: null,
       likes: p.likes?.[0]?.count || 0,
-      comments: 0,
+      comments: p.comments?.[0]?.count || 0,
       liked: false,
       commentList: []
     })),
