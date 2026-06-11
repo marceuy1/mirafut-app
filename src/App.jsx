@@ -308,12 +308,12 @@ export default function App() {
   const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
   const [editLoading, setEditLoading] = useState(false);
 
+  const t = useMemo(() => translations[lang], [lang]);
+  const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
+
   if (loading) {
     return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
   }
-
-  const t = translations[lang];
-  const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('login') && !session) {
