@@ -293,6 +293,7 @@ export default function App() {
   };
 
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [submittingComment, setSubmittingComment] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
@@ -306,7 +307,6 @@ export default function App() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [postComments, setPostComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const [submittingComment, setSubmittingComment] = useState(false);
   const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
   const [editLoading, setEditLoading] = useState(false);
 
