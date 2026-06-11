@@ -81,6 +81,8 @@ const timeAgo = (dateStr) => {
   return date.toLocaleDateString();
 };
 
+const V = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="#00C853"><path d="M12 2L3.5 6.5v5c0 4.83 3.6 9.36 8.5 10.5 4.9-1.14 8.5-5.67 8.5-10.5v-5L12 2zm-1 14.59l-3.29-3.3 1.41-1.41L11 13.76l4.88-4.88 1.41 1.41L11 16.59z"/></svg>;
+
 function AuthInline({ onSuccess, onClose, postLoginTab }) {
   const tl = translations['es'];
   const [isSignUp, setIsSignUp] = useState(false);
@@ -822,7 +824,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
                     {p.avatar_url ? <img src={p.avatar_url} style={{width:"38px",height:"38px",borderRadius:"11px",objectFit:"cover",flexShrink:0}} /> : <div className="poav">{p.av}</div>}
                     <div className="poi">
-                      <div className="pon">{p.name} {p.verified && V}</div>
+                      <div className="pon">{p.name} {p.verified && <V/>}</div>
                       <div className="pot">{p.time}</div>
                     </div>
                   </div>
@@ -852,7 +854,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===viewPost.userId))}>
                   <div className="poav">{viewPost.av}</div>
                   <div className="poi">
-                    <div className="pon">{viewPost.name} {viewPost.verified && V}</div>
+                    <div className="pon">{viewPost.name} {viewPost.verified && <V/>}</div>
                     <div className="pot">{viewPost.time}</div>
                   </div>
                 </div>
@@ -902,7 +904,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {viewProfile && (
             <div className="profile">
               {viewProfile.avatar_url ? <img src={viewProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover",margin:"0 auto 12px",display:"block"}} /> : <div className="prof-av">{viewProfile.avatar}</div>}
-              <div className="prof-name">{viewProfile.name} {viewProfile.verified && V}</div>
+              <div className="prof-name">{viewProfile.name} {viewProfile.verified && <V/>}</div>
               <div className="prof-meta">📍 {viewProfile.city}, {viewProfile.country} · {viewProfile.age} años · {viewProfile.position}</div>
               <div className="prof-bio">{viewProfile.bio}</div>
               <div className="prof-stats">
