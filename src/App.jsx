@@ -198,7 +198,7 @@ export default function App() {
   };
 
   const addComment = async (postId) => {
-    if (!newComment.trim() || !session) return;
+    if (!newComment.trim() || !session || !session.user) return;
     const realPostId = postId.toString().replace('real-', '');
     const { error } = await supabase.from('comments').insert([{ user_id: session.user.id, post_id: realPostId, content: newComment }]);
     if (!error) { setNewComment(''); loadComments(postId); loadRealPosts(); }
