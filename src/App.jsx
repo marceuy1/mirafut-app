@@ -199,7 +199,7 @@ export default function App() {
     if (!newComment.trim() || !session || !session.user || submittingComment) return;
     setSubmittingComment(true);
     const realPostId = postId.toString().replace('real-', '');
-    const { data: { session: cs } } = await supabase.auth.getSession(); console.log("uid:", cs?.user?.id); const { error } = await supabase.from('comments').insert([{ user_id: session.user.id, post_id: realPostId, content: newComment }]);
+    const { error } = await supabase.from('comments').insert([{ user_id: session.user.id, post_id: realPostId, content: newComment }]);
     if (!error) { setNewComment(''); loadComments(postId); loadRealPosts(); }
     setSubmittingComment(false);
   };
