@@ -452,7 +452,7 @@ export default function App() {
     if (data) setRealChatMsgs(data);
   };
 
-  const sendRealMessage = async (partnerId) => {
+  const sendRealMessage = async (partnerId) => { console.log('sendRealMessage called', partnerId, chatMsg);
     if (!chatMsg.trim() || !session) return;
     const msg = chatMsg.trim();
     setChatMsg('');
