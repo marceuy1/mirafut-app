@@ -458,7 +458,7 @@ export default function App() {
     setChatMsg('');
     const tempMsg = { id: Date.now(), from_user_id: session.user.id, to_user_id: partnerId, content: msg, created_at: new Date().toISOString() };
     setRealChatMsgs(prev => [...prev, tempMsg]);
-    await supabase.from('messages').insert([{
+    const { error: msgError } = await supabase.from('messages').insert([{
       from_user_id: session.user.id,
       to_user_id: partnerId,
       content: msg,
@@ -469,6 +469,7 @@ export default function App() {
       updated_at: new Date().toISOString(),
       inserted_at: new Date().toISOString()
     }]);
+    if (msgError) { console.error('Error sending message:', msgError); return; }
     loadMessages(partnerId);
     loadChatList();
   };
