@@ -452,8 +452,7 @@ export default function App() {
     if (data) setRealChatMsgs(data);
   };
 
-  const sendRealMessage = async (partnerId) => { console.log('sendRealMessage called', partnerId, chatMsg);
-    console.log('session:', session?.user?.id, 'chatMsg:', chatMsg.trim());
+  const sendRealMessage = async (partnerId) => {
     if (!chatMsg.trim() || !session) return;
     const msg = chatMsg.trim();
     setChatMsg('');
@@ -465,7 +464,7 @@ export default function App() {
       content: msg,
       read: false
     }]);
-    console.log('msgError:', JSON.stringify(msgError)); if (msgError) { console.error('Error sending message:', msgError); return; }
+    if (msgError) { console.error('Error sending message:', msgError); return; }
     loadMessages(partnerId);
     loadChatList();
   };
