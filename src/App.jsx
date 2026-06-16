@@ -459,16 +459,17 @@ export default function App() {
     setChatMsg('');
     const tempMsg = { id: Date.now(), from_user_id: session.user.id, to_user_id: partnerId, content: msg, created_at: new Date().toISOString() };
     setRealChatMsgs(prev => [...prev, tempMsg]);
+    const now = new Date().toISOString();
     const { error: msgError } = await supabase.from('messages').insert([{
       from_user_id: session.user.id,
       to_user_id: partnerId,
       content: msg,
       topic: 'direct',
       extension: 'text',
-      event: 'message',
       private: true,
-      updated_at: new Date().toISOString(),
-      inserted_at: new Date().toISOString()
+      read: false,
+      updated_at: now,
+      inserted_at: now
     }]);
     console.log('msgError:', JSON.stringify(msgError)); if (msgError) { console.error('Error sending message:', msgError); return; }
     loadMessages(partnerId);
