@@ -456,6 +456,8 @@ export default function App() {
     if (!chatMsg.trim() || !session) return;
     const msg = chatMsg.trim();
     setChatMsg('');
+    const tempMsg = { id: Date.now(), from_user_id: session.user.id, to_user_id: partnerId, content: msg, created_at: new Date().toISOString() };
+    setRealChatMsgs(prev => [...prev, tempMsg]);
     await supabase.from('messages').insert([{
       from_user_id: session.user.id,
       to_user_id: partnerId,
