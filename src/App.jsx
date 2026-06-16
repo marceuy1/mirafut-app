@@ -473,7 +473,7 @@ export default function App() {
 
   const openChat = async (partner) => {
     setChatPartner(partner);
-    setChatOpen(partner.id);
+    setChatOpen(partner.id); setViewProfile(null);
     await loadMessages(partner.id);
     setTab('chat');
   };
