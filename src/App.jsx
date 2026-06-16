@@ -469,7 +469,7 @@ export default function App() {
       updated_at: new Date().toISOString(),
       inserted_at: new Date().toISOString()
     }]);
-    if (msgError) { console.error('Error sending message:', msgError); return; }
+    console.log('msgError:', JSON.stringify(msgError)); if (msgError) { console.error('Error sending message:', msgError); return; }
     loadMessages(partnerId);
     loadChatList();
   };
