@@ -167,6 +167,9 @@ export default function App() {
   const [viewProfile, setViewProfile] = useState(null);
   const [chatOpen, setChatOpen] = useState(null);
   const [chatMsg, setChatMsg] = useState("");
+  const [realChatMsgs, setRealChatMsgs] = useState([]);
+  const [chatPartner, setChatPartner] = useState(null);
+  const [chatList, setChatList] = useState([]);
   const [chatMsgs, setChatMsgs] = useState([
     {id:1,text:"Vi tu último video, increíble",from:"them",time:"10:30"},
     {id:2,text:"¡Muchas gracias!",from:"me",time:"10:32"},
@@ -243,14 +246,14 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadLikes(); }
+      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadLikes(); loadChatList(); }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) { setShowAuthPrompt(false); loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); }
+      if (session) { setShowAuthPrompt(false); loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadChatList(); }
       if (session && pendingTabRef.current && pendingTabRef.current !== 'home') {
         setTab(pendingTabRef.current);
         pendingTabRef.current = 'home';
@@ -419,6 +422,60 @@ export default function App() {
       setLikedPosts(prev => [...prev, realPostId]);
     }
     loadRealPosts();
+  };
+
+  const loadChatList = async () => {
+    if (!session) return;
+    const { data } = await supabase
+      .from('messages')
+      .select('from_user_id, to_user_id, content, created_at')
+      .or(`from_user_id.eq.${session.user.id},to_user_id.eq.${session.user.id}`)
+      .order('created_at', { ascending: false });
+    if (!data) return;
+    const partnerIds = [...new Set(data.map(m => m.from_user_id === session.user.id ? m.to_user_id : m.from_user_id))];
+    const { data: profiles } = await supabase.from('profiles').select('id, full_name, avatar_url').in('id', partnerIds);
+    const list = partnerIds.map(pid => {
+      const last = data.find(m => m.from_user_id === pid || m.to_user_id === pid);
+      const profile = profiles?.find(p => p.id === pid);
+      return { id: pid, name: profile?.full_name || 'Usuario', avatar_url: profile?.avatar_url, lastMsg: last?.content || '', time: last?.created_at };
+    });
+    setChatList(list);
+  };
+
+  const loadMessages = async (partnerId) => {
+    if (!session) return;
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`and(from_user_id.eq.${session.user.id},to_user_id.eq.${partnerId}),and(from_user_id.eq.${partnerId},to_user_id.eq.${session.user.id})`)
+      .order('created_at', { ascending: true });
+    if (data) setRealChatMsgs(data);
+  };
+
+  const sendRealMessage = async (partnerId) => {
+    if (!chatMsg.trim() || !session) return;
+    const msg = chatMsg.trim();
+    setChatMsg('');
+    await supabase.from('messages').insert([{
+      from_user_id: session.user.id,
+      to_user_id: partnerId,
+      content: msg,
+      topic: 'direct',
+      extension: 'text',
+      event: 'message',
+      private: true,
+      updated_at: new Date().toISOString(),
+      inserted_at: new Date().toISOString()
+    }]);
+    loadMessages(partnerId);
+    loadChatList();
+  };
+
+  const openChat = async (partner) => {
+    setChatPartner(partner);
+    setChatOpen(partner.id);
+    await loadMessages(partner.id);
+    setTab('chat');
   };
 
   const loadFollowing = async () => {
@@ -915,38 +972,50 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className={`prof-btn ${followingList.includes(viewProfile.id) || follows[viewProfile.id] ? 'sec' : 'pri'}`} onClick={() => toggleFollowUser(viewProfile.id)}>
                 {followingList.includes(viewProfile.id) || follows[viewProfile.id] ? 'Siguiendo ✓' : '+ Seguir'}
               </button>
-              <button className="prof-btn sec" onClick={() => setChatOpen(1)}>💬 Mensaje</button>
+              <button className="prof-btn sec" onClick={() => openChat({id: viewProfile.id, name: viewProfile.name, avatar_url: viewProfile.avatar_url})}>💬 Mensaje</button>
             </div>
           )}
 
           {/* ====== CHAT LIST ====== */}
           {tab === "chat" && !chatOpen && (
-            <div>{CHATS.map(c => (
-              <div key={c.id} className="cli" onClick={() => setChatOpen(c.id)}>
-                <div className={`cav ${c.group?'g':''}`}>{c.av}</div>
-                <div className="cin">
-                  <div className="cnm">{c.name}</div>
-                  <div className="cls">{c.last}</div>
+            <div>
+              {chatList.length === 0 && (
+                <div style={{textAlign:'center',color:'#556677',fontSize:'13px',marginTop:'60px',padding:'20px'}}>
+                  <div style={{fontSize:'32px',marginBottom:'12px'}}>💬</div>
+                  <div>No tienes conversaciones aún.</div>
+                  <div style={{marginTop:'8px'}}>Busca un jugador y envíale un mensaje.</div>
                 </div>
-                <div style={{textAlign:'right',flexShrink:0}}>
-                  <div className="ctm">{c.time}</div>
-                  {c.unread>0 && <div className="cur">{c.unread}</div>}
+              )}
+              {chatList.map(c => (
+                <div key={c.id} className="cli" onClick={() => openChat(c)}>
+                  {c.avatar_url ? <img src={c.avatar_url} style={{width:'42px',height:'42px',borderRadius:'12px',objectFit:'cover',flexShrink:0}} /> : <div className="cav">{c.name?.substring(0,2).toUpperCase()}</div>}
+                  <div className="cin">
+                    <div className="cnm">{c.name}</div>
+                    <div className="cls">{c.lastMsg?.substring(0,40)}</div>
+                  </div>
+                  <div style={{textAlign:'right',flexShrink:0}}>
+                    <div className="ctm">{c.time ? timeAgo(c.time) : ''}</div>
+                  </div>
                 </div>
-              </div>
-            ))}</div>
+              ))}
+            </div>
           )}
 
           {/* ====== CHAT VIEW ====== */}
-          {chatOpen && (
+          {chatOpen && chatPartner && (
             <div className="chat-view">
               <div className="chat-msgs">
-                {chatMsgs.map(m => (
-                  <div key={m.id} className={`chat-msg ${m.from}`}>{m.text}</div>
+                {realChatMsgs.map(m => (
+                  <div key={m.id} className={`chat-msg ${m.from_user_id === session?.user?.id ? 'me' : 'them'}`}>
+                    <div>{m.content}</div>
+                    <div style={{fontSize:'10px',opacity:0.5,marginTop:'2px'}}>{timeAgo(m.created_at)}</div>
+                  </div>
                 ))}
+                {realChatMsgs.length === 0 && <div style={{textAlign:'center',color:'#556677',fontSize:'13px',marginTop:'40px'}}>No hay mensajes aún. ¡Sé el primero en escribir!</div>}
               </div>
               <div className="chat-input">
-                <input placeholder="Escribe..." value={chatMsg} onChange={e => setChatMsg(e.target.value)} onKeyDown={e => e.key==='Enter' && sendChat()}/>
-                <button className="chat-send" onClick={sendChat}>→</button>
+                <input placeholder="Escribe un mensaje..." value={chatMsg} onChange={e => setChatMsg(e.target.value)} onKeyDown={e => e.key==='Enter' && sendRealMessage(chatPartner.id)}/>
+                <button className="chat-send" onClick={() => sendRealMessage(chatPartner.id)}>→</button>
               </div>
             </div>
           )}
