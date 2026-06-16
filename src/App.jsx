@@ -265,6 +265,25 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Realtime chat
+  useEffect(() => {
+    if (!chatOpen || !session) return;
+    const channel = supabase
+      .channel('chat-' + chatOpen)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `to_user_id=eq.${session.user.id}`
+      }, (payload) => {
+        if (payload.new.from_user_id === chatOpen) {
+          setRealChatMsgs(prev => [...prev, payload.new]);
+        }
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [chatOpen, session]);
+
   // Resize effect
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 769);
