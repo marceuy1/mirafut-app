@@ -464,9 +464,6 @@ export default function App() {
       from_user_id: session.user.id,
       to_user_id: partnerId,
       content: msg,
-      topic: 'direct',
-      extension: 'text',
-      private: true,
       read: false,
       updated_at: now,
       inserted_at: now
