@@ -279,10 +279,7 @@ export default function App() {
         const isRelevant = (msg.from_user_id === chatOpen && msg.to_user_id === session.user.id) ||
                            (msg.from_user_id === session.user.id && msg.to_user_id === chatOpen);
         if (isRelevant) {
-          setRealChatMsgs(prev => {
-            if (prev.find(m => m.id === msg.id)) return prev;
-            return [...prev, msg];
-          });
+          loadMessages(chatOpen);
         }
       })
       .subscribe();
@@ -480,8 +477,6 @@ export default function App() {
     if (!chatMsg.trim() || !session) return;
     const msg = chatMsg.trim();
     setChatMsg('');
-    const tempMsg = { id: Date.now(), from_user_id: session.user.id, to_user_id: partnerId, content: msg, created_at: new Date().toISOString() };
-    setRealChatMsgs(prev => [...prev, tempMsg]);
     const { error: msgError } = await supabase.from('messages').insert([{
       from_user_id: session.user.id,
       to_user_id: partnerId,
