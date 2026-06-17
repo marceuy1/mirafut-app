@@ -185,7 +185,6 @@ export default function App() {
   const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState(false);
   const aiEnd = useRef(null);
-  const chatOpenRef = useRef(null);
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [likes, setLikes] = useState({});
@@ -267,27 +266,30 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Realtime chat
+  // Chat polling - refresca mensajes cada 5 segundos cuando el chat está abierto
   useEffect(() => {
     if (!chatOpen || !session) return;
-    const channel = supabase
-      .channel('chat-' + chatOpen)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages'
-      }, (payload) => {
-        const msg = payload.new;
-        const isRelevant = (msg.from_user_id === chatOpen && msg.to_user_id === session.user.id) ||
-                           (msg.from_user_id === session.user.id && msg.to_user_id === chatOpen);
-        if (isRelevant) {
-          loadMessages(chatOpenRef.current);
-          loadChatList();
-        }
-      })
-      .subscribe();
-    return () => supabase.removeChannel(channel);
+    const interval = setInterval(() => {
+      loadMessages(chatOpen);
+    }, 5000);
+    return () => clearInterval(interval);
   }, [chatOpen, session]);
+
+  // Contador mensajes no leídos - refresca cada 30 segundos
+  useEffect(() => {
+    if (!session) return;
+    const fetchUnread = async () => {
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('to_user_id', session.user.id)
+        .eq('read', false);
+      setUnreadMessages(count || 0);
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, [session]);
 
   // Resize effect
   useEffect(() => {
@@ -466,8 +468,6 @@ export default function App() {
       return { id: pid, name: profile?.full_name || 'Usuario', avatar_url: profile?.avatar_url, lastMsg: last?.content || '', time: last?.created_at };
     });
     setChatList(list);
-    const { count } = await supabase.from('messages').select('*', { count: 'exact', head: true }).eq('to_user_id', session.user.id).eq('read', false);
-    setUnreadMessages(count || 0);
   };
 
   const loadMessages = async (partnerId) => {
@@ -498,7 +498,7 @@ export default function App() {
   const openChat = async (partner) => {
     setChatPartner(partner);
     setChatOpen(partner.id);
-    chatOpenRef.current = partner.id; setViewProfile(null);
+    setViewProfile(null);
     await loadMessages(partner.id);
     setTab('chat');
   };
