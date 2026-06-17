@@ -170,6 +170,7 @@ export default function App() {
   const [realChatMsgs, setRealChatMsgs] = useState([]);
   const [chatPartner, setChatPartner] = useState(null);
   const [chatList, setChatList] = useState([]);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [chatMsgs, setChatMsgs] = useState([
     {id:1,text:"Vi tu último video, increíble",from:"them",time:"10:30"},
     {id:2,text:"¡Muchas gracias!",from:"me",time:"10:32"},
@@ -281,6 +282,7 @@ export default function App() {
                            (msg.from_user_id === session.user.id && msg.to_user_id === chatOpen);
         if (isRelevant) {
           loadMessages(chatOpenRef.current);
+          loadChatList();
         }
       })
       .subscribe();
@@ -462,6 +464,8 @@ export default function App() {
       return { id: pid, name: profile?.full_name || 'Usuario', avatar_url: profile?.avatar_url, lastMsg: last?.content || '', time: last?.created_at };
     });
     setChatList(list);
+    const { count } = await supabase.from('messages').select('*', { count: 'exact', head: true }).eq('to_user_id', session.user.id).eq('read', false);
+    setUnreadMessages(count || 0);
   };
 
   const loadMessages = async (partnerId) => {
@@ -1294,7 +1298,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         <nav className="bnav">
           <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">🏠</span><span>{t.home}</span></button>
           <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('coach');setChatOpen(null);}}><span className="ni-emoji">⚽</span><span>{t.coach}</span></button>
-          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);}}><span className="ni-emoji">💬</span><span>{t.chat}</span>{CHATS.reduce((s,c)=>s+c.unread,0)>0 && <span className="nbg">{CHATS.reduce((s,c)=>s+c.unread,0)}</span>}</button>
+          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);}}><span className="ni-emoji">💬</span><span>{t.chat}</span>{unreadMessages>0 && <span className="nbg">{unreadMessages}</span>}</button>
           <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{ if(!session){requireAuth('profile');return;} setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>{t.profile}</span></button>
         </nav>
       </div>
