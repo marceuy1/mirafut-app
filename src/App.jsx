@@ -273,11 +273,16 @@ export default function App() {
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'messages',
-        filter: `to_user_id=eq.${session.user.id}`
+        table: 'messages'
       }, (payload) => {
-        if (payload.new.from_user_id === chatOpen) {
-          setRealChatMsgs(prev => [...prev, payload.new]);
+        const msg = payload.new;
+        const isRelevant = (msg.from_user_id === chatOpen && msg.to_user_id === session.user.id) ||
+                           (msg.from_user_id === session.user.id && msg.to_user_id === chatOpen);
+        if (isRelevant) {
+          setRealChatMsgs(prev => {
+            if (prev.find(m => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
         }
       })
       .subscribe();
