@@ -449,7 +449,9 @@ export default function App() {
   };
 
   const loadChatList = async () => {
-    if (!session) return;
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (!currentSession) return;
+    const session = currentSession;
     const { data } = await supabase
       .from('messages')
       .select('from_user_id, to_user_id, content, created_at')
