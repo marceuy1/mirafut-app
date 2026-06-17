@@ -184,6 +184,7 @@ export default function App() {
   const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState(false);
   const aiEnd = useRef(null);
+  const chatOpenRef = useRef(null);
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [likes, setLikes] = useState({});
@@ -279,7 +280,7 @@ export default function App() {
         const isRelevant = (msg.from_user_id === chatOpen && msg.to_user_id === session.user.id) ||
                            (msg.from_user_id === session.user.id && msg.to_user_id === chatOpen);
         if (isRelevant) {
-          loadMessages(chatOpen);
+          loadMessages(chatOpenRef.current);
         }
       })
       .subscribe();
@@ -490,7 +491,8 @@ export default function App() {
 
   const openChat = async (partner) => {
     setChatPartner(partner);
-    setChatOpen(partner.id); setViewProfile(null);
+    setChatOpen(partner.id);
+    chatOpenRef.current = partner.id; setViewProfile(null);
     await loadMessages(partner.id);
     setTab('chat');
   };
