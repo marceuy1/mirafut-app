@@ -452,6 +452,7 @@ export default function App() {
 
   const loadChatList = async () => {
     const { data: { session: cs } } = await supabase.auth.getSession();
+    console.log('loadChatList cs:', cs?.user?.id);
     if (!cs) return;
     const userId = cs.user.id;
     const { data } = await supabase
