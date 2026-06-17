@@ -1301,7 +1301,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         <nav className="bnav">
           <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">🏠</span><span>{t.home}</span></button>
           <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('coach');setChatOpen(null);}}><span className="ni-emoji">⚽</span><span>{t.coach}</span></button>
-          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);}}><span className="ni-emoji">💬</span><span>{t.chat}</span>{unreadMessages>0 && <span className="nbg">{unreadMessages}</span>}</button>
+          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);loadChatList();}}><span className="ni-emoji">💬</span><span>{t.chat}</span>{unreadMessages>0 && <span className="nbg">{unreadMessages}</span>}</button>
           <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{ if(!session){requireAuth('profile');return;} setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>{t.profile}</span></button>
         </nav>
       </div>
