@@ -451,16 +451,16 @@ export default function App() {
   };
 
   const loadChatList = async () => {
-    const { data: { session: currentSession } } = await supabase.auth.getSession();
-    if (!currentSession) return;
-    const session = currentSession;
+    const { data: { session: cs } } = await supabase.auth.getSession();
+    if (!cs) return;
+    const userId = cs.user.id;
     const { data } = await supabase
       .from('messages')
       .select('from_user_id, to_user_id, content, created_at')
-      .or(`from_user_id.eq.${session.user.id},to_user_id.eq.${session.user.id}`)
+      .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
       .order('created_at', { ascending: false });
     if (!data) return;
-    const partnerIds = [...new Set(data.map(m => m.from_user_id === session.user.id ? m.to_user_id : m.from_user_id))];
+    const partnerIds = [...new Set(data.map(m => m.from_user_id === userId ? m.to_user_id : m.from_user_id))];
     const { data: profiles } = await supabase.from('profiles').select('id, full_name, avatar_url').in('id', partnerIds);
     const list = partnerIds.map(pid => {
       const last = data.find(m => m.from_user_id === pid || m.to_user_id === pid);
