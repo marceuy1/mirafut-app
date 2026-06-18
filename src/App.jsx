@@ -618,16 +618,21 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 }
 
 /* POST CARD */
-.post{background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:18px;margin:0 16px 14px;overflow:hidden}
+.post{background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:20px;margin:0 16px 16px;overflow:hidden}
 .poh{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
-.poav{width:38px;height:38px;border-radius:11px;background:rgba(0,230,118,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#00E676;flex-shrink:0}
-.poi{flex:1;min-width:0}.pon{font-weight:600;font-size:13px;display:flex;align-items:center;gap:4px}.pot{font-size:11px;color:#556677}
-.poc{padding:0 14px 10px;font-size:14px;line-height:1.5;color:#ECEFF4}
-.pov{margin:0 14px 10px;border-radius:12px;background:linear-gradient(135deg,#0d3320,#0a1a14);height:200px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden}
-.pov::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 60% 40%,rgba(0,230,118,0.1),transparent)}
-.pov-label{font-size:11px;color:#8899A6;text-align:center;font-style:italic}
-.poa{display:flex;padding:6px 14px 12px;gap:16px;border-top:1px solid rgba(255,255,255,0.04);margin-top:6px}
-.poab{display:flex;align-items:center;gap:5px;background:none;border:none;color:#556677;font-size:12px;cursor:pointer;font-family:'Outfit';font-weight:500}
+.poav{width:40px;height:40px;border-radius:12px;background:rgba(0,230,118,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#00E676;flex-shrink:0}
+.poi{flex:1;min-width:0}.pon{font-weight:700;font-size:14px;display:flex;align-items:center;gap:4px}.pot{font-size:11px;color:#556677;margin-top:2px}
+.pos-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:1px;background:rgba(0,230,118,0.12);color:#00E676}
+.poc{padding:0 14px 10px;font-size:14px;line-height:1.6;color:#ECEFF4}
+.pov{position:relative;height:260px;overflow:hidden;cursor:pointer}
+.pov img{width:100%;height:100%;object-fit:cover}
+.pov-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(0,0,0,0.85) 100%)}
+.pov-user{position:absolute;bottom:12px;left:12px;right:12px;display:flex;align-items:center;gap:10px}
+.pov-badge{position:absolute;top:12px;right:12px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:1px;background:#00E676;color:#0a0e14}
+.pov-name{color:#fff;font-weight:700;font-size:14px}
+.pov-meta{color:rgba(255,255,255,0.6);font-size:11px;margin-top:1px}
+.poa{display:flex;align-items:center;padding:4px 8px 12px;border-top:1px solid rgba(255,255,255,0.04);margin-top:4px}
+.poab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:none;border:none;color:#8899A6;font-size:13px;cursor:pointer;font-family:'Outfit';font-weight:600;padding:8px}
 .poab.lk.on{color:#FF5252}
 
 /* COMMENTS */
@@ -881,19 +886,30 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="posts-grid">
               {allPosts.map(p => (
                 <div key={p.id} className="post">
-                  <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
-                    {p.avatar_url ? <img src={p.avatar_url} style={{width:"38px",height:"38px",borderRadius:"11px",objectFit:"cover",flexShrink:0}} /> : <div className="poav">{p.av}</div>}
-                    <div className="poi">
-                      <div className="pon">{p.name} {p.verified && <V/>}</div>
-                      <div className="pot">{p.time}</div>
+                  {p.image ? (
+                    <div className="pov" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
+                      <img src={IMG[p.image] || p.image} alt="" />
+                      <div className="pov-overlay"/>
+                      {p.position && <div className="pov-badge">{p.position}</div>}
+                      <div className="pov-user">
+                        {p.avatar_url ? <img src={p.avatar_url} style={{width:'40px',height:'40px',borderRadius:'12px',objectFit:'cover',border:'2px solid #00E676',flexShrink:0}} /> : <div className="poav">{p.av}</div>}
+                        <div>
+                          <div className="pov-name">{p.name} {p.verified && <V/>}</div>
+                          <div className="pov-meta">{p.time}</div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="poc">{p.text}</div>
-                  {p.image && (
-                    <div className="pov">
-                      {p.image === 'game' ? <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80&fit=crop&auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image === 'training' ? <img src="https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600&q=80&fit=crop&auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image === 'goal' ? <img src="https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&q=80&fit=crop&auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image.startsWith('http') ? <img src={p.image} style={{width:'100%',height:'200px',objectFit:'cover'}} /> : null}
+                  ) : (
+                    <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
+                      {p.avatar_url ? <img src={p.avatar_url} style={{width:'40px',height:'40px',borderRadius:'12px',objectFit:'cover',flexShrink:0}} /> : <div className="poav">{p.av}</div>}
+                      <div className="poi">
+                        <div className="pon">{p.name} {p.verified && <V/>}</div>
+                        <div className="pot">{p.time}</div>
+                      </div>
+                      {p.position && <div className="pos-badge">{p.position}</div>}
                     </div>
                   )}
+                  <div className="poc">{p.text}</div>
                   <div className="poa">
                     <button className={`poab lk ${(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? 'on' : ''}`} onClick={() => p.id.toString().startsWith('real-') ? toggleRealLike(p.id) : null}>
                       {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? '❤️' : '🤍'} {p.likes}
