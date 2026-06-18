@@ -966,7 +966,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{fontSize:'12px',color:'#556677'}}>Vota y deja tu opinión 👇</div>
               </div>
               <div style={{padding:'0 16px 16px',display:'flex',flexDirection:'column',gap:'10px'}}>
-                {JSON.parse(debate.options).map((opt, i) => {
+                {(Array.isArray(debate.options) ? debate.options : JSON.parse(debate.options)).map((opt, i) => {
                   const count = debateVotes.filter(v => v.option_index === i).length;
                   const pct = debateVotes.length > 0 ? Math.round(count / debateVotes.length * 100) : 0;
                   const voted = userVote === i;
