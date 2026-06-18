@@ -237,7 +237,7 @@ export default function App() {
   const loadRealPosts = async () => {
     const { data, error } = await supabase
       .from('posts')
-      .select('*, likes(count), comments(count)')
+      .select('*, profiles(full_name, avatar_url, verified), likes(count), comments(count)')
       .order('created_at', { ascending: false });
     if (!error && data) setRealPosts(data);
   };
@@ -305,7 +305,6 @@ export default function App() {
   }, [aiMessages, thinking, tab]);
 
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
-  const [authMode, setAuthMode] = useState('login');
   const [postAuthTab, setPostAuthTab] = useState('home');
   const pendingTabRef = useRef('home');
 
@@ -352,12 +351,6 @@ export default function App() {
   if (!session && tab === 'chat') {
     // will be handled in nav click
   }
-
-  const sendChat = () => {
-    if (!chatMsg.trim()) return;
-    setChatMsgs([...chatMsgs, {id:Date.now(),text:chatMsg,from:"me",time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}]);
-    setChatMsg("");
-  };
 
   const sendAI = async (text) => {
     if (requireAuth()) return;
@@ -584,9 +577,9 @@ export default function App() {
     ...realPosts.map(p => ({
       id: 'real-' + p.id,
       userId: p.user_id,
-      name: userProfile?.full_name || (session ? session.user.email.split('@')[0] : 'Usuario'),
-      av: userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : (session ? session.user.email.substring(0,2).toUpperCase() : 'U'),
-      verified: false,
+      name: p.profiles?.full_name || 'Usuario',
+      av: (p.profiles?.full_name || 'U').substring(0, 2).toUpperCase(),
+      verified: p.profiles?.verified || false,
       time: timeAgo(p.created_at),
       text: p.content,
       image: p.image_url || null,
@@ -594,7 +587,7 @@ export default function App() {
       comments: p.comments?.[0]?.count || 0,
       liked: false,
       commentList: [],
-      avatar_url: userProfile?.avatar_url || null
+      avatar_url: p.profiles?.avatar_url || null
     })),
     ...POSTS
   ];
@@ -803,7 +796,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         {chatOpen ? (
           <div className="chat-hdr">
             <button className="chat-back" onClick={() => setChatOpen(null)}>←</button>
-            <span style={{fontWeight:600,fontSize:14}}>{CHATS.find(c=>c.id===chatOpen)?.name}</span>
+            <span style={{fontWeight:600,fontSize:14}}>{chatPartner?.name || 'Chat'}</span>
             <div style={{width:30}}/>
           </div>
         ) : viewProfile ? (
@@ -913,7 +906,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div className="poc">{p.text}</div>
                   {p.image && (
                     <div className="pov">
-                      {p.image === 'game' ? <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80fit=crophttps://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image === 'training' ? <img src="https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600&q=80fit=crophttps://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600&q=80auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image === 'goal' ? <img src="https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&q=80fit=crophttps://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&q=80auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image.startsWith('http') ? <img src={p.image} style={{width:'100%',height:'200px',objectFit:'cover'}} /> : null}
+                      {p.image === 'game' ? <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80&fit=crop&auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image === 'training' ? <img src="https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600&q=80&fit=crop&auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image === 'goal' ? <img src="https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&q=80&fit=crop&auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image.startsWith('http') ? <img src={p.image} style={{width:'100%',height:'200px',objectFit:'cover'}} /> : null}
                     </div>
                   )}
                   <div className="poa">
@@ -1307,4 +1300,3 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
     </>
   );
 }
-// force rebuild Thu Jun 11 18:32:47 EDT 2026
