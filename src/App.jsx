@@ -171,10 +171,6 @@ export default function App() {
   const [chatPartner, setChatPartner] = useState(null);
   const [chatList, setChatList] = useState([]);
   const [unreadMessages, setUnreadMessages] = useState(0);
-  const [chatMsgs, setChatMsgs] = useState([
-    {id:1,text:"Vi tu último video, increíble",from:"them",time:"10:30"},
-    {id:2,text:"¡Muchas gracias!",from:"me",time:"10:32"},
-  ]);
   const [currentAgent, setCurrentAgent] = useState("coach");
   const [aiMessages, setAiMessages] = useState([
     { id:1, from:"coach", type:"text", text:"Hola 👋 ¿Cómo estás hoy?", time:"14:20" },
@@ -187,8 +183,6 @@ export default function App() {
   const aiEnd = useRef(null);
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  const [likes, setLikes] = useState({});
-  const [follows, setFollows] = useState({});
   const [newPost, setNewPost] = useState("");
   const [showNewPost, setShowNewPost] = useState(false);
   const [realPosts, setRealPosts] = useState([]);
@@ -417,7 +411,7 @@ export default function App() {
     setEditLoading(true);
     const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, age: editForm.age ? parseInt(editForm.age) : null, country: editForm.country, city: editForm.city, position: editForm.position }).eq('id', session.user.id);
     setEditLoading(false);
-    if (error) { alert('Error: ' + error.message); } else { setShowEditProfile(false); alert('¡Perfil actualizado!'); }
+    if (error) { console.error('Error actualizando perfil:', error.message); } else { setShowEditProfile(false); loadUserProfile(session.user.id); }
   };
 
 
@@ -533,15 +527,6 @@ export default function App() {
       await navigator.clipboard.writeText(url);
       alert('Link copiado al portapapeles!');
     }
-  };
-
-  const toggleLike = (postId) => {
-    if (requireAuth()) return;
-    setLikes(l => ({...l, [postId]: !l[postId]}));
-  };
-  const toggleFollow = (userId) => {
-    if (requireAuth()) return;
-    setFollows(f => ({...f, [userId]: !f[userId]}));
   };
 
   const uploadPostImage = async (file) => {
