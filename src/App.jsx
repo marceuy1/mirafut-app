@@ -895,8 +895,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     </div>
                   )}
                   <div className="poa">
-                    <button className={`poab lk ${(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : (likes[p.id] || p.liked)) ? 'on' : ''}`} onClick={() => p.id.toString().startsWith('real-') ? toggleRealLike(p.id) : toggleLike(p.id)}>
-                      {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : (likes[p.id] || p.liked)) ? '❤️' : '🤍'} {p.likes + (likedPosts.includes(p.id.toString().replace('real-','')) ? 1 : 0)}
+                    <button className={`poab lk ${(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? 'on' : ''}`} onClick={() => p.id.toString().startsWith('real-') ? toggleRealLike(p.id) : null}>
+                      {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? '❤️' : '🤍'} {p.likes}
                     </button>
                     <button className="poab" onClick={() => { setViewPost(p); loadComments(p.id); }}>💬 {p.comments}</button>
                     <button className="poab" onClick={() => sharePost(p)}>{t.share}</button>
@@ -925,8 +925,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   </div>
                 )}
                 <div className="poa">
-                  <button className={`poab lk ${(likes[viewPost.id] || viewPost.liked)?'on':''}`} onClick={() => toggleLike(viewPost.id)}>
-                    {(likes[viewPost.id] || viewPost.liked) ? '❤️' : '🤍'} {viewPost.likes + (likes[viewPost.id] && !viewPost.liked ? 1 : 0)}
+                  <button className={`poab lk ${(viewPost.id.toString().startsWith('real-') ? likedPosts.includes(viewPost.id.toString().replace('real-','')) : viewPost.liked) ? 'on' : ''}`} onClick={() => viewPost.id.toString().startsWith('real-') ? toggleRealLike(viewPost.id) : null}>
+                    {(viewPost.id.toString().startsWith('real-') ? likedPosts.includes(viewPost.id.toString().replace('real-','')) : viewPost.liked) ? '❤️' : '🤍'} {viewPost.likes}
                   </button>
                   <button className="poab">💬 {viewPost.comments}</button>
                   <button className="poab" onClick={() => sharePost(p)}>{t.share}</button>
