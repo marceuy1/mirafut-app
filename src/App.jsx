@@ -228,6 +228,59 @@ export default function App() {
     if (data) { setUserProfile(data); loadRealPosts(); }
   };
 
+  const loadDebate = async () => {
+    const { data } = await supabase
+      .from('debates')
+      .select('*')
+      .gte('ends_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+    if (data) {
+      setDebate(data);
+      const { data: votes } = await supabase
+        .from('debate_votes')
+        .select('option_index, user_id')
+        .eq('debate_id', data.id);
+      if (votes) setDebateVotes(votes);
+      if (session) {
+        const myVote = votes?.find(v => v.user_id === session.user.id);
+        if (myVote) setUserVote(myVote.option_index);
+      }
+      const { data: comments } = await supabase
+        .from('debate_comments')
+        .select('*, profiles(full_name)')
+        .eq('debate_id', data.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (comments) setDebateComments(comments);
+    }
+  };
+
+  const voteDebate = async (optionIndex) => {
+    if (requireAuth()) return;
+    if (userVote !== null) return;
+    const { error } = await supabase.from('debate_votes').insert([{
+      debate_id: debate.id,
+      user_id: session.user.id,
+      option_index: optionIndex
+    }]);
+    if (!error) {
+      setUserVote(optionIndex);
+      setDebateVotes(prev => [...prev, { option_index: optionIndex, user_id: session.user.id }]);
+    }
+  };
+
+  const sendDebateComment = async () => {
+    if (!debateComment.trim() || requireAuth()) return;
+    const { error } = await supabase.from('debate_comments').insert([{
+      debate_id: debate.id,
+      user_id: session.user.id,
+      content: debateComment
+    }]);
+    if (!error) { setDebateComment(''); loadDebate(); }
+  };
+
   const loadRealPosts = async () => {
     const { data, error } = await supabase
       .from('posts')
@@ -256,6 +309,7 @@ export default function App() {
     });
 
     loadRealPosts();
+    loadDebate();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -325,6 +379,13 @@ export default function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // ── Debate ────────────────────────────────────────────
+  const [debate, setDebate] = useState(null);
+  const [debateVotes, setDebateVotes] = useState([]);
+  const [debateComments, setDebateComments] = useState([]);
+  const [debateComment, setDebateComment] = useState('');
+  const [userVote, setUserVote] = useState(null);
   const [postComments, setPostComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
@@ -881,6 +942,60 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         )}
 
         <div className="mc">
+          {/* ====== DEBATE DE LA SEMANA ====== */}
+          {tab === "home" && !viewPost && !viewProfile && debate && (
+            <div style={{margin:'16px 16px 4px',background:'#121820',borderRadius:'20px',overflow:'hidden',border:'1px solid rgba(255,255,255,0.06)'}}>
+              <div style={{background:'#00E676',padding:'12px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                  <span style={{fontSize:'18px'}}>🔥</span>
+                  <div>
+                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'#0a0e14',opacity:0.7}}>DEBATE DE LA SEMANA</div>
+                    <div style={{fontSize:'11px',color:'#0a0e14',opacity:0.6}}>{Math.max(0,Math.ceil((new Date(debate.ends_at)-new Date())/(1000*60*60*24)))} días restantes</div>
+                  </div>
+                </div>
+                <div style={{background:'rgba(0,0,0,0.15)',padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} votos</div>
+              </div>
+              <div style={{padding:'16px 16px 12px'}}>
+                <div style={{fontSize:'17px',fontWeight:'800',color:'#ECEFF4',lineHeight:'1.3',marginBottom:'4px'}}>{debate.question}</div>
+                <div style={{fontSize:'12px',color:'#556677'}}>Vota y deja tu opinión 👇</div>
+              </div>
+              <div style={{padding:'0 16px 16px',display:'flex',flexDirection:'column',gap:'10px'}}>
+                {JSON.parse(debate.options).map((opt, i) => {
+                  const count = debateVotes.filter(v => v.option_index === i).length;
+                  const pct = debateVotes.length > 0 ? Math.round(count / debateVotes.length * 100) : 0;
+                  const voted = userVote === i;
+                  return (
+                    <div key={i} onClick={() => voteDebate(i)} style={{position:'relative',borderRadius:'12px',overflow:'hidden',cursor:userVote === null ? 'pointer' : 'default'}}>
+                      {userVote !== null && <div style={{position:'absolute',inset:0,background:voted?'rgba(0,230,118,0.15)':'rgba(255,255,255,0.03)',width:`${pct}%`}}/>}
+                      <div style={{position:'relative',padding:'11px 14px',display:'flex',alignItems:'center',justifyContent:'space-between',border:voted?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px'}}>
+                        <span style={{fontSize:'14px',fontWeight:voted?'700':'600',color:'#ECEFF4'}}>{opt}</span>
+                        {userVote !== null && <span style={{fontSize:'13px',fontWeight:'800',color:voted?'#00E676':'#8899A6'}}>{pct}%</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {debateComments.length > 0 && (
+                <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',padding:'12px 16px'}}>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>Opiniones</div>
+                  {debateComments.slice(0,2).map((c,i) => (
+                    <div key={i} style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
+                      <div style={{width:'28px',height:'28px',borderRadius:'9px',background:'rgba(0,230,118,0.12)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:'800',color:'#00E676',flexShrink:0}}>{c.profiles?.full_name?c.profiles.full_name.substring(0,2).toUpperCase():'U'}</div>
+                      <div style={{background:'rgba(255,255,255,0.04)',borderRadius:'10px',padding:'8px 10px',flex:1}}>
+                        <div style={{fontSize:'12px',fontWeight:'700',color:'#ECEFF4'}}>{c.profiles?.full_name||'Usuario'}</div>
+                        <div style={{fontSize:'12px',color:'#8899A6',marginTop:'2px'}}>{c.content}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{padding:'10px 16px 14px',display:'flex',gap:'8px'}}>
+                <input value={debateComment} onChange={e=>setDebateComment(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendDebateComment()} placeholder="Tu opinión..." style={{flex:1,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',padding:'8px 12px',fontSize:'13px',color:'#ECEFF4',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                <button onClick={sendDebateComment} style={{width:'36px',height:'36px',background:'#00E676',border:'none',borderRadius:'10px',color:'#0a0e14',cursor:'pointer',fontSize:'16px'}}>→</button>
+              </div>
+            </div>
+          )}
+
           {/* ====== HOME FEED ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
             <div className="posts-grid">
