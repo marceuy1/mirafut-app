@@ -70,6 +70,12 @@ const QUICK_PROMPTS = {
   carrera:["¿Cómo llamo scouts?","¿Qué es un contrato juvenil?","Becas disponibles","¿Mi perfil está listo?"],
 };
 
+const IMG = {
+  game:     'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80&fit=crop&auto=format',
+  training: 'https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600&q=80&fit=crop&auto=format',
+  goal:     'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&q=80&fit=crop&auto=format',
+};
+
 const timeAgo = (dateStr) => {
   const now = new Date();
   const date = new Date(dateStr);
@@ -249,7 +255,7 @@ export default function App() {
       }
       const { data: comments } = await supabase
         .from('debate_comments')
-        .select('*, profiles(full_name)')
+        .select('*, profiles(full_name, avatar_url)')
         .eq('debate_id', data.id)
         .order('created_at', { ascending: false })
         .limit(5);
