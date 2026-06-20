@@ -223,6 +223,9 @@ export default function App() {
   const [newPost, setNewPost] = useState("");
   const [showNewPost, setShowNewPost] = useState(false);
   const [realPosts, setRealPosts] = useState([]);
+  const [postsPage, setPostsPage] = useState(0);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const loaderRef = useRef(null);
 
   const loadComments = async (postId) => {
     const realPostId = postId.toString().replace('real-', '');
@@ -318,12 +321,19 @@ export default function App() {
     if (!error) { setDebateComment(''); loadDebate(); }
   };
 
-  const loadRealPosts = async () => {
+  const loadRealPosts = async (page = 0, append = false) => {
+    const PAGE_SIZE = 10;
     const { data, error } = await supabase
       .from('posts')
       .select('*, profiles(full_name, avatar_url, verified), likes(count), comments(count)')
-      .order('created_at', { ascending: false });
-    if (!error && data) setRealPosts(data);
+      .order('created_at', { ascending: false })
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    if (!error && data) {
+      if (data.length < PAGE_SIZE) setHasMorePosts(false);
+      else setHasMorePosts(true);
+      if (append) setRealPosts(prev => [...prev, ...data]);
+      else setRealPosts(data);
+    }
   };
 
   // Auth effect
@@ -360,6 +370,20 @@ export default function App() {
       });
     }
   }, [session]);
+
+  // Scroll infinito
+  useEffect(() => {
+    if (!loaderRef.current) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMorePosts) {
+        const nextPage = postsPage + 1;
+        setPostsPage(nextPage);
+        loadRealPosts(nextPage, true);
+      }
+    }, { threshold: 0.1 });
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [postsPage, hasMorePosts]);
 
   // Chat polling - refresca mensajes cada 5 segundos cuando el chat está abierto
   useEffect(() => {
@@ -1329,6 +1353,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
           )}
         </div>
+
+        {/* SCROLL LOADER */}
+        {tab === "home" && !viewPost && !viewProfile && hasMorePosts && (
+          <div ref={loaderRef} style={{height:'40px',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px',margin:'8px 0'}}>Cargando más...</div>
+        )}
 
         {/* FLOATING ACTION BUTTON */}
         {tab === "home" && !viewPost && !viewProfile && (
