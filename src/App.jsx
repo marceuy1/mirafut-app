@@ -394,7 +394,7 @@ export default function App() {
   const [userVote, setUserVote] = useState(null);
   const [postComments, setPostComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
+  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '', height: '', weight: '', dominant_foot: '', goal: '' });
   const [editLoading, setEditLoading] = useState(false);
 
   const t = useMemo(() => translations[lang], [lang]);
@@ -470,13 +470,13 @@ export default function App() {
   const openEditProfile = async () => {
     if (!session) return;
     const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-    if (data) setEditForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', age: data.age || '', country: data.country || '', city: data.city || '', position: data.position || '' });
+    if (data) setEditForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', age: data.age || '', country: data.country || '', city: data.city || '', position: data.position || '', height: data.height || '', weight: data.weight || '', dominant_foot: data.dominant_foot || '', goal: data.goal || '' });
     setShowEditProfile(true);
   };
 
   const saveProfile = async () => {
     setEditLoading(true);
-    const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, age: editForm.age ? parseInt(editForm.age) : null, country: editForm.country, city: editForm.city, position: editForm.position }).eq('id', session.user.id);
+    const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, age: editForm.age ? parseInt(editForm.age) : null, country: editForm.country, city: editForm.city, position: editForm.position, height: editForm.height ? parseInt(editForm.height) : null, weight: editForm.weight ? parseInt(editForm.weight) : null, dominant_foot: editForm.dominant_foot || null, goal: editForm.goal || null }).eq('id', session.user.id);
     setEditLoading(false);
     if (error) { console.error('Error actualizando perfil:', error.message); } else { setShowEditProfile(false); loadUserProfile(session.user.id); }
   };
@@ -1242,12 +1242,30 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="profile">
               {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover"}} /> : <div className="prof-av">{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : "TU"}</div>}
               <div className="prof-name">{userProfile?.full_name || 'Tu nombre'}</div>
-              <div className="prof-meta">Completa tu perfil para conectar con la comunidad</div>
+              <div className="prof-meta">{userProfile?.position ? `${userProfile.position} · ` : ''}{userProfile?.city ? `${userProfile.city}, ` : ''}{userProfile?.country || 'Completa tu perfil'}{userProfile?.age ? ` · ${userProfile.age} años` : ''}</div>
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">Seguidores</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{followingList.length}</div><div className="prof-stat-l">Siguiendo</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{realPosts.length}</div><div className="prof-stat-l">Posts</div></div>
               </div>
+              {(userProfile?.height || userProfile?.weight || userProfile?.dominant_foot) && (
+                <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',textAlign:'left'}}>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>Datos del jugador</div>
+                  {userProfile?.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Altura</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.height} cm</div></div>}
+                  {userProfile?.weight && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Peso</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.weight} kg</div></div>}
+                  {userProfile?.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Pie dominante</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.dominant_foot}</div></div>}
+                  {userProfile?.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Posición</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{userProfile.position}</div></div>}
+                </div>
+              )}
+              {userProfile?.goal && (
+                <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',textAlign:'left'}}>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>Objetivo</div>
+                  <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                    <span style={{fontSize:'20px'}}>🎯</span>
+                    <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.4'}}>{userProfile.goal}</div>
+                  </div>
+                </div>
+              )}
               <button className="prof-btn pri" onClick={openEditProfile}>{t.editProfile}</button>
               <button className="prof-btn sec">{t.settings}</button>
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
@@ -1366,6 +1384,29 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <option value="MED">Mediocampista</option>
                   <option value="DEL">Delantero</option>
                 </select>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'14px'}}>
+                <div>
+                  <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Altura (cm)</label>
+                  <input type="number" value={editForm.height} onChange={e => setEditForm(prev => ({...prev, height: e.target.value}))} placeholder="175" style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
+                </div>
+                <div>
+                  <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Peso (kg)</label>
+                  <input type="number" value={editForm.weight} onChange={e => setEditForm(prev => ({...prev, weight: e.target.value}))} placeholder="68" style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
+                </div>
+              </div>
+              <div style={{marginBottom:'14px'}}>
+                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Pie dominante</label>
+                <select value={editForm.dominant_foot} onChange={e => setEditForm(prev => ({...prev, dominant_foot: e.target.value}))} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}}>
+                  <option value="">Selecciona</option>
+                  <option value="Derecho">Derecho</option>
+                  <option value="Izquierdo">Izquierdo</option>
+                  <option value="Ambos">Ambos</option>
+                </select>
+              </div>
+              <div style={{marginBottom:'20px'}}>
+                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Objetivo</label>
+                <input type="text" value={editForm.goal} onChange={e => setEditForm(prev => ({...prev, goal: e.target.value}))} placeholder="Ej: Busco academia profesional en Europa" style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
               </div>
               <button onClick={saveProfile} disabled={editLoading} style={{width:'100%',padding:'13px',background:editLoading?'#556677':'linear-gradient(135deg,#00E676,#00C853)',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit, sans-serif'}}>
                 {editLoading ? 'Guardando...' : 'Guardar cambios'}
