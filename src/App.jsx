@@ -773,7 +773,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .ch-name{font-weight:700;font-size:15px;display:flex;align-items:center;gap:5px}
 .ch-role{font-size:11px;color:#8899A6}
 
-.drawer-bg{position:absolute;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);z-index:200;display:${showSpecialists?'flex':'none'};align-items:flex-end}
+.drawer-bg{position:absolute;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);z-index:200;align-items:flex-end}
 .drawer{background:#121820;border-top-left-radius:24px;border-top-right-radius:24px;padding:20px;width:100%;border-top:1px solid rgba(255,255,255,0.08);animation:slideUp 0.25s ease}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .drawer-handle{width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 16px}
@@ -1238,7 +1238,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 )}
               </div>
 
-              <div className="drawer-bg" onClick={()=>setShowSpecialists(false)}>
+              <div className="drawer-bg" style={{display:showSpecialists?"flex":"none"}} onClick={()=>setShowSpecialists(false)}>
                 <div className="drawer" onClick={e=>e.stopPropagation()}>
                   <div className="drawer-handle"/>
                   <div className="drawer-title">Elige con quién hablar</div>
