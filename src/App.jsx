@@ -326,7 +326,7 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadLikes(); loadChatList(); }
+      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadLikes(); loadChatList(); supabase.from('profiles').select('position').eq('id', session.user.id).single().then(({ data }) => { if (!data?.position) { setShowOnboarding(true); setOnboardingStep(1); } }); }
     });
 
     const {
