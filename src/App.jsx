@@ -826,8 +826,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .ai-ibox{flex:1;background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:9px 12px;display:flex;align-items:center;gap:7px}
 .ai-att{background:none;border:none;color:#556677;cursor:pointer;font-size:16px;padding:2px}
 .ai-field{flex:1;background:none;border:none;outline:none;color:#ECEFF4;font-family:'Outfit';font-size:13px;resize:none;max-height:70px;min-height:20px;line-height:1.5}
-.ai-mic{width:40px;height:40px;border-radius:12px;background:${recording?'#FF5252':'#121820'};border:1px solid ${recording?'#FF5252':'rgba(255,255,255,0.06)'};color:${recording?'white':'#8899A6'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.ai-send{width:40px;height:40px;border-radius:12px;background:${aiInput.trim()?'#00E676':'#121820'};border:none;color:${aiInput.trim()?'#0a0e14':'#556677'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:bold}
+.ai-mic{width:40px;height:40px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ai-send{width:40px;height:40px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:bold}
 
 /* HEALTH DISCLAIMER MODAL */
 .disclaimer-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
@@ -1232,9 +1232,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <textarea className="ai-field" placeholder={`Escríbele a ${agent.name}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
                 </div>
                 {aiInput.trim() ? (
-                  <button className="ai-send" onClick={()=>sendAI(aiInput)}>→</button>
+                  <button className="ai-send" style={{background:aiInput.trim()?"#00E676":"#121820",color:aiInput.trim()?"#0a0e14":"#556677"}} onClick={()=>sendAI(aiInput)}>→</button>
                 ) : (
-                  <button className="ai-mic" onMouseDown={()=>setRecording(true)} onMouseUp={()=>setRecording(false)} onMouseLeave={()=>setRecording(false)}>🎤</button>
+                  <button className="ai-mic" style={{background:recording?"#FF5252":"#121820",border:`1px solid ${recording?"#FF5252":"rgba(255,255,255,0.06)"}`,color:recording?"white":"#8899A6"}} onMouseDown={()=>setRecording(true)} onMouseUp={()=>setRecording(false)} onMouseLeave={()=>setRecording(false)}>🎤</button>
                 )}
               </div>
 
