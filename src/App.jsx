@@ -171,6 +171,8 @@ export default function App() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterPosition, setFilterPosition] = useState('');
+  const [filterCountry, setFilterCountry] = useState('');
   const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
   const [showSearch, setShowSearch] = useState(false);
   const [postImage, setPostImage] = useState(null);
@@ -652,6 +654,8 @@ export default function App() {
   };
 
   // Merge real posts (from Supabase) at top, then hardcoded posts
+  const COUNTRIES = [...new Set([...USERS.map(u => u.country)])].sort();
+
   const allPosts = [
     ...realPosts.map(p => ({
       id: 'real-' + p.id,
@@ -670,6 +674,10 @@ export default function App() {
     })),
     ...POSTS
   ];
+
+  const filteredPosts = allPosts
+    .filter(p => !filterPosition || (USERS.find(u => u.id === p.userId)?.position === filterPosition))
+    .filter(p => !filterCountry || (USERS.find(u => u.id === p.userId)?.country === filterCountry));
 
   return (
     <>
@@ -975,6 +983,27 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         )}
 
         <div className="mc">
+          {/* ====== FILTROS ====== */}
+          {tab === "home" && !viewPost && !viewProfile && (
+            <div style={{padding:'10px 16px 4px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+              <div style={{display:'flex',gap:'6px',overflowX:'auto',scrollbarWidth:'none',marginBottom:'8px'}}>
+                {['','POR','DEF','MED','DEL'].map(pos => (
+                  <button key={pos} onClick={() => setFilterPosition(pos)} style={{padding:'7px 16px',background:filterPosition===pos?'#00E676':'#121820',border:filterPosition===pos?'none':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterPosition===pos?'#0a0e14':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
+                    {pos === '' ? 'Todos' : pos === 'POR' ? '🧤 POR' : pos === 'DEF' ? '🛡️ DEF' : pos === 'MED' ? '⚙️ MED' : '⚡ DEL'}
+                  </button>
+                ))}
+              </div>
+              <div style={{display:'flex',gap:'6px',overflowX:'auto',scrollbarWidth:'none'}}>
+                <button onClick={() => setFilterCountry('')} style={{padding:'6px 14px',background:filterCountry===''?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===''?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===''?'#00E676':'#8899A6',fontSize:'11px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>🌍 Todos</button>
+                {COUNTRIES.map(c => (
+                  <button key={c} onClick={() => setFilterCountry(c)} style={{padding:'6px 14px',background:filterCountry===c?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===c?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===c?'#00E676':'#8899A6',fontSize:'11px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ====== DEBATE DE LA SEMANA ====== */}
           {tab === "home" && !viewPost && !viewProfile && debate && (
             <div style={{margin:'16px 16px 4px',background:'#121820',borderRadius:'20px',overflow:'hidden',border:'1px solid rgba(255,255,255,0.06)'}}>
@@ -1032,7 +1061,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {/* ====== HOME FEED ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
             <div className="posts-grid">
-              {allPosts.map(p => (
+              {filteredPosts.map(p => (
                 <div key={p.id} className="post">
                   {p.image ? (
                     <div className="pov" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
