@@ -213,6 +213,9 @@ export default function App() {
   const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState(false);
   const aiEnd = useRef(null);
+  const pendingTabRef = useRef('home');
+  const t = useMemo(() => translations[lang], [lang]);
+  const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [newPost, setNewPost] = useState("");
@@ -388,8 +391,6 @@ export default function App() {
     if (tab === "coach") aiEnd.current?.scrollIntoView({ behavior: "smooth" });
   }, [aiMessages, thinking, tab]);
 
-  const pendingTabRef = useRef('home');
-
   const requireAuth = (redirectTab = 'home') => {
     if (!session) {
       pendingTabRef.current = redirectTab;
@@ -402,10 +403,6 @@ export default function App() {
 
   // ── Debate ────────────────────────────────────────────
 
-
-  const agent = SPECIALISTS.find(s => s.id === currentAgent);
-  const t = useMemo(() => translations[lang], [lang]);
-  const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
 
   if (loading) {
     return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
