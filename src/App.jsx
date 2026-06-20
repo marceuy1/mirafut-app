@@ -163,6 +163,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   
   // App state - TODOS los useState ANTES de los useEffect
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(1);
   const [tab, setTab] = useState(() => {
     const saved = sessionStorage.getItem('activeTab');
     if (saved) { sessionStorage.removeItem('activeTab'); return saved; }
@@ -359,8 +361,6 @@ export default function App() {
   }, [aiMessages, thinking, tab]);
 
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingStep, setOnboardingStep] = useState(1);
   const [postAuthTab, setPostAuthTab] = useState('home');
   const pendingTabRef = useRef('home');
 
