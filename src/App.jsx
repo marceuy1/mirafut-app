@@ -1129,8 +1129,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="prof-stat"><div className="prof-stat-v">{viewProfile.following}</div><div className="prof-stat-l">Siguiendo</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{POSTS.filter(p=>p.userId===viewProfile.id).length}</div><div className="prof-stat-l">Posts</div></div>
               </div>
-              <button className={`prof-btn ${followingList.includes(viewProfile.id) || follows[viewProfile.id] ? 'sec' : 'pri'}`} onClick={() => toggleFollowUser(viewProfile.id)}>
-                {followingList.includes(viewProfile.id) || follows[viewProfile.id] ? 'Siguiendo ✓' : '+ Seguir'}
+              <button className={`prof-btn ${followingList.includes(viewProfile.id) ? 'sec' : 'pri'}`} onClick={() => toggleFollowUser(viewProfile.id)}>
+                {followingList.includes(viewProfile.id) ? 'Siguiendo ✓' : '+ Seguir'}
               </button>
               <button className="prof-btn sec" onClick={() => openChat({id: viewProfile.id, name: viewProfile.name, avatar_url: viewProfile.avatar_url})}>💬 Mensaje</button>
             </div>
