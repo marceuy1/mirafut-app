@@ -338,13 +338,6 @@ export default function App() {
       setSession(session);
       if (session) {
         loadUserProfile(session.user.id);
-        loadNotifications(session.user.id);
-        loadFollowing();
-        loadChatList();
-        if (pendingTabRef.current && pendingTabRef.current !== 'home') {
-          setTab(pendingTabRef.current);
-          pendingTabRef.current = 'home';
-        }
       }
     });
 
