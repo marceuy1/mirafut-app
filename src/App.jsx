@@ -307,7 +307,7 @@ export default function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) { setShowAuthPrompt(false); loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadChatList(); }
+      if (session) { setShowAuthPrompt(false); loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadChatList(); if (_event === 'SIGNED_IN') { const { data: prof } = await supabase.from('profiles').select('full_name, position').eq('id', session.user.id).single(); if (!prof?.position) { setShowOnboarding(true); setOnboardingStep(1); } } }
       if (session && pendingTabRef.current && pendingTabRef.current !== 'home') {
         setTab(pendingTabRef.current);
         pendingTabRef.current = 'home';
@@ -359,6 +359,8 @@ export default function App() {
   }, [aiMessages, thinking, tab]);
 
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(1);
   const [postAuthTab, setPostAuthTab] = useState('home');
   const pendingTabRef = useRef('home');
 
@@ -532,6 +534,25 @@ export default function App() {
       .or(`and(from_user_id.eq.${session.user.id},to_user_id.eq.${partnerId}),and(from_user_id.eq.${partnerId},to_user_id.eq.${session.user.id})`)
       .order('created_at', { ascending: true });
     if (data) setRealChatMsgs(data);
+  };
+
+  const saveOnboarding = async () => {
+    if (!session) return;
+    await supabase.from('profiles').update({
+      full_name: editForm.full_name || null,
+      username: editForm.username || null,
+      bio: editForm.bio || null,
+      age: editForm.age ? parseInt(editForm.age) : null,
+      country: editForm.country || null,
+      city: editForm.city || null,
+      position: editForm.position || null,
+      height: editForm.height ? parseInt(editForm.height) : null,
+      weight: editForm.weight ? parseInt(editForm.weight) : null,
+      dominant_foot: editForm.dominant_foot || null,
+      goal: editForm.goal || null,
+    }).eq('id', session.user.id);
+    setShowOnboarding(false);
+    loadUserProfile(session.user.id);
   };
 
   const sendRealMessage = async (partnerId) => {
@@ -1433,6 +1454,109 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   </div>
                 ))
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ONBOARDING */}
+        {showOnboarding && (
+          <div style={{position:'fixed',inset:0,background:'#0a0e14',zIndex:99999,display:'flex',flexDirection:'column',padding:'24px',overflowY:'auto'}}>
+            <div style={{textAlign:'center',marginBottom:'24px'}}>
+              <svg width="56" height="56" viewBox="0 0 64 64" style={{margin:'0 auto 12px',display:'block'}}>
+                <rect width="64" height="64" rx="14" fill="#00E676"/>
+                <path d="M8,32 Q32,6 56,32 Q32,58 8,32 Z" fill="#0a0e14"/>
+                <path d="M13,32 Q32,11 51,32 Q32,53 13,32 Z" fill="#00E676"/>
+                <circle cx="32" cy="32" r="5.5" fill="#0a0e14"/>
+                <line x1="32" y1="32" x2="36.5" y2="27.5" stroke="#00E676" strokeWidth="1.3" strokeLinecap="round"/>
+                <circle cx="37" cy="27" r="1.5" fill="#00E676"/>
+              </svg>
+              <div style={{fontSize:'22px',fontWeight:'900',color:'#ECEFF4'}}>MiraFut</div>
+              <div style={{fontSize:'12px',color:'#556677',letterSpacing:'2px',marginTop:'2px'}}>TALENT WITHOUT BORDERS</div>
+            </div>
+            <div style={{display:'flex',gap:'6px',marginBottom:'28px'}}>
+              {[1,2,3].map(i => <div key={i} style={{flex:1,height:'4px',background:i<=onboardingStep?'#00E676':'rgba(255,255,255,0.1)',borderRadius:'2px'}}/>)}
+            </div>
+            {onboardingStep === 1 && (
+              <div>
+                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>¡Bienvenido! 👋</div>
+                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 1 de 3 — Tu identidad</div>
+                <div style={{textAlign:'center',marginBottom:'24px'}}>
+                  <label style={{cursor:'pointer'}}>
+                    <div style={{width:'80px',height:'80px',borderRadius:'24px',background:'#121820',border:'2px dashed rgba(0,230,118,0.4)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',margin:'0 auto 8px'}}>
+                      <span style={{fontSize:'24px'}}>📷</span>
+                      <span style={{fontSize:'10px',color:'#556677',marginTop:'4px'}}>Subir foto</span>
+                    </div>
+                    <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files[0] && uploadAvatar(e.target.files[0])} />
+                  </label>
+                </div>
+                {[{label:'Nombre completo',key:'full_name',placeholder:'Tu nombre'},{label:'Usuario',key:'username',placeholder:'@usuario'},{label:'Biografía',key:'bio',placeholder:'Cuéntanos sobre ti...'}].map(f => (
+                  <div key={f.key} style={{marginBottom:'14px'}}>
+                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{f.label}</div>
+                    <input type="text" value={editForm[f.key]} onChange={e => setEditForm(prev=>({...prev,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                  </div>
+                ))}
+              </div>
+            )}
+            {onboardingStep === 2 && (
+              <div>
+                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>Tu posición ⚽</div>
+                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 2 de 3 — Dónde juegas</div>
+                <div style={{marginBottom:'14px'}}>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Posición</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
+                    {[{v:'POR',e:'🧤'},{v:'DEF',e:'🛡️'},{v:'MED',e:'⚙️'},{v:'DEL',e:'⚡'}].map(p => (
+                      <div key={p.v} onClick={() => setEditForm(prev=>({...prev,position:p.v}))} style={{padding:'14px',background:editForm.position===p.v?'rgba(0,230,118,0.12)':'#121820',border:editForm.position===p.v?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center'}}>
+                        <div style={{fontSize:'24px',marginBottom:'4px'}}>{p.e}</div>
+                        <div style={{fontSize:'13px',fontWeight:'700',color:editForm.position===p.v?'#00E676':'#ECEFF4'}}>{p.v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {[{label:'País',key:'country',placeholder:'Tu país'},{label:'Ciudad',key:'city',placeholder:'Tu ciudad'},{label:'Edad',key:'age',placeholder:'Tu edad',type:'number'}].map(f => (
+                  <div key={f.key} style={{marginBottom:'14px'}}>
+                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{f.label}</div>
+                    <input type={f.type||'text'} value={editForm[f.key]} onChange={e => setEditForm(prev=>({...prev,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                  </div>
+                ))}
+              </div>
+            )}
+            {onboardingStep === 3 && (
+              <div>
+                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>Datos físicos 💪</div>
+                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 3 de 3 — Para los scouts</div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'14px'}}>
+                  <div>
+                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Altura (cm)</div>
+                    <input type="number" value={editForm.height} onChange={e=>setEditForm(prev=>({...prev,height:e.target.value}))} placeholder="175" style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                  </div>
+                  <div>
+                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Peso (kg)</div>
+                    <input type="number" value={editForm.weight} onChange={e=>setEditForm(prev=>({...prev,weight:e.target.value}))} placeholder="68" style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                  </div>
+                </div>
+                <div style={{marginBottom:'14px'}}>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Pie dominante</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px'}}>
+                    {['Derecho','Izquierdo','Ambos'].map(p => (
+                      <div key={p} onClick={() => setEditForm(prev=>({...prev,dominant_foot:p}))} style={{padding:'10px',background:editForm.dominant_foot===p?'rgba(0,230,118,0.12)':'#121820',border:editForm.dominant_foot===p?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'700',color:editForm.dominant_foot===p?'#00E676':'#ECEFF4'}}>
+                        {p}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{marginBottom:'14px'}}>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Objetivo</div>
+                  <input type="text" value={editForm.goal} onChange={e=>setEditForm(prev=>({...prev,goal:e.target.value}))} placeholder="Ej: Busco academia profesional en Europa" style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                </div>
+              </div>
+            )}
+            <div style={{marginTop:'auto',paddingTop:'20px'}}>
+              <button onClick={() => { if(onboardingStep < 3) setOnboardingStep(s=>s+1); else saveOnboarding(); }} style={{width:'100%',padding:'14px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'16px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
+                {onboardingStep < 3 ? 'Continuar →' : '¡Empezar! 🚀'}
+              </button>
+              <div onClick={() => setShowOnboarding(false)} style={{textAlign:'center',marginTop:'12px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>
+                Completar después
+              </div>
             </div>
           </div>
         )}
