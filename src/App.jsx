@@ -165,6 +165,30 @@ export default function App() {
   // App state - TODOS los useState ANTES de los useEffect
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [postAuthTab, setPostAuthTab] = useState('home');
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
+  const [showSearch, setShowSearch] = useState(false);
+  const [postImage, setPostImage] = useState(null);
+  const [postImageUrl, setPostImageUrl] = useState(null);
+  const [followingList, setFollowingList] = useState([]);
+  const [likedPosts, setLikedPosts] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [debate, setDebate] = useState(null);
+  const [debateVotes, setDebateVotes] = useState([]);
+  const [debateComments, setDebateComments] = useState([]);
+  const [debateComment, setDebateComment] = useState('');
+  const [userVote, setUserVote] = useState(null);
+  const [postComments, setPostComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '', height: '', weight: '', dominant_foot: '', goal: '' });
+  const [editLoading, setEditLoading] = useState(false);
   const [tab, setTab] = useState(() => {
     const saved = sessionStorage.getItem('activeTab');
     if (saved) { sessionStorage.removeItem('activeTab'); return saved; }
@@ -360,8 +384,6 @@ export default function App() {
     if (tab === "coach") aiEnd.current?.scrollIntoView({ behavior: "smooth" });
   }, [aiMessages, thinking, tab]);
 
-  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
-  const [postAuthTab, setPostAuthTab] = useState('home');
   const pendingTabRef = useRef('home');
 
   const requireAuth = (redirectTab = 'home') => {
@@ -374,30 +396,8 @@ export default function App() {
     return false;
   };
 
-  const [showEditProfile, setShowEditProfile] = useState(false);
-  const [submittingComment, setSubmittingComment] = useState(false);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
-  const [showSearch, setShowSearch] = useState(false);
-  const [postImage, setPostImage] = useState(null);
-  const [postImageUrl, setPostImageUrl] = useState(null);
-  const [followingList, setFollowingList] = useState([]);
-  const [likedPosts, setLikedPosts] = useState([]);
-  const [userProfile, setUserProfile] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-
   // ── Debate ────────────────────────────────────────────
-  const [debate, setDebate] = useState(null);
-  const [debateVotes, setDebateVotes] = useState([]);
-  const [debateComments, setDebateComments] = useState([]);
-  const [debateComment, setDebateComment] = useState('');
-  const [userVote, setUserVote] = useState(null);
-  const [postComments, setPostComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
-  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '', height: '', weight: '', dominant_foot: '', goal: '' });
-  const [editLoading, setEditLoading] = useState(false);
+
 
   const t = useMemo(() => translations[lang], [lang]);
   const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
