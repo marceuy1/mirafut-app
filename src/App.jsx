@@ -329,18 +329,13 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadLikes(); loadChatList(); supabase.from('profiles').select('position').eq('id', session.user.id).single().then(({ data }) => { console.log('profile position:', data?.position); if (!data?.position) { console.log('showing onboarding'); setShowOnboarding(true); setOnboardingStep(1); } }); }
+
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) {
-        loadUserProfile(session.user.id);
-        loadNotifications(session.user.id);
-        loadFollowing();
-      }
     });
 
     loadRealPosts();
@@ -348,6 +343,21 @@ export default function App() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Reaccionar a cambios de session
+  useEffect(() => {
+    if (session) {
+      loadUserProfile(session.user.id);
+      loadNotifications(session.user.id);
+      loadFollowing();
+      loadLikes();
+      loadChatList();
+      setShowAuthPrompt(false);
+      supabase.from('profiles').select('position').eq('id', session.user.id).single().then(({ data }) => {
+        if (!data?.position) { setShowOnboarding(true); setOnboardingStep(1); }
+      });
+    }
+  }, [session]);
 
   // Chat polling - refresca mensajes cada 5 segundos cuando el chat está abierto
   useEffect(() => {
