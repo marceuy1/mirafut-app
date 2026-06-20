@@ -305,7 +305,7 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session) { setShowAuthPrompt(false); loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadChatList(); if (_event === 'SIGNED_IN') { const { data: prof } = await supabase.from('profiles').select('full_name, position').eq('id', session.user.id).single(); if (!prof?.position) { setShowOnboarding(true); setOnboardingStep(1); } } }
       if (session && pendingTabRef.current && pendingTabRef.current !== 'home') {
