@@ -378,8 +378,6 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const agent = SPECIALISTS.find(s => s.id === currentAgent);
-
   useEffect(() => {
     if (tab === "coach") aiEnd.current?.scrollIntoView({ behavior: "smooth" });
   }, [aiMessages, thinking, tab]);
@@ -399,6 +397,7 @@ export default function App() {
   // ── Debate ────────────────────────────────────────────
 
 
+  const agent = SPECIALISTS.find(s => s.id === currentAgent);
   const t = useMemo(() => translations[lang], [lang]);
   const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
 
