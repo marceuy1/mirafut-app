@@ -336,17 +336,6 @@ export default function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) {
-        setShowAuthPrompt(false);
-        loadUserProfile(session.user.id);
-        loadNotifications(session.user.id);
-        loadFollowing();
-        loadChatList();
-        if (pendingTabRef.current && pendingTabRef.current !== 'home') {
-          setTab(pendingTabRef.current);
-          pendingTabRef.current = 'home';
-        }
-      }
     });
 
     loadRealPosts();
