@@ -1227,7 +1227,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               )}
               {chatList.map(c => (
                 <div key={c.id} className="cli" onClick={() => openChat(c)}>
-                  {c.avatar_url ? <img src={c.avatar_url} style={{width:'42px',height:'42px',borderRadius:'12px',objectFit:'cover',flexShrink:0}} /> : <div className="cav">{c.name?.substring(0,2).toUpperCase()}</div>}
+                  {c.avatar_url ? <img src={c.avatar_url} style={{width:'48px',height:'48px',borderRadius:'14px',objectFit:'cover',flexShrink:0}} /> : <div className="cav">{c.name?.substring(0,2).toUpperCase()}</div>}
                   <div className="cin">
                     <div className="cnm">{c.name}</div>
                     <div className="cls">{c.lastMsg?.substring(0,40)}</div>
@@ -1237,6 +1237,21 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   </div>
                 </div>
               ))}
+
+              {/* Jugadores sugeridos */}
+              <div style={{padding:'20px 16px 8px'}}>
+                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'12px'}}>Jugadores que quizás conozcas</div>
+                {USERS.filter(u => !chatList.find(c => c.id === u.id)).slice(0,4).map(u => (
+                  <div key={u.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                    <div style={{width:'44px',height:'44px',borderRadius:'13px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px',fontWeight:'800',color:'#00E676',flexShrink:0}}>{u.av}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4'}}>{u.name}</div>
+                      <div style={{fontSize:'12px',color:'#556677'}}>{u.position} · {u.country}</div>
+                    </div>
+                    <button onClick={() => openChat({id:u.id, name:u.name, avatar_url:u.avatar_url})} style={{padding:'7px 14px',background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.3)',borderRadius:'20px',color:'#00E676',fontSize:'12px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',whiteSpace:'nowrap'}}>Mensaje</button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
