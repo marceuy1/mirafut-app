@@ -375,7 +375,10 @@ export default function App() {
 
   // Mostrar FAB al scrollear
   useEffect(() => {
-    const handleScroll = () => setShowFab(window.scrollY > 300);
+    const el = document.querySelector('.feed-scroll') || window;
+    const handleScroll = () => { const y = el === window ? window.scrollY : el.scrollTop; setShowFab(y > 500); };
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -1427,7 +1430,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         )}
 
         {/* FLOATING ACTION BUTTON */}
-        {tab === "home" && !viewPost && !viewProfile && (
+        {tab === "home" && !viewPost && !viewProfile && showFab && (
           <button className="fab" onClick={() => { if (requireAuth()) return; setShowNewPost(true); }}>+</button>
         )}
 
