@@ -914,7 +914,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .ni-emoji{font-size:18px}
 .nbg{position:absolute;top:0;right:0;background:#FF5252;color:white;font-size:8px;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 3px}
 
-.fab{position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));left:20px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#00E676,#00C853);box-shadow:0 8px 24px rgba(0,230,118,0.4);border:none;color:#0a0e14;font-size:24px;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;font-weight:300}
+.fab{position:fixed;bottom:calc(140px + env(safe-area-inset-bottom));right:20px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#00E676,#00C853);box-shadow:0 8px 24px rgba(0,230,118,0.4);border:none;color:#0a0e14;font-size:24px;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;font-weight:300}
       `}</style>
 
       <div className="app">
