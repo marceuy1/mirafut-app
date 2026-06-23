@@ -851,8 +851,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .handoff-line{flex:1;height:1px;background:rgba(255,255,255,0.08)}
 .handoff-intro{font-size:12px;color:#ECEFF4;line-height:1.5;font-style:italic}
 
-.sugs{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;margin-left:36px}
-.sug{padding:7px 13px;background:#121820;border:1px solid rgba(255,255,255,0.08);border-radius:14px;font-size:12px;color:#ECEFF4;cursor:pointer;font-family:'Outfit'}
+.sugs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-left:36px}
+.sug{padding:9px 16px;background:rgba(0,230,118,0.08);border:1.5px solid rgba(0,230,118,0.3);border-radius:20px;font-size:13px;color:#00E676;cursor:pointer;font-family:'Outfit';font-weight:600;transition:all 0.2s}
+.sug:hover{background:rgba(0,230,118,0.15);border-color:#00E676}
 
 .spec-sug{background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:12px;margin-top:4px;margin-left:36px;max-width:78%}
 .spec-sug-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
@@ -866,9 +867,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .dot:nth-child(2){animation-delay:0.2s}.dot:nth-child(3){animation-delay:0.4s}
 @keyframes blink{0%,60%,100%{opacity:0.3}30%{opacity:1}}
 
-.qp-lbl{font-size:10px;color:#556677;letter-spacing:1px;padding:10px 14px 4px;text-transform:uppercase;font-weight:600}
-.qps{padding:4px 14px 8px;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
-.qp{padding:6px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:18px;font-size:11px;color:#8899A6;cursor:pointer;white-space:nowrap;font-family:'Outfit';flex-shrink:0}
+.qp-lbl{font-size:10px;color:#556677;letter-spacing:1px;padding:10px 14px 4px;text-transform:uppercase;font-weight:700}
+.qps{padding:4px 14px 10px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.qp{padding:8px 14px;background:rgba(0,230,118,0.06);border:1px solid rgba(0,230,118,0.2);border-radius:20px;font-size:12px;color:#00E676;cursor:pointer;white-space:nowrap;font-family:'Outfit';flex-shrink:0;font-weight:600}
 
 .ai-input{padding:10px 14px 14px;border-top:1px solid rgba(255,255,255,0.05);background:#0f1419;display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
 .ai-ibox{flex:1;background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:9px 12px;display:flex;align-items:center;gap:7px}
@@ -1305,8 +1306,6 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
               <div className="ai-input">
                 <div className="ai-ibox">
-                  <button className="ai-att" title="Foto">📷</button>
-                  <button className="ai-att" title="Video">🎥</button>
                   <textarea className="ai-field" placeholder={`Escríbele a ${agent.name}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
                 </div>
                 {aiInput.trim() ? (
