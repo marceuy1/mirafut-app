@@ -375,12 +375,11 @@ export default function App() {
 
   // Mostrar FAB al scrollear
   useEffect(() => {
-    const el = document.querySelector('.feed-scroll') || window;
-    const handleScroll = () => { const y = el === window ? window.scrollY : el.scrollTop; setShowFab(y > 500); };
-    el.addEventListener('scroll', handleScroll);
-    return () => el.removeEventListener('scroll', handleScroll);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const el = document.querySelector('.mc');
+    const handleScroll = () => { const y = el ? el.scrollTop : window.scrollY; setShowFab(y > 500); };
+    if (el) el.addEventListener('scroll', handleScroll);
+    else window.addEventListener('scroll', handleScroll);
+    return () => { if (el) el.removeEventListener('scroll', handleScroll); else window.removeEventListener('scroll', handleScroll); };
   }, []);
 
   // Scroll infinito
