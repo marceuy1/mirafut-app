@@ -1299,6 +1299,12 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
               {aiMessages.length <= 3 && (
                 <>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px 20px',textAlign:'center'}}>
+                    <div style={{width:'64px',height:'64px',borderRadius:'20px',background:`${agent.color}20`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'32px',marginBottom:'12px'}}>{agent.emoji}</div>
+                    <div style={{fontSize:'16px',fontWeight:'800',color:'#ECEFF4',marginBottom:'6px'}}>{agent.name}</div>
+                    <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5',maxWidth:'240px'}}>{agent.desc}</div>
+                    <div style={{marginTop:'16px',padding:'12px 16px',background:'rgba(255,255,255,0.03)',borderRadius:'12px',border:'1px solid rgba(255,255,255,0.06)',fontSize:'13px',color:'#8899A6',lineHeight:'1.5',maxWidth:'260px',fontStyle:'italic'}}>"{agent.intro}"</div>
+                  </div>
                   <div className="qp-lbl">Sugerencias</div>
                   <div className="qps">{QUICK_PROMPTS[currentAgent].map(p=><button key={p} className="qp" onClick={()=>sendAI(p)}>{p}</button>)}</div>
                 </>
