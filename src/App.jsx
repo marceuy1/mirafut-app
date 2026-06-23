@@ -1053,9 +1053,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   return (
                     <div key={i} onClick={() => voteDebate(i)} style={{position:'relative',borderRadius:'12px',overflow:'hidden',cursor:userVote === null ? 'pointer' : 'default'}}>
                       {userVote !== null && <div style={{position:'absolute',inset:0,background:voted?'rgba(0,230,118,0.15)':'rgba(255,255,255,0.03)',width:`${pct}%`}}/>}
-                      <div style={{position:'relative',padding:'11px 14px',display:'flex',alignItems:'center',justifyContent:'space-between',border:voted?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px'}}>
-                        <span style={{fontSize:'14px',fontWeight:voted?'700':'600',color:'#ECEFF4'}}>{opt}</span>
-                        {userVote !== null && <span style={{fontSize:'13px',fontWeight:'800',color:voted?'#00E676':'#8899A6'}}>{pct}%</span>}
+                      <div style={{position:'relative',padding:'13px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',border:voted?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.12)',borderRadius:'12px',transition:'all 0.2s'}}>
+                        <span style={{fontSize:'14px',fontWeight:'700',color:voted?'#00E676':'#ECEFF4'}}>{userVote===null?'👆 ':''}{opt}</span>
+                        {userVote !== null && <span style={{fontSize:'14px',fontWeight:'800',color:voted?'#00E676':'#8899A6'}}>{pct}%</span>}
                       </div>
                     </div>
                   );
@@ -1322,7 +1322,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="profile">
               {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover"}} /> : <div className="prof-av">{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : "TU"}</div>}
               <div className="prof-name">{userProfile?.full_name || 'Tu nombre'}</div>
-              <div className="prof-meta">{userProfile?.position ? `${userProfile.position} · ` : ''}{userProfile?.city ? `${userProfile.city}, ` : ''}{userProfile?.country || 'Completa tu perfil'}{userProfile?.age ? ` · ${userProfile.age} años` : ''}</div>
+              <div className="prof-meta">{userProfile?.position ? `${userProfile.position} · ` : ''}{userProfile?.city ? `${userProfile.city}, ` : ''}{userProfile?.country}{userProfile?.age ? ` · ${userProfile.age} años` : ''}</div>
+              {!userProfile?.country && <div style={{color:'#00E676',fontSize:'12px',marginTop:'4px'}}>✨ Completa tu perfil para que los scouts te encuentren</div>}
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">Seguidores</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{followingList.length}</div><div className="prof-stat-l">Siguiendo</div></div>
@@ -1349,7 +1350,24 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className="prof-btn pri" onClick={openEditProfile}>{t.editProfile}</button>
               <button className="prof-btn sec">{t.settings}</button>
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
-              {realPosts.length > 0 && <div style={{width:"100%",marginTop:"20px",textAlign:"left"}}><div style={{fontSize:"11px",color:"#556677",letterSpacing:"1px",textTransform:"uppercase",fontWeight:"600",marginBottom:"12px"}}>{t.myPosts}</div>{realPosts.map(p => <div key={p.id} style={{background:"#0a0e14",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"14px",padding:"12px",marginBottom:"10px"}}><div style={{fontSize:"14px",color:"#ECEFF4"}}>{p.content}</div><div style={{fontSize:"11px",color:"#556677",marginTop:"6px"}}>{new Date(p.created_at).toLocaleDateString()}</div></div>)}</div>}
+              {realPosts.length > 0 && (
+                <div style={{width:'100%',marginTop:'20px',textAlign:'left'}}>
+                  <div style={{fontSize:'11px',color:'#556677',letterSpacing:'1px',textTransform:'uppercase',fontWeight:'700',marginBottom:'12px'}}>{t.myPosts}</div>
+                  {realPosts.map(p => (
+                    <div key={p.id} style={{background:'#0a0e14',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'14px',marginBottom:'10px',cursor:'pointer'}} onClick={() => setViewPost({...p, av: userProfile?.full_name?.substring(0,2).toUpperCase(), name: userProfile?.full_name, time: new Date(p.created_at).toLocaleDateString(), text: p.content, likes: 0, comments: 0})}>
+                      <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.5',marginBottom:'8px'}}>{p.content}</div>
+                      {p.image_url && <img src={p.image_url} style={{width:'100%',borderRadius:'10px',marginBottom:'8px',objectFit:'cover',maxHeight:'160px'}} />}
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                        <div style={{fontSize:'11px',color:'#556677'}}>{new Date(p.created_at).toLocaleDateString()}</div>
+                        <div style={{fontSize:'11px',color:'#556677',display:'flex',gap:'12px'}}>
+                          <span>❤️ {p.likes?.[0]?.count || 0}</span>
+                          <span>💬 {p.comments?.[0]?.count || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
