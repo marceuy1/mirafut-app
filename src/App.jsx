@@ -217,7 +217,6 @@ export default function App() {
   const aiEnd = useRef(null);
   const pendingTabRef = useRef('home');
   const agent = SPECIALISTS.find(s => s.id === currentAgent);
-  const agent = SPECIALISTS.find(s => s.id === currentAgent);
   const t = useMemo(() => translations[lang], [lang]);
   const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
