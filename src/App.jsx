@@ -164,6 +164,7 @@ export default function App() {
   
   // App state - TODOS los useState ANTES de los useEffect
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showFab, setShowFab] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [postAuthTab, setPostAuthTab] = useState('home');
@@ -371,6 +372,13 @@ export default function App() {
       });
     }
   }, [session]);
+
+  // Mostrar FAB al scrollear
+  useEffect(() => {
+    const handleScroll = () => setShowFab(window.scrollY > 300);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Scroll infinito
   useEffect(() => {
@@ -1379,7 +1387,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         )}
 
         {/* FLOATING ACTION BUTTON */}
-        {tab === "home" && !viewPost && !viewProfile && (
+        {tab === "home" && !viewPost && !viewProfile && showFab && (
           <button className="fab" style={{bottom:"80px"}} onClick={() => { if (requireAuth()) return; setShowNewPost(true); }}>+</button>
         )}
 
