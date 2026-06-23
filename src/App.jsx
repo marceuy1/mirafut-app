@@ -1040,7 +1040,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div style={{fontSize:'11px',color:'#0a0e14',opacity:0.6}}>{Math.max(0,Math.ceil((new Date(debate.ends_at)-new Date())/(1000*60*60*24)))} días restantes</div>
                   </div>
                 </div>
-                <div style={{background:'rgba(0,0,0,0.15)',padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} votos</div>
+                <div style={{background:'rgba(0,0,0,0.15)',padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} {debateVotes.length === 1 ? 'voto' : 'votos'}</div>
               </div>
               <div style={{padding:'16px 16px 12px'}}>
                 <div style={{fontSize:'17px',fontWeight:'800',color:'#ECEFF4',lineHeight:'1.3',marginBottom:'4px'}}>{debate.question}</div>
@@ -1065,7 +1065,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {debateComments.length > 0 && (
                 <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',padding:'12px 16px'}}>
                   <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>Opiniones</div>
-                  {debateComments.slice(0,2).map((c,i) => (
+                  {debateComments.filter(c => c.content && c.content.trim()).slice(0,2).map((c,i) => (
                     <div key={i} style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
                       <div style={{width:'28px',height:'28px',borderRadius:'9px',background:'rgba(0,230,118,0.12)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:'800',color:'#00E676',flexShrink:0}}>{c.profiles?.full_name?c.profiles.full_name.substring(0,2).toUpperCase():'U'}</div>
                       <div style={{background:'rgba(255,255,255,0.04)',borderRadius:'10px',padding:'8px 10px',flex:1}}>
@@ -1380,7 +1380,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
         {/* FLOATING ACTION BUTTON */}
         {tab === "home" && !viewPost && !viewProfile && (
-          <button className="fab" onClick={() => { if (requireAuth()) return; setShowNewPost(true); }}>+</button>
+          <button className="fab" style={{bottom:"80px"}} onClick={() => { if (requireAuth()) return; setShowNewPost(true); }}>+</button>
         )}
 
         {/* HEALTH DISCLAIMER MODAL */}
