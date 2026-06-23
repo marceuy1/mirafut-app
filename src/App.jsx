@@ -375,11 +375,18 @@ export default function App() {
 
   // Mostrar FAB al scrollear
   useEffect(() => {
+    const checkScroll = () => {
+      const el = document.querySelector('.mc');
+      const y = el ? el.scrollTop : window.scrollY;
+      setShowFab(y > 400);
+    };
     const el = document.querySelector('.mc');
-    const handleScroll = () => { const y = el ? el.scrollTop : window.scrollY; setShowFab(y > 500); };
-    if (el) el.addEventListener('scroll', handleScroll);
-    else window.addEventListener('scroll', handleScroll);
-    return () => { if (el) el.removeEventListener('scroll', handleScroll); else window.removeEventListener('scroll', handleScroll); };
+    if (el) el.addEventListener('scroll', checkScroll);
+    window.addEventListener('scroll', checkScroll);
+    return () => {
+      if (el) el.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('scroll', checkScroll);
+    };
   }, []);
 
   // Scroll infinito
@@ -1049,7 +1056,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
           )}
 
-          {tab === "home" && !viewPost && !viewProfile && session && (<div style={{padding:"8px 16px 0"}}><button onClick={() => setShowNewPost(true)} style={{width:"100%",padding:"12px 16px",background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",color:"#556677",fontSize:"14px",cursor:"pointer",fontFamily:"Outfit,sans-serif",textAlign:"left",display:"flex",alignItems:"center",gap:"10px"}}><div style={{width:"32px",height:"32px",borderRadius:"10px",background:"rgba(0,230,118,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",flexShrink:0}}>✏️</div><span>¿Qué está pasando en el campo?</span></button></div>)}
+          {tab === "home" && !viewPost && !viewProfile && showFab && (
+          <button className="fab" onClick={() => { if (requireAuth()) return; setShowNewPost(true); }}>+</button>
+        )}
+
+        {tab === "home" && !viewPost && !viewProfile && session && (<div style={{padding:"8px 16px 0"}}><button onClick={() => setShowNewPost(true)} style={{width:"100%",padding:"12px 16px",background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",color:"#556677",fontSize:"14px",cursor:"pointer",fontFamily:"Outfit,sans-serif",textAlign:"left",display:"flex",alignItems:"center",gap:"10px"}}><div style={{width:"32px",height:"32px",borderRadius:"10px",background:"rgba(0,230,118,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",flexShrink:0}}>✏️</div><span>¿Qué está pasando en el campo?</span></button></div>)}
 
           {/* ====== DEBATE DE LA SEMANA ====== */}
           {tab === "home" && !viewPost && !viewProfile && debate && (
