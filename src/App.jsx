@@ -958,6 +958,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
             </div>
             <div style={{flex:1,margin:"0 12px",position:"relative"}}>
+              {isDesktop ? (
               <input
                 value={searchQuery}
                 onChange={e => { handleSearch(e.target.value); setShowSearch(true); }}
@@ -965,6 +966,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 placeholder={t.search}
                 style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",padding:"7px 12px",color:"#ECEFF4",fontSize:"13px",outline:"none",fontFamily:"Outfit, sans-serif"}}
               />
+              ) : (
+              <div onClick={() => setShowSearch(s => !s)} style={{display:"flex",alignItems:"center",justifyContent:"center",width:"36px",height:"36px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",cursor:"pointer",fontSize:"16px"}}>🔍</div>
+              )}
+              {!isDesktop && showSearch && (
+              <div style={{position:"fixed",top:"60px",left:0,right:0,padding:"10px 16px",background:"#0a0e14",borderBottom:"1px solid rgba(255,255,255,0.08)",zIndex:200}}>
+                <input autoFocus value={searchQuery} onChange={e => { handleSearch(e.target.value); }} onBlur={() => { if(!searchQuery) setShowSearch(false); }} placeholder={t.search} style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",padding:"10px 14px",color:"#ECEFF4",fontSize:"14px",outline:"none",fontFamily:"Outfit, sans-serif"}} />
+              </div>
+              )}
               {showSearch && searchQuery && (searchResults.users.length > 0 || searchResults.posts.length > 0) && (
                 <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",marginTop:"4px",zIndex:1000,maxHeight:"300px",overflowY:"auto"}}>
                   {searchResults.users.length > 0 && <div style={{padding:"8px 12px 4px",fontSize:"10px",color:"#556677",textTransform:"uppercase",letterSpacing:"1px"}}>Usuarios</div>}
