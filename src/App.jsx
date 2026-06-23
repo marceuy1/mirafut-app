@@ -794,11 +794,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .prof-btn.sec{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#ECEFF4}
 
 /* CHAT */
-.cli{display:flex;align-items:center;gap:10px;padding:12px 18px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04)}
-.cav{width:44px;height:44px;border-radius:12px;background:#121820;border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#00E676;flex-shrink:0}
-.cav.g{font-size:20px;background:rgba(0,230,118,0.1)}
-.cin{flex:1;min-width:0}.cnm{font-weight:600;font-size:13px}.cls{font-size:12px;color:#556677;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ctm{font-size:10px;color:#556677}
+.cli{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;margin:4px 12px;border-radius:16px;background:#121820;border:1px solid rgba(255,255,255,0.04)}
+.cav{width:48px;height:48px;border-radius:14px;background:rgba(0,230,118,0.1);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#00E676;flex-shrink:0}
+.cav.g{font-size:22px;background:rgba(0,230,118,0.1)}
+.cin{flex:1;min-width:0}.cnm{font-weight:700;font-size:14px;color:#ECEFF4;margin-bottom:3px}.cls{font-size:12px;color:#556677;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctm{font-size:11px;color:#556677;margin-bottom:2px}
 .cur{background:#00E676;color:#0a0e14;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-top:3px;margin-left:auto;padding:0 5px}
 
 .chat-view{display:flex;flex-direction:column;height:100%}
@@ -1250,7 +1250,18 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div style={{fontSize:'10px',opacity:0.5,marginTop:'2px'}}>{timeAgo(m.created_at)}</div>
                   </div>
                 ))}
-                {realChatMsgs.length === 0 && <div style={{textAlign:'center',color:'#556677',fontSize:'13px',marginTop:'40px'}}>No hay mensajes aún. ¡Sé el primero en escribir!</div>}
+                {realChatMsgs.length === 0 && (
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flex:1,padding:'40px 20px',textAlign:'center'}}>
+                    <div style={{width:'64px',height:'64px',borderRadius:'20px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px',marginBottom:'14px'}}>
+                      {chatPartner?.avatar_url ? <img src={chatPartner.avatar_url} style={{width:'64px',height:'64px',borderRadius:'20px',objectFit:'cover'}} /> : <span style={{fontSize:'22px',fontWeight:'800',color:'#00E676'}}>{chatPartner?.name?.substring(0,2).toUpperCase()}</span>}
+                    </div>
+                    <div style={{fontSize:'16px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>{chatPartner?.name}</div>
+                    <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5',maxWidth:'220px'}}>Aún no hay mensajes. ¡Sé el primero en escribir!</div>
+                    <div style={{marginTop:'20px',padding:'10px 20px',background:'rgba(0,230,118,0.08)',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'20px',fontSize:'13px',color:'#00E676',cursor:'pointer',fontWeight:'600'}} onClick={() => document.querySelector('.chat-input input')?.focus()}>
+                      Enviar un mensaje 💬
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="chat-input">
                 <input placeholder="Escribe un mensaje..." value={chatMsg} onChange={e => setChatMsg(e.target.value)} onKeyDown={e => e.key==='Enter' && sendRealMessage(chatPartner.id)}/>
