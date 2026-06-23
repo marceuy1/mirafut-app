@@ -1049,6 +1049,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
           )}
 
+          {tab === "home" && !viewPost && !viewProfile && session && (<div style={{padding:"8px 16px 0"}}><button onClick={() => setShowNewPost(true)} style={{width:"100%",padding:"12px 16px",background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",color:"#556677",fontSize:"14px",cursor:"pointer",fontFamily:"Outfit,sans-serif",textAlign:"left",display:"flex",alignItems:"center",gap:"10px"}}><div style={{width:"32px",height:"32px",borderRadius:"10px",background:"rgba(0,230,118,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",flexShrink:0}}>✏️</div><span>¿Qué está pasando en el campo?</span></button></div>)}
+
           {/* ====== DEBATE DE LA SEMANA ====== */}
           {tab === "home" && !viewPost && !viewProfile && debate && (
             <div style={{margin:'16px 16px 4px',background:'#121820',borderRadius:'20px',overflow:'hidden',border:'1px solid rgba(255,255,255,0.06)'}}>
@@ -1429,9 +1431,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         )}
 
         {/* FLOATING ACTION BUTTON */}
-        {tab === "home" && !viewPost && !viewProfile && (
-          <button className="fab" onClick={() => { if (requireAuth()) return; setShowNewPost(true); }}>+</button>
-        )}
+
 
         {/* HEALTH DISCLAIMER MODAL */}
         <div className={`disclaimer-modal-bg ${showHealthDisclaimer ? 'show' : ''}`} onClick={() => setShowHealthDisclaimer(false)}>
