@@ -376,7 +376,8 @@ export default function App() {
       loadChatList();
       setShowAuthPrompt(false);
       supabase.from('profiles').select('position').eq('id', session.user.id).single().then(({ data }) => {
-        if (!data?.position) { setShowOnboarding(true); setOnboardingStep(1); }
+        const skipped = localStorage.getItem('onboarding_skipped_' + session.user.id);
+        if (!data?.position && !skipped) { setShowOnboarding(true); setOnboardingStep(1); }
       });
     }
   }, [session]);
@@ -1740,7 +1741,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button onClick={() => { if(onboardingStep < 3) setOnboardingStep(s=>s+1); else saveOnboarding(); }} style={{width:'100%',padding:'14px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'16px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
                 {onboardingStep < 3 ? 'Continuar →' : '¡Empezar! 🚀'}
               </button>
-              <div onClick={() => setShowOnboarding(false)} style={{textAlign:'center',marginTop:'12px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>
+              <div onClick={() => { setShowOnboarding(false); if(session) localStorage.setItem('onboarding_skipped_' + session.user.id, '1'); }} style={{textAlign:'center',marginTop:'12px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>
                 Completar después
               </div>
             </div>
