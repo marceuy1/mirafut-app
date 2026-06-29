@@ -549,7 +549,7 @@ export default function App() {
     try {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer RE_API_KEY' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer re_AQ7unFq2_FnXgbTeKAbRQs4Fvc6svY5w6' },
         body: JSON.stringify({
           from: 'MiraFut <noreply@mirafut.com>',
           to: ['profutbolmg@gmail.com'],
