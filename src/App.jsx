@@ -538,6 +538,13 @@ export default function App() {
     if (data) setLikedPosts(data.map(l => l.post_id));
   };
 
+  const deletePost = async (postId) => {
+    const realId = postId.toString().replace('real-', '');
+    if (!window.confirm('¿Eliminar este post?')) return;
+    const { error } = await supabase.from('posts').delete().eq('id', realId).eq('user_id', session.user.id);
+    if (!error) loadRealPosts();
+  };
+
   const toggleRealLike = async (postId) => {
     if (requireAuth()) return;
     const realPostId = postId.toString().replace('real-', '');
@@ -1162,6 +1169,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     </div>
                   )}
                   <div className="poa">
+                    {session && p.id.toString().startsWith('real-') && p.userId === session.user.id && (
+                      <button className="poab" onClick={() => deletePost(p.id)} style={{color:'#FF5252'}}>🗑️</button>
+                    )}
                     <button className={`poab lk ${(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? 'on' : ''}`} onClick={() => p.id.toString().startsWith('real-') ? toggleRealLike(p.id) : null}>
                       {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? '❤️' : '🤍'} {p.likes}
                     </button>
