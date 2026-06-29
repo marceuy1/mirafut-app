@@ -325,7 +325,7 @@ export default function App() {
 
   const getVideoThumbnail = (url) => {
     if (!url) return null;
-    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]+)/);
     if (ytMatch) return { thumb: `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`, type: 'YouTube' };
     if (url.includes('tiktok.com')) return { thumb: null, type: 'TikTok' };
     return null;
