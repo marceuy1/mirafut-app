@@ -164,6 +164,10 @@ export default function App() {
   
   // App state - TODOS los useState ANTES de los useEffect
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showContact, setShowContact] = useState(false);
+  const [contactForm, setContactForm] = useState({name:'',email:'',country:'',position:'',story:''});
+  const [contactSending, setContactSending] = useState(false);
+  const [contactSent, setContactSent] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [postAuthTab, setPostAuthTab] = useState('home');
@@ -537,6 +541,26 @@ export default function App() {
     if (!session) return;
     const { data } = await supabase.from('likes').select('post_id').eq('user_id', session.user.id);
     if (data) setLikedPosts(data.map(l => l.post_id));
+  };
+
+  const sendContactForm = async () => {
+    if (!contactForm.name || !contactForm.email || !contactForm.story) return;
+    setContactSending(true);
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer RE_API_KEY' },
+        body: JSON.stringify({
+          from: 'MiraFut <noreply@mirafut.com>',
+          to: ['profutbolmg@gmail.com'],
+          subject: 'Nueva historia: ' + contactForm.name,
+          html: '<h2>Nueva historia</h2><p><b>Nombre:</b> ' + contactForm.name + '</p><p><b>Email:</b> ' + contactForm.email + '</p><p><b>Pais:</b> ' + (contactForm.country||'N/A') + '</p><p><b>Posicion:</b> ' + (contactForm.position||'N/A') + '</p><p><b>Historia:</b> ' + contactForm.story + '</p>'
+        })
+      });
+      setContactSent(true);
+      setContactForm({name:'',email:'',country:'',position:'',story:''});
+    } catch(e) { console.error(e); }
+    setContactSending(false);
   };
 
   const deletePost = async (postId) => {
@@ -1439,6 +1463,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
               )}
               <button className="prof-btn pri" onClick={openEditProfile}>{t.editProfile}</button>
+              <button className="prof-btn sec" onClick={() => setShowContact(true)}>✉️ Cuéntanos tu historia</button>
               <button className="prof-btn sec">{t.settings}</button>
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
               {realPosts.length > 0 && (
@@ -1744,6 +1769,42 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div onClick={() => { setShowOnboarding(false); if(session) localStorage.setItem('onboarding_skipped_' + session.user.id, '1'); }} style={{textAlign:'center',marginTop:'12px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>
                 Completar después
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* CONTACT MODAL */}
+        {showContact && (
+          <div className="modal-bg show" onClick={() => { setShowContact(false); setContactSent(false); }}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
+              <div className="modal-hdr">
+                <div className="modal-title">✉️ Cuéntanos tu historia</div>
+                <button className="modal-close" onClick={() => { setShowContact(false); setContactSent(false); }}>✕</button>
+              </div>
+              {contactSent ? (
+                <div style={{textAlign:'center',padding:'24px 0'}}>
+                  <div style={{fontSize:'48px',marginBottom:'12px'}}>🎉</div>
+                  <div style={{fontSize:'18px',fontWeight:'800',color:'#ECEFF4',marginBottom:'8px'}}>¡Mensaje enviado!</div>
+                  <div style={{fontSize:'14px',color:'#556677'}}>Nos pondremos en contacto contigo pronto.</div>
+                </div>
+              ) : (
+                <div>
+                  <p style={{fontSize:'13px',color:'#556677',marginBottom:'16px',lineHeight:'1.5'}}>Queremos conocerte. Cuéntanos tu historia y te haremos un seguimiento personalizado.</p>
+                  {[{label:'Nombre completo',key:'name',type:'text',placeholder:'Tu nombre'},{label:'Email',key:'email',type:'email',placeholder:'tu@email.com'},{label:'País',key:'country',type:'text',placeholder:'Tu país'},{label:'Posición',key:'position',type:'text',placeholder:'Delantero, Mediocampista...'}].map(f => (
+                    <div key={f.key} style={{marginBottom:'12px'}}>
+                      <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'5px'}}>{f.label}</div>
+                      <input type={f.type} value={contactForm[f.key]} onChange={e => setContactForm(p=>({...p,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                    </div>
+                  ))}
+                  <div style={{marginBottom:'16px'}}>
+                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'5px'}}>Tu historia</div>
+                    <textarea value={contactForm.story} onChange={e => setContactForm(p=>({...p,story:e.target.value}))} placeholder="Cuéntanos sobre ti, tus sueños, tu trayectoria..." rows={4} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none'}} />
+                  </div>
+                  <button onClick={sendContactForm} disabled={contactSending} style={{width:'100%',padding:'13px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
+                    {contactSending ? 'Enviando...' : 'Enviar mi historia 🚀'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
