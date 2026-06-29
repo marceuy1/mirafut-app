@@ -1157,7 +1157,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {filteredPosts.map(p => (
                 <div key={p.id} className="post">
                   {p.image ? (
-                    <div className="pov" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
+                    <div className="pov" onClick={() => { if(p.id.toString().startsWith("real-")) { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal}); }); } else setViewProfile(USERS.find(u=>u.id===p.userId)); }}>
                       <img src={IMG[p.image] || p.image} alt="" />
                       <div className="pov-overlay"/>
                       {p.position && <div className="pov-badge">{p.position}</div>}
@@ -1170,7 +1170,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       </div>
                     </div>
                   ) : (
-                    <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
+                    <div className="poh" onClick={() => { if(p.id.toString().startsWith("real-")) { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal}); }); } else setViewProfile(USERS.find(u=>u.id===p.userId)); }}>
                       {p.avatar_url ? <img src={p.avatar_url} style={{width:'40px',height:'40px',borderRadius:'12px',objectFit:'cover',flexShrink:0}} /> : <div className="poav">{p.av}</div>}
                       <div className="poi">
                         <div className="pon">{p.name} {p.verified && <V/>}</div>
