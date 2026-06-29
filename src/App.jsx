@@ -223,6 +223,7 @@ export default function App() {
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [newPost, setNewPost] = useState("");
   const [showNewPost, setShowNewPost] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
   const [realPosts, setRealPosts] = useState([]);
   const [postsPage, setPostsPage] = useState(0);
   const [hasMorePosts, setHasMorePosts] = useState(true);
@@ -320,6 +321,14 @@ export default function App() {
       content: debateComment
     }]);
     if (!error) { setDebateComment(''); loadDebate(); }
+  };
+
+  const getVideoThumbnail = (url) => {
+    if (!url) return null;
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+    if (ytMatch) return { thumb: `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`, type: 'YouTube' };
+    if (url.includes('tiktok.com')) return { thumb: null, type: 'TikTok' };
+    return null;
   };
 
   const loadRealPosts = async (page = 0, append = false) => {
@@ -671,13 +680,13 @@ export default function App() {
     const imageUrl = postImage ? await uploadPostImage(postImage) : null;
     const { data, error } = await supabase
       .from('posts')
-      .insert([{ user_id: session.user.id, content: newPost, image_url: imageUrl }])
+      .insert([{ user_id: session.user.id, content: newPost, image_url: imageUrl, video_url: videoUrl || null }])
       .select()
       .single();
     if (error) {
       alert("Error al crear el post: " + error.message);
     } else {
-      setNewPost(""); setPostImage(null); setPostImageUrl(null);
+      setNewPost(""); setPostImage(null); setPostImageUrl(null); setVideoUrl('');
       setShowNewPost(false);
       loadRealPosts();
     }
@@ -1129,6 +1138,20 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     </div>
                   )}
                   <div className="poc">{p.text}</div>
+                  {p.video_url && getVideoThumbnail(p.video_url) && (
+                    <div style={{margin:'0 14px 10px',borderRadius:'12px',overflow:'hidden',position:'relative',height:'200px',cursor:'pointer'}} onClick={() => window.open(p.video_url, '_blank')}>
+                      {getVideoThumbnail(p.video_url).thumb ? <img src={getVideoThumbnail(p.video_url).thumb} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : <div style={{width:'100%',height:'100%',background:'#0a0e14',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px'}}>Video de TikTok</div>}
+                      <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.35)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        <div style={{width:'52px',height:'52px',borderRadius:'50%',background:'rgba(0,230,118,0.9)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 20px rgba(0,230,118,0.4)'}}>
+                          <div style={{width:0,height:0,borderTop:'10px solid transparent',borderBottom:'10px solid transparent',borderLeft:'18px solid #0a0e14',marginLeft:'4px'}}/>
+                        </div>
+                      </div>
+                      <div style={{position:'absolute',bottom:'10px',right:'10px',background:'rgba(0,0,0,0.7)',padding:'4px 8px',borderRadius:'8px',display:'flex',alignItems:'center',gap:'5px'}}>
+                        <div style={{width:'8px',height:'8px',borderRadius:'50%',background:getVideoThumbnail(p.video_url).type==='YouTube'?'#FF0000':'#000'}}/>
+                        <span style={{fontSize:'11px',color:'#fff',fontWeight:'600'}}>{getVideoThumbnail(p.video_url).type}</span>
+                      </div>
+                    </div>
+                  )}
                   <div className="poa">
                     <button className={`poab lk ${(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? 'on' : ''}`} onClick={() => p.id.toString().startsWith('real-') ? toggleRealLike(p.id) : null}>
                       {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? '❤️' : '🤍'} {p.likes}
@@ -1476,6 +1499,22 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className="modal-close" onClick={() => setShowNewPost(false)}>×</button>
             </div>
             <textarea className="modal-textarea" placeholder={t.whatsHappening} value={newPost} onChange={e => setNewPost(e.target.value)}/>
+            <div style={{marginTop:'12px'}}>
+              <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'6px'}}>Link de video (opcional)</div>
+              <div style={{display:'flex',alignItems:'center',gap:'8px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',padding:'10px 14px'}}>
+                <span style={{fontSize:'16px'}}>🔗</span>
+                <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="Pega tu link de YouTube o TikTok..." style={{flex:1,background:'none',border:'none',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+              </div>
+              {videoUrl && getVideoThumbnail(videoUrl) && (
+                <div style={{marginTop:'8px',borderRadius:'12px',overflow:'hidden',position:'relative',height:'120px'}}>
+                  {getVideoThumbnail(videoUrl).thumb ? <img src={getVideoThumbnail(videoUrl).thumb} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : <div style={{width:'100%',height:'100%',background:'#0a0e14',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px'}}>Preview de TikTok</div>}
+                  <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    <div style={{width:'40px',height:'40px',borderRadius:'50%',background:'rgba(0,230,118,0.9)',display:'flex',alignItems:'center',justifyContent:'center'}}>▶</div>
+                  </div>
+                  <div style={{position:'absolute',bottom:'8px',right:'8px',background:'rgba(0,0,0,0.7)',padding:'3px 8px',borderRadius:'8px',fontSize:'11px',color:'#fff',fontWeight:'600'}}>{getVideoThumbnail(videoUrl).type}</div>
+                </div>
+              )}
+            </div>
             {postImageUrl && <div style={{marginTop:'10px',borderRadius:'12px',overflow:'hidden',position:'relative'}}>
               <img src={postImageUrl} style={{width:'100%',maxHeight:'200px',objectFit:'cover',borderRadius:'12px'}} />
               <button onClick={()=>{setPostImage(null);setPostImageUrl(null);}} style={{position:'absolute',top:'8px',right:'8px',background:'rgba(0,0,0,0.6)',border:'none',color:'white',borderRadius:'50%',width:'24px',height:'24px',cursor:'pointer',fontSize:'14px'}}>×</button>
