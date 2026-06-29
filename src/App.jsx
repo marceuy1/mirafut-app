@@ -1028,6 +1028,13 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="hero-stat-label">Países</div>
               </div>
             </div>
+            {session && (
+              <div style={{marginTop:'28px'}}>
+                <button onClick={() => setShowNewPost(true)} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'inline-flex',alignItems:'center',gap:'8px'}}>
+                  ✏️ ¿Qué está pasando en el campo?
+                </button>
+              </div>
+            )}
           </div>
         )}
 
