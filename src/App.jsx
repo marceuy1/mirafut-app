@@ -165,6 +165,7 @@ export default function App() {
   // App state - TODOS los useState ANTES de los useEffect
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [viewProfilePosts, setViewProfilePosts] = useState([]);
   const [contactForm, setContactForm] = useState({name:'',email:'',country:'',position:'',story:''});
   const [contactSending, setContactSending] = useState(false);
   const [contactSent, setContactSent] = useState(false);
@@ -549,12 +550,14 @@ export default function App() {
   };
 
   const loadViewProfileStats = async (userId) => {
-    const [followers, following, posts] = await Promise.all([
+    const [followers, following, postsCount, postsData] = await Promise.all([
       supabase.from('follows').select('*', {count:'exact',head:true}).eq('following_id', userId),
       supabase.from('follows').select('*', {count:'exact',head:true}).eq('follower_id', userId),
-      supabase.from('posts').select('*', {count:'exact',head:true}).eq('user_id', userId)
+      supabase.from('posts').select('*', {count:'exact',head:true}).eq('user_id', userId),
+      supabase.from('posts').select('*').eq('user_id', userId).order('created_at', {ascending:false}).limit(6)
     ]);
-    setViewProfile(prev => prev ? {...prev, followers: followers.count||0, following: following.count||0, posts: posts.count||0} : prev);
+    setViewProfile(prev => prev ? {...prev, followers: followers.count||0, following: following.count||0, posts: postsCount.count||0} : prev);
+    if (postsData.data) setViewProfilePosts(postsData.data);
   };
 
   const sendContactForm = async () => {
@@ -1310,6 +1313,26 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <span style={{fontSize:'20px'}}>🎯</span>
                     <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.4'}}>{viewProfile.goal}</div>
                   </div>
+                </div>
+              )}
+              {viewProfilePosts.length > 0 && (
+                <div style={{width:'100%',marginTop:'16px',textAlign:'left'}}>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'12px'}}>Posts</div>
+                  {viewProfilePosts.map(p => (
+                    <div key={p.id} style={{background:'#0a0e14',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'12px',marginBottom:'10px'}}>
+                      <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.5',marginBottom:'6px'}}>{p.content}</div>
+                      {p.image_url && <img src={p.image_url} style={{width:'100%',borderRadius:'10px',marginBottom:'6px',objectFit:'cover',maxHeight:'160px'}} />}
+                      {p.video_url && getVideoThumbnail(p.video_url) && (
+                        <div style={{position:'relative',height:'120px',borderRadius:'10px',overflow:'hidden',cursor:'pointer',marginBottom:'6px'}} onClick={() => window.open(p.video_url,'_blank')}>
+                          {getVideoThumbnail(p.video_url).thumb && <img src={getVideoThumbnail(p.video_url).thumb} style={{width:'100%',height:'100%',objectFit:'cover'}} />}
+                          <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.35)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                            <div style={{width:'36px',height:'36px',borderRadius:'50%',background:'rgba(0,230,118,0.9)',display:'flex',alignItems:'center',justifyContent:'center'}}>▶</div>
+                          </div>
+                        </div>
+                      )}
+                      <div style={{fontSize:'11px',color:'#556677'}}>{new Date(p.created_at).toLocaleDateString()}</div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
