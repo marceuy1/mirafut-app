@@ -391,6 +391,11 @@ export default function App() {
 
   }, []);
 
+  // Cargar stats del perfil público
+  useEffect(() => {
+    if (viewProfile?.id) loadViewProfileStats(viewProfile.id);
+  }, [viewProfile?.id]);
+
   // Scroll infinito
   useEffect(() => {
     if (!loaderRef.current) return;
@@ -541,6 +546,15 @@ export default function App() {
     if (!session) return;
     const { data } = await supabase.from('likes').select('post_id').eq('user_id', session.user.id);
     if (data) setLikedPosts(data.map(l => l.post_id));
+  };
+
+  const loadViewProfileStats = async (userId) => {
+    const [followers, following, posts] = await Promise.all([
+      supabase.from('follows').select('*', {count:'exact',head:true}).eq('following_id', userId),
+      supabase.from('follows').select('*', {count:'exact',head:true}).eq('follower_id', userId),
+      supabase.from('posts').select('*', {count:'exact',head:true}).eq('user_id', userId)
+    ]);
+    setViewProfile(prev => prev ? {...prev, followers: followers.count||0, following: following.count||0, posts: posts.count||0} : prev);
   };
 
   const sendContactForm = async () => {
@@ -1271,9 +1285,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div className="prof-meta">📍 {viewProfile.city}, {viewProfile.country} · {viewProfile.age} años · {viewProfile.position}</div>
               <div className="prof-bio">{viewProfile.bio}</div>
               <div className="prof-stats">
-                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.followers}</div><div className="prof-stat-l">Seguidores</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.following}</div><div className="prof-stat-l">Siguiendo</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">{POSTS.filter(p=>p.userId===viewProfile.id).length}</div><div className="prof-stat-l">Posts</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.followers||0}</div><div className="prof-stat-l">Seguidores</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.following||0}</div><div className="prof-stat-l">Siguiendo</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.posts||0}</div><div className="prof-stat-l">Posts</div></div>
               </div>
               <button className={`prof-btn ${followingList.includes(viewProfile.id) ? 'sec' : 'pri'}`} onClick={() => toggleFollowUser(viewProfile.id)}>
                 {followingList.includes(viewProfile.id) ? 'Siguiendo ✓' : '+ Seguir'}
