@@ -461,6 +461,14 @@ export default function App() {
   // ── Debate ────────────────────────────────────────────
 
 
+  const renderMarkdown = (text) => {
+    if (!text) return null;
+    return text.split('\n').map((line, i) => {
+      const parts = line.split(/\*\*(.+?)\*\*/);
+      return <span key={i}>{parts.map((part, j) => j % 2 === 1 ? <strong key={j} style={{color:'#ECEFF4'}}>{part}</strong> : part)}<br/></span>;
+    });
+  };
+
   if (loading) {
     return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
   }
@@ -1433,7 +1441,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div key={m.id} className={`ai-row ${m.from==='me'?'me':''}`}>
                       {m.from !== 'me' && <div className="ai-av" style={{background:`${ma?.color||'#00E676'}20`,color:ma?.color||'#00E676'}}>{ma?.emoji}</div>}
                       <div className="ai-group">
-                        <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`} >{(m.text||'').split('\n').map((line,i) => <span key={i}>{line.split(/\*\*(.+?)\*\*/).map((part,j) => j%2===1 ? <strong key={j}>{part}</strong> : part)}<br/></span>)}</div>
+                        <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`} >{renderMarkdown(m.text)}</div>
 /g,'<br/>')}}></div>
                         <div className="ai-time" style={{textAlign:m.from==='me'?'right':'left'}}>{m.time}</div>
                       </div>
