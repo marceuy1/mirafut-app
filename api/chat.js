@@ -34,7 +34,8 @@ export default async function handler(req, res) {
     })
 
     const data = await response.json()
-    return res.status(200).json({ reply: data.choices[0].message.content })
+    const reply = data.choices[0].message.content.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1');
+    return res.status(200).json({ reply })
   } catch (error) {
     return res.status(500).json({ error: 'Error al conectar con OpenAI' })
   }
