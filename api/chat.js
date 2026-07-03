@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
   const { message, agentType, userProfile } = req.body
 
-  const perfilStr = userProfile ? `El jugador se llama ${userProfile.full_name || 'jugador'}, tiene ${userProfile.age || 'edad desconocida'} años, juega de ${userProfile.position || 'posición no especificada'}, su pie dominante es ${userProfile.dominant_foot || 'no especificado'} y su objetivo es: ${userProfile.goal || 'no especificado'}. Personaliza tus consejos según esta información.` : ''
+  const perfilStr = userProfile && (userProfile.position || userProfile.age) ? `IMPORTANTE: Este jugador es ${userProfile.full_name || 'un jugador'}, tiene ${userProfile.age || '?'} años, juega de ${userProfile.position === 'POR' ? 'Portero' : userProfile.position === 'DEF' ? 'Defensa' : userProfile.position === 'MED' ? 'Mediocampista' : userProfile.position === 'DEL' ? 'Delantero' : userProfile.position || 'posición no especificada'}, pie dominante ${userProfile.dominant_foot || 'no especificado'}, objetivo: ${userProfile.goal || 'no especificado'}. Adapta TODO tu consejo específicamente a su posición.` : ''
 
   const systemPrompts = {
     coach: `Eres un entrenador motivador para jóvenes futbolistas. Sé empático, positivo y práctico. ${perfilStr} Responde en español con máximo 150 palabras. Si el jugador tiene posición definida, da consejos específicos para esa posición.`,
