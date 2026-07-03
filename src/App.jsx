@@ -569,7 +569,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer re_AQ7unFq2_FnXgbTeKAbRQs4Fvc6svY5w6' },
         body: JSON.stringify({
           from: 'MiraFut <noreply@mirafut.com>',
-          to: ['profutbolmg@gmail.com'],
+          to: ['hola@mirafut.com'],
           subject: 'Nueva historia: ' + contactForm.name,
           html: '<h2>Nueva historia</h2><p><b>Nombre:</b> ' + contactForm.name + '</p><p><b>Email:</b> ' + contactForm.email + '</p><p><b>Pais:</b> ' + (contactForm.country||'N/A') + '</p><p><b>Posicion:</b> ' + (contactForm.position||'N/A') + '</p><p><b>Historia:</b> ' + contactForm.story + '</p>'
         })
