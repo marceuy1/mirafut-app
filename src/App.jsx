@@ -464,7 +464,7 @@ export default function App() {
   const renderMarkdown = (text) => {
     if (!text) return null;
     return text.split('\n').map((line, i) => {
-      const parts = line.split(/\*\*(.+?)\*\*/);
+      const parts = line.split(/\*\*([^*]+)\*\*/);
       return <span key={i}>{parts.map((part, j) => j % 2 === 1 ? <strong key={j} style={{color:'#ECEFF4'}}>{part}</strong> : part)}<br/></span>;
     });
   };
