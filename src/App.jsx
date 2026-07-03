@@ -1714,14 +1714,25 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <button onClick={()=>setShowNotifications(false)} style={{background:"none",border:"none",color:"#8899A6",fontSize:"20px",cursor:"pointer"}}>×</button>
               </div>
               {notifications.length === 0 ? (
-                <div style={{color:"#556677",fontSize:"14px",textAlign:"center",padding:"20px"}}>{t.noNotifications}</div>
+                <div style={{textAlign:'center',padding:'30px 20px'}}>
+                  <div style={{fontSize:'36px',marginBottom:'12px'}}>🔔</div>
+                  <div style={{color:'#556677',fontSize:'14px',fontWeight:'600'}}>No hay notificaciones aún</div>
+                  <div style={{color:'#556677',fontSize:'12px',marginTop:'6px'}}>Cuando alguien te siga o dé like aparecerá aquí</div>
+                </div>
               ) : (
-                notifications.map(n => (
-                  <div key={n.id} onClick={() => { if(n.post_id) { setShowNotifications(false); setViewPost(allPosts.find(p => p.id === "real-"+n.post_id) || null); setTab("home"); } }} style={{padding:"12px",borderRadius:"12px",background:n.read?"transparent":"rgba(0,230,118,0.05)",border:"1px solid",borderColor:n.read?"rgba(255,255,255,0.04)":"rgba(0,230,118,0.15)",marginBottom:"8px",cursor:n.post_id?"pointer":"default"}}>
-                    <div style={{fontSize:"13px",color:"#ECEFF4"}}>{n.message}</div>
-                    <div style={{fontSize:"11px",color:"#556677",marginTop:"4px"}}>{new Date(n.created_at).toLocaleDateString()}</div>
+                notifications.map(n => {
+                  const icon = n.message?.includes('like') ? '❤️' : n.message?.includes('siguiendo') || n.message?.includes('follow') ? '👤' : n.message?.includes('comentario') || n.message?.includes('comment') ? '💬' : '🔔';
+                  return (
+                  <div key={n.id} onClick={() => { if(n.post_id) { setShowNotifications(false); setViewPost(allPosts.find(p => p.id === "real-"+n.post_id) || null); setTab("home"); } }} style={{padding:"12px",borderRadius:"12px",background:n.read?"transparent":"rgba(0,230,118,0.05)",border:"1px solid",borderColor:n.read?"rgba(255,255,255,0.04)":"rgba(0,230,118,0.15)",marginBottom:"8px",cursor:n.post_id?"pointer":"default",display:'flex',alignItems:'center',gap:'10px'}}>
+                    <div style={{width:'36px',height:'36px',borderRadius:'10px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px',flexShrink:0}}>{icon}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:"13px",color:"#ECEFF4",fontWeight:'600'}}>{n.message}</div>
+                      <div style={{fontSize:"11px",color:"#556677",marginTop:"3px"}}>{timeAgo(n.created_at)}</div>
+                    </div>
+                    {!n.read && <div style={{width:'8px',height:'8px',borderRadius:'50%',background:'#00E676',flexShrink:0}}/>}
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
