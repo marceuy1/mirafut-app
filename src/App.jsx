@@ -461,6 +461,28 @@ export default function App() {
   // ── Debate ────────────────────────────────────────────
 
 
+  const EXERCISE_IMAGES = {
+    'pase': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80&fit=crop',
+    'dribbling': 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&q=80&fit=crop',
+    'tiro': 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=400&q=80&fit=crop',
+    'posición': 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=400&q=80&fit=crop',
+    'visión': 'https://images.unsplash.com/photo-1516522024948-2f3a0e4e4d9c?w=400&q=80&fit=crop',
+    'resistencia': 'https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=400&q=80&fit=crop',
+    'portero': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&q=80&fit=crop',
+    'defensa': 'https://images.unsplash.com/photo-1508098682722-e99c643e7f76?w=400&q=80&fit=crop',
+    'velocidad': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&q=80&fit=crop',
+    'rondo': 'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=400&q=80&fit=crop',
+  };
+
+  const getExerciseImage = (text) => {
+    if (!text) return null;
+    const lower = text.toLowerCase();
+    for (const [key, url] of Object.entries(EXERCISE_IMAGES)) {
+      if (lower.includes(key)) return url;
+    }
+    return null;
+  };
+
   const renderMarkdown = (text) => {
     if (!text) return null;
     return text.split('\n').map((line, i) => {
@@ -1442,6 +1464,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {m.from !== 'me' && <div className="ai-av" style={{background:`${ma?.color||'#00E676'}20`,color:ma?.color||'#00E676'}}>{ma?.emoji}</div>}
                       <div className="ai-group">
                         <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`}>{renderMarkdown(m.text)}</div>
+                        {m.from !== 'me' && getExerciseImage(m.text) && (
+                          <img src={getExerciseImage(m.text)} alt="ejercicio" style={{width:'100%',borderRadius:'12px',marginTop:'8px',objectFit:'cover',maxHeight:'160px'}} />
+                        )}
                         <div className="ai-time" style={{textAlign:m.from==='me'?'right':'left'}}>{m.time}</div>
                       </div>
                     </div>
