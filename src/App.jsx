@@ -165,6 +165,7 @@ export default function App() {
   // App state - TODOS los useState ANTES de los useEffect
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [showSorteo, setShowSorteo] = useState(false);
   const [viewProfilePosts, setViewProfilePosts] = useState([]);
   const [contactForm, setContactForm] = useState({name:'',email:'',country:'',position:'',story:''});
   const [contactSending, setContactSending] = useState(false);
@@ -1121,6 +1122,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   </div>
                 </div>
                 <div style={{background:'rgba(0,0,0,0.15)',padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} {debateVotes.length === 1 ? 'voto' : 'votos'}</div>
+                <button onClick={() => setShowSorteo(true)} style={{background:'rgba(0,0,0,0.15)',border:'none',borderRadius:'20px',padding:'4px 10px',fontSize:'11px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🎁 Sorteo</button>
               </div>
               <div style={{padding:'16px 16px 12px'}}>
                 <div style={{fontSize:'17px',fontWeight:'800',color:'#ECEFF4',lineHeight:'1.3',marginBottom:'4px'}}>{debate.question}</div>
@@ -1825,6 +1827,60 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div onClick={() => { setShowOnboarding(false); if(session) { localStorage.setItem('onboarding_skipped_' + session.user.id, '1'); supabase.from('profiles').update({onboarding_seen: true}).eq('id', session.user.id); } }} style={{textAlign:'center',marginTop:'12px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>
                 Completar después
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* SORTEO MODAL */}
+        {showSorteo && (
+          <div className="modal-bg show" onClick={() => setShowSorteo(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
+              <div className="modal-hdr">
+                <div className="modal-title">🎁 Sorteo del mes</div>
+                <button className="modal-close" onClick={() => setShowSorteo(false)}>✕</button>
+              </div>
+              <div style={{background:'linear-gradient(135deg,#00E676,#00C853)',borderRadius:'14px',padding:'16px',marginBottom:'12px',position:'relative',overflow:'hidden'}}>
+                <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.5)',marginBottom:'4px'}}>SORTEO DEL MES</div>
+                <div style={{fontSize:'18px',fontWeight:'900',color:'#0a0e14',marginBottom:'4px'}}>Camiseta oficial ⚽</div>
+                <div style={{fontSize:'12px',color:'rgba(0,0,0,0.6)',marginBottom:'12px'}}>Participa en el debate y entra al sorteo</div>
+                <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
+                  <div style={{background:'rgba(0,0,0,0.15)',borderRadius:'20px',padding:'5px 12px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>⏱ 12 días restantes</div>
+                  <div style={{background:'rgba(0,0,0,0.15)',borderRadius:'20px',padding:'5px 12px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} participantes</div>
+                </div>
+              </div>
+              <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'10px'}}>
+                <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>Premio de este mes</div>
+                <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                  <div style={{width:'48px',height:'48px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'24px',flexShrink:0}}>👕</div>
+                  <div>
+                    <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4'}}>Camiseta de tu club favorito</div>
+                    <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>Original · Talla a elección del ganador</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'10px'}}>
+                <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>Cómo participar</div>
+                {[{n:'1',t:'Vota en el debate de la semana'},{n:'2',t:'Deja un comentario con tu opinión'},{n:'3',t:'¡Espera el sorteo en vivo! 🎉'}].map((s,i) => (
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'8px'}}>
+                    <div style={{width:'26px',height:'26px',borderRadius:'8px',background:i<2?'#00E676':'rgba(0,230,118,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:'800',color:i<2?'#0a0e14':'#00E676',flexShrink:0}}>{s.n}</div>
+                    <div style={{fontSize:'13px',color:i<2?'#ECEFF4':'#8899A6'}}>{s.t}</div>
+                  </div>
+                ))}
+              </div>
+              {session && userVote !== null && (
+                <div style={{background:'rgba(0,230,118,0.08)',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'12px',padding:'12px',marginBottom:'10px',display:'flex',alignItems:'center',gap:'10px'}}>
+                  <div style={{width:'32px',height:'32px',borderRadius:'8px',background:'#00E676',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px',flexShrink:0}}>✓</div>
+                  <div>
+                    <div style={{fontSize:'13px',fontWeight:'700',color:'#00E676'}}>¡Estás participando!</div>
+                    <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>Votaste en el debate de esta semana</div>
+                  </div>
+                </div>
+              )}
+              {session && userVote === null && (
+                <button onClick={() => { setShowSorteo(false); }} style={{width:'100%',padding:'12px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif',marginBottom:'10px'}}>
+                  Ir al debate para participar 🗳️
+                </button>
+              )}
             </div>
           </div>
         )}
