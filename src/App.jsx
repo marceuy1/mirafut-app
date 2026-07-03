@@ -490,7 +490,7 @@ export default function App() {
     setThinking(true);
 
     try {
-      const response = await sendMessageToCoach(text, currentAgent);
+      const response = await sendMessageToCoach(text, currentAgent, userProfile);
       setAiMessages(m => [...m, { 
         id:Date.now()+1, 
         from:currentAgent, 

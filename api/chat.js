@@ -3,10 +3,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { message, agentType } = req.body
+  const { message, agentType, userProfile } = req.body
+
+  const perfilStr = userProfile ? `El jugador se llama ${userProfile.full_name || 'jugador'}, tiene ${userProfile.age || 'edad desconocida'} años, juega de ${userProfile.position || 'posición no especificada'}, su pie dominante es ${userProfile.dominant_foot || 'no especificado'} y su objetivo es: ${userProfile.goal || 'no especificado'}. Personaliza tus consejos según esta información.` : ''
 
   const systemPrompts = {
-    coach: "Eres un entrenador motivador para jóvenes futbolistas. Sé empático, positivo y práctico. Responde en español con máximo 100 palabras.",
+    coach: `Eres un entrenador motivador para jóvenes futbolistas. Sé empático, positivo y práctico. ${perfilStr} Responde en español con máximo 150 palabras. Si el jugador tiene posición definida, da consejos específicos para esa posición.`,
     nutricion: "Eres un nutricionista deportivo. Da consejos prácticos de alimentación económica para jóvenes deportistas. Responde en español con máximo 100 palabras.",
     psicologia: "Eres un psicólogo deportivo empático. Ayuda con el bienestar emocional de jóvenes atletas. Responde en español con máximo 100 palabras.",
     tecnica: "Eres un analista técnico de fútbol. Da consejos sobre técnica, táctica y ejercicios. Responde en español con máximo 100 palabras.",
