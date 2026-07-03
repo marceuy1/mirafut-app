@@ -134,7 +134,6 @@ function AuthInline({ onSuccess, onClose, postLoginTab }) {
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
         <div>
           <Logo size={28} />
-          <div style={{fontSize:'13px',color:'#8899A6'}}>{isSignUp ? 'Crear cuenta' : 'Iniciar sesión'}</div>
         </div>
         <button onClick={onClose} style={{background:'none',border:'none',color:'#8899A6',fontSize:'22px',cursor:'pointer'}}>×</button>
       </div>
