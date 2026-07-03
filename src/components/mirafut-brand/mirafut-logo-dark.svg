@@ -1,0 +1,14 @@
+<svg width="260" height="56" viewBox="0 0 260 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- MiraFut Logo (icon + wordmark) — for dark backgrounds -->
+  <!-- Requires Inter font loaded in the app (already common in Vite/React setups):
+       https://fonts.googleapis.com/css2?family=Inter:wght@900&display=swap -->
+  <circle cx="28" cy="28" r="19" stroke="#00E676" stroke-width="2.2" fill="none"/>
+  <line x1="28" y1="4"  x2="28" y2="11" stroke="#00E676" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="28" y1="45" x2="28" y2="52" stroke="#00E676" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="4"  y1="28" x2="11" y2="28" stroke="#00E676" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="45" y1="28" x2="52" y2="28" stroke="#00E676" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="28" cy="28" r="9" fill="#00E676"/>
+  <path d="M 20 28 Q 24 24 28 28 Q 32 32 36 28" stroke="#080808" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+  <path d="M 28 19 Q 31 23 28 28 Q 25 33 28 37" stroke="#080808" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+  <text x="64" y="38" font-family="'Inter', -apple-system, sans-serif" font-weight="900" font-size="26" fill="#FFFFFF" letter-spacing="-1.5">Mira<tspan fill="#00E676">Fut</tspan></text>
+</svg>

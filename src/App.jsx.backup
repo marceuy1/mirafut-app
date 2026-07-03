@@ -3,7 +3,6 @@ import { translations, getLanguage } from './translations';
 import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect, useMemo } from "react";
-import Logo from "./components/Logo";
 
 // ============ SIMULATED DATA ============
 const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasionado", followers: 45, following: 67, verified: false };
@@ -69,12 +68,6 @@ const QUICK_PROMPTS = {
   psicologia:["Tengo ansiedad","No me siento suficiente","Extraño a mi familia","Perdí un partido importante"],
   tecnica:["Analiza este video","Ejercicios sin equipo","Mejorar pierna débil","Rutina para casa"],
   carrera:["¿Cómo llamo scouts?","¿Qué es un contrato juvenil?","Becas disponibles","¿Mi perfil está listo?"],
-};
-
-const IMG = {
-  game:     'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80&fit=crop&auto=format',
-  training: 'https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600&q=80&fit=crop&auto=format',
-  goal:     'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&q=80&fit=crop&auto=format',
 };
 
 const timeAgo = (dateStr) => {
@@ -164,39 +157,6 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   
   // App state - TODOS los useState ANTES de los useEffect
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showContact, setShowContact] = useState(false);
-  const [viewProfilePosts, setViewProfilePosts] = useState([]);
-  const [contactForm, setContactForm] = useState({name:'',email:'',country:'',position:'',story:''});
-  const [contactSending, setContactSending] = useState(false);
-  const [contactSent, setContactSent] = useState(false);
-  const [onboardingStep, setOnboardingStep] = useState(1);
-  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
-  const [postAuthTab, setPostAuthTab] = useState('home');
-  const [showEditProfile, setShowEditProfile] = useState(false);
-  const [submittingComment, setSubmittingComment] = useState(false);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterPosition, setFilterPosition] = useState('');
-  const [filterCountry, setFilterCountry] = useState('');
-  const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
-  const [showSearch, setShowSearch] = useState(false);
-  const [postImage, setPostImage] = useState(null);
-  const [postImageUrl, setPostImageUrl] = useState(null);
-  const [followingList, setFollowingList] = useState([]);
-  const [likedPosts, setLikedPosts] = useState([]);
-  const [userProfile, setUserProfile] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [debate, setDebate] = useState(null);
-  const [debateVotes, setDebateVotes] = useState([]);
-  const [debateComments, setDebateComments] = useState([]);
-  const [debateComment, setDebateComment] = useState('');
-  const [userVote, setUserVote] = useState(null);
-  const [postComments, setPostComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
-  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '', height: '', weight: '', dominant_foot: '', goal: '' });
-  const [editLoading, setEditLoading] = useState(false);
   const [tab, setTab] = useState(() => {
     const saved = sessionStorage.getItem('activeTab');
     if (saved) { sessionStorage.removeItem('activeTab'); return saved; }
@@ -211,6 +171,10 @@ export default function App() {
   const [chatPartner, setChatPartner] = useState(null);
   const [chatList, setChatList] = useState([]);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [chatMsgs, setChatMsgs] = useState([
+    {id:1,text:"Vi tu último video, increíble",from:"them",time:"10:30"},
+    {id:2,text:"¡Muchas gracias!",from:"me",time:"10:32"},
+  ]);
   const [currentAgent, setCurrentAgent] = useState("coach");
   const [aiMessages, setAiMessages] = useState([
     { id:1, from:"coach", type:"text", text:"Hola 👋 ¿Cómo estás hoy?", time:"14:20" },
@@ -221,19 +185,13 @@ export default function App() {
   const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState(false);
   const aiEnd = useRef(null);
-  const pendingTabRef = useRef('home');
-  const agent = SPECIALISTS.find(s => s.id === currentAgent);
-  const t = useMemo(() => translations[lang], [lang]);
-  const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+  const [likes, setLikes] = useState({});
+  const [follows, setFollows] = useState({});
   const [newPost, setNewPost] = useState("");
   const [showNewPost, setShowNewPost] = useState(false);
-  const [videoUrl, setVideoUrl] = useState('');
   const [realPosts, setRealPosts] = useState([]);
-  const [postsPage, setPostsPage] = useState(0);
-  const [hasMorePosts, setHasMorePosts] = useState(true);
-  const loaderRef = useRef(null);
 
   const loadComments = async (postId) => {
     const realPostId = postId.toString().replace('real-', '');
@@ -276,80 +234,12 @@ export default function App() {
     if (data) { setUserProfile(data); loadRealPosts(); }
   };
 
-  const loadDebate = async () => {
-    const { data } = await supabase
-      .from('debates')
-      .select('*')
-      .gte('ends_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-    if (data) {
-      setDebate(data);
-      const { data: votes } = await supabase
-        .from('debate_votes')
-        .select('option_index, user_id')
-        .eq('debate_id', data.id);
-      if (votes) setDebateVotes(votes);
-      if (session) {
-        const myVote = votes?.find(v => v.user_id === session.user.id);
-        if (myVote) setUserVote(myVote.option_index);
-      }
-      const { data: comments } = await supabase
-        .from('debate_comments')
-        .select('*, profiles(full_name, avatar_url)')
-        .eq('debate_id', data.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-      if (comments) setDebateComments(comments);
-    }
-  };
-
-  const voteDebate = async (optionIndex) => {
-    if (requireAuth()) return;
-    if (userVote !== null) return;
-    const { error } = await supabase.from('debate_votes').insert([{
-      debate_id: debate.id,
-      user_id: session.user.id,
-      option_index: optionIndex
-    }]);
-    if (!error) {
-      setUserVote(optionIndex);
-      setDebateVotes(prev => [...prev, { option_index: optionIndex, user_id: session.user.id }]);
-    }
-  };
-
-  const sendDebateComment = async () => {
-    if (!debateComment.trim() || requireAuth()) return;
-    const { error } = await supabase.from('debate_comments').insert([{
-      debate_id: debate.id,
-      user_id: session.user.id,
-      content: debateComment
-    }]);
-    if (!error) { setDebateComment(''); loadDebate(); }
-  };
-
-  const getVideoThumbnail = (url) => {
-    if (!url) return null;
-    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]+)/);
-    if (ytMatch) return { thumb: `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`, type: 'YouTube' };
-    if (url.includes('tiktok.com')) return { thumb: null, type: 'TikTok' };
-    return null;
-  };
-
-  const loadRealPosts = async (page = 0, append = false) => {
-    const PAGE_SIZE = 10;
+  const loadRealPosts = async () => {
     const { data, error } = await supabase
       .from('posts')
-      .select('*, profiles(full_name, avatar_url, verified, position), likes(count), comments(count)')
-      .order('created_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-    if (!error && data) {
-      if (data.length < PAGE_SIZE) setHasMorePosts(false);
-      else setHasMorePosts(true);
-      if (append) setRealPosts(prev => [...prev, ...data]);
-      else setRealPosts(data);
-    }
+      .select('*, likes(count), comments(count)')
+      .order('created_at', { ascending: false });
+    if (!error && data) setRealPosts(data);
   };
 
   // Auth effect
@@ -357,60 +247,24 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-
+      if (session) { loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadLikes(); loadChatList(); }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) { setShowAuthPrompt(false); loadUserProfile(session.user.id); loadNotifications(session.user.id); loadFollowing(); loadChatList(); }
+      if (session && pendingTabRef.current && pendingTabRef.current !== 'home') {
+        setTab(pendingTabRef.current);
+        pendingTabRef.current = 'home';
+      }
     });
 
     loadRealPosts();
-    loadDebate();
 
     return () => subscription.unsubscribe();
   }, []);
-
-  // Reaccionar a cambios de session
-  useEffect(() => {
-    if (session) {
-      loadUserProfile(session.user.id);
-      loadNotifications(session.user.id);
-      loadFollowing();
-      loadLikes();
-      loadChatList();
-      setShowAuthPrompt(false);
-      supabase.from('profiles').select('position').eq('id', session.user.id).single().then(({ data }) => {
-        const skipped = localStorage.getItem('onboarding_skipped_' + session.user.id);
-        if (!data?.position && !skipped && !data?.onboarding_seen) { setShowOnboarding(true); setOnboardingStep(1); }
-      });
-    }
-  }, [session]);
-
-  // Mostrar FAB al scrollear
-  useEffect(() => {
-
-  }, []);
-
-  // Cargar stats del perfil público
-  useEffect(() => {
-    if (viewProfile?.id) loadViewProfileStats(viewProfile.id);
-  }, [viewProfile?.id]);
-
-  // Scroll infinito
-  useEffect(() => {
-    if (!loaderRef.current) return;
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMorePosts) {
-        const nextPage = postsPage + 1;
-        setPostsPage(nextPage);
-        loadRealPosts(nextPage, true);
-      }
-    }, { threshold: 0.1 });
-    observer.observe(loaderRef.current);
-    return () => observer.disconnect();
-  }, [postsPage, hasMorePosts]);
 
   // Chat polling - refresca mensajes cada 5 segundos cuando el chat está abierto
   useEffect(() => {
@@ -444,9 +298,16 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const agent = SPECIALISTS.find(s => s.id === currentAgent);
+
   useEffect(() => {
     if (tab === "coach") aiEnd.current?.scrollIntoView({ behavior: "smooth" });
   }, [aiMessages, thinking, tab]);
+
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+  const [postAuthTab, setPostAuthTab] = useState('home');
+  const pendingTabRef = useRef('home');
 
   const requireAuth = (redirectTab = 'home') => {
     if (!session) {
@@ -458,8 +319,26 @@ export default function App() {
     return false;
   };
 
-  // ── Debate ────────────────────────────────────────────
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
+  const [showSearch, setShowSearch] = useState(false);
+  const [postImage, setPostImage] = useState(null);
+  const [postImageUrl, setPostImageUrl] = useState(null);
+  const [followingList, setFollowingList] = useState([]);
+  const [likedPosts, setLikedPosts] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [postComments, setPostComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '' });
+  const [editLoading, setEditLoading] = useState(false);
 
+  const t = useMemo(() => translations[lang], [lang]);
+  const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
 
   if (loading) {
     return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
@@ -473,6 +352,12 @@ export default function App() {
   if (!session && tab === 'chat') {
     // will be handled in nav click
   }
+
+  const sendChat = () => {
+    if (!chatMsg.trim()) return;
+    setChatMsgs([...chatMsgs, {id:Date.now(),text:chatMsg,from:"me",time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}]);
+    setChatMsg("");
+  };
 
   const sendAI = async (text) => {
     if (requireAuth()) return;
@@ -531,15 +416,15 @@ export default function App() {
   const openEditProfile = async () => {
     if (!session) return;
     const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-    if (data) setEditForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', age: data.age || '', country: data.country || '', city: data.city || '', position: data.position || '', height: data.height || '', weight: data.weight || '', dominant_foot: data.dominant_foot || '', goal: data.goal || '' });
+    if (data) setEditForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', age: data.age || '', country: data.country || '', city: data.city || '', position: data.position || '' });
     setShowEditProfile(true);
   };
 
   const saveProfile = async () => {
     setEditLoading(true);
-    const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, age: editForm.age ? parseInt(editForm.age) : null, country: editForm.country, city: editForm.city, position: editForm.position, height: editForm.height ? parseInt(editForm.height) : null, weight: editForm.weight ? parseInt(editForm.weight) : null, dominant_foot: editForm.dominant_foot || null, goal: editForm.goal || null }).eq('id', session.user.id);
+    const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, age: editForm.age ? parseInt(editForm.age) : null, country: editForm.country, city: editForm.city, position: editForm.position }).eq('id', session.user.id);
     setEditLoading(false);
-    if (error) { console.error('Error actualizando perfil:', error.message); } else { setShowEditProfile(false); loadUserProfile(session.user.id); }
+    if (error) { alert('Error: ' + error.message); } else { setShowEditProfile(false); alert('¡Perfil actualizado!'); }
   };
 
 
@@ -548,44 +433,6 @@ export default function App() {
     if (!session) return;
     const { data } = await supabase.from('likes').select('post_id').eq('user_id', session.user.id);
     if (data) setLikedPosts(data.map(l => l.post_id));
-  };
-
-  const loadViewProfileStats = async (userId) => {
-    const [followers, following, postsCount, postsData] = await Promise.all([
-      supabase.from('follows').select('*', {count:'exact',head:true}).eq('following_id', userId),
-      supabase.from('follows').select('*', {count:'exact',head:true}).eq('follower_id', userId),
-      supabase.from('posts').select('*', {count:'exact',head:true}).eq('user_id', userId),
-      supabase.from('posts').select('*').eq('user_id', userId).order('created_at', {ascending:false}).limit(6)
-    ]);
-    setViewProfile(prev => prev ? {...prev, followers: followers.count||0, following: following.count||0, posts: postsCount.count||0} : prev);
-    if (postsData.data) setViewProfilePosts(postsData.data);
-  };
-
-  const sendContactForm = async () => {
-    if (!contactForm.name || !contactForm.email || !contactForm.story) return;
-    setContactSending(true);
-    try {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer re_AQ7unFq2_FnXgbTeKAbRQs4Fvc6svY5w6' },
-        body: JSON.stringify({
-          from: 'MiraFut <noreply@mirafut.com>',
-          to: ['profutbolmg@gmail.com'],
-          subject: 'Nueva historia: ' + contactForm.name,
-          html: '<h2>Nueva historia</h2><p><b>Nombre:</b> ' + contactForm.name + '</p><p><b>Email:</b> ' + contactForm.email + '</p><p><b>Pais:</b> ' + (contactForm.country||'N/A') + '</p><p><b>Posicion:</b> ' + (contactForm.position||'N/A') + '</p><p><b>Historia:</b> ' + contactForm.story + '</p>'
-        })
-      });
-      setContactSent(true);
-      setContactForm({name:'',email:'',country:'',position:'',story:''});
-    } catch(e) { console.error(e); }
-    setContactSending(false);
-  };
-
-  const deletePost = async (postId) => {
-    const realId = postId.toString().replace('real-', '');
-    if (!window.confirm('¿Eliminar este post?')) return;
-    const { error } = await supabase.from('posts').delete().eq('id', realId).eq('user_id', session.user.id);
-    if (!error) loadRealPosts();
   };
 
   const toggleRealLike = async (postId) => {
@@ -631,26 +478,6 @@ export default function App() {
       .or(`and(from_user_id.eq.${session.user.id},to_user_id.eq.${partnerId}),and(from_user_id.eq.${partnerId},to_user_id.eq.${session.user.id})`)
       .order('created_at', { ascending: true });
     if (data) setRealChatMsgs(data);
-  };
-
-  const saveOnboarding = async () => {
-    if (!session) return;
-    await supabase.from('profiles').update({
-      full_name: editForm.full_name || null,
-      username: editForm.username || null,
-      bio: editForm.bio || null,
-      age: editForm.age ? parseInt(editForm.age) : null,
-      country: editForm.country || null,
-      city: editForm.city || null,
-      position: editForm.position || null,
-      height: editForm.height ? parseInt(editForm.height) : null,
-      weight: editForm.weight ? parseInt(editForm.weight) : null,
-      dominant_foot: editForm.dominant_foot || null,
-      goal: editForm.goal || null,
-    }).eq('id', session.user.id);
-    await supabase.from('profiles').update({onboarding_seen: true}).eq('id', session.user.id);
-    setShowOnboarding(false);
-    loadUserProfile(session.user.id);
   };
 
   const sendRealMessage = async (partnerId) => {
@@ -715,6 +542,15 @@ export default function App() {
     }
   };
 
+  const toggleLike = (postId) => {
+    if (requireAuth()) return;
+    setLikes(l => ({...l, [postId]: !l[postId]}));
+  };
+  const toggleFollow = (userId) => {
+    if (requireAuth()) return;
+    setFollows(f => ({...f, [userId]: !f[userId]}));
+  };
+
   const uploadPostImage = async (file) => {
     if (!session || !file) return null;
     const ext = file.name.split('.').pop();
@@ -731,28 +567,26 @@ export default function App() {
     const imageUrl = postImage ? await uploadPostImage(postImage) : null;
     const { data, error } = await supabase
       .from('posts')
-      .insert([{ user_id: session.user.id, content: newPost, image_url: imageUrl, video_url: videoUrl || null }])
+      .insert([{ user_id: session.user.id, content: newPost, image_url: imageUrl }])
       .select()
       .single();
     if (error) {
       alert("Error al crear el post: " + error.message);
     } else {
-      setNewPost(""); setPostImage(null); setPostImageUrl(null); setVideoUrl('');
+      setNewPost(""); setPostImage(null); setPostImageUrl(null);
       setShowNewPost(false);
       loadRealPosts();
     }
   };
 
   // Merge real posts (from Supabase) at top, then hardcoded posts
-  const COUNTRIES = [...new Set([...USERS.map(u => u.country)])].sort();
-
   const allPosts = [
     ...realPosts.map(p => ({
       id: 'real-' + p.id,
       userId: p.user_id,
-      name: p.profiles?.full_name || 'Usuario',
-      av: (p.profiles?.full_name || 'U').substring(0, 2).toUpperCase(),
-      verified: p.profiles?.verified || false,
+      name: userProfile?.full_name || (session ? session.user.email.split('@')[0] : 'Usuario'),
+      av: userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : (session ? session.user.email.substring(0,2).toUpperCase() : 'U'),
+      verified: false,
       time: timeAgo(p.created_at),
       text: p.content,
       image: p.image_url || null,
@@ -760,16 +594,10 @@ export default function App() {
       comments: p.comments?.[0]?.count || 0,
       liked: false,
       commentList: [],
-      avatar_url: p.profiles?.avatar_url || null,
-      video_url: p.video_url || null,
-      position: p.profiles?.position || null
+      avatar_url: userProfile?.avatar_url || null
     })),
     ...POSTS
   ];
-
-  const filteredPosts = allPosts
-    .filter(p => !filterPosition || (USERS.find(u => u.id === p.userId)?.position === filterPosition))
-    .filter(p => !filterCountry || (USERS.find(u => u.id === p.userId)?.country === filterCountry));
 
   return (
     <>
@@ -812,21 +640,16 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 }
 
 /* POST CARD */
-.post{background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:20px;margin:0 16px 16px;overflow:hidden}
+.post{background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:18px;margin:0 16px 14px;overflow:hidden}
 .poh{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
-.poav{width:40px;height:40px;border-radius:12px;background:rgba(0,230,118,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#00E676;flex-shrink:0}
-.poi{flex:1;min-width:0}.pon{font-weight:700;font-size:14px;display:flex;align-items:center;gap:4px}.pot{font-size:11px;color:#556677;margin-top:2px}
-.pos-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:1px;background:rgba(0,230,118,0.12);color:#00E676}
-.poc{padding:0 14px 10px;font-size:14px;line-height:1.6;color:#ECEFF4}
-.pov{position:relative;height:260px;overflow:hidden;cursor:pointer}
-.pov img{width:100%;height:100%;object-fit:cover}
-.pov-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(0,0,0,0.85) 100%)}
-.pov-user{position:absolute;bottom:12px;left:12px;right:12px;display:flex;align-items:center;gap:10px}
-.pov-badge{position:absolute;top:12px;right:12px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:1px;background:#00E676;color:#0a0e14}
-.pov-name{color:#fff;font-weight:700;font-size:14px}
-.pov-meta{color:rgba(255,255,255,0.6);font-size:11px;margin-top:1px}
-.poa{display:flex;align-items:center;padding:4px 8px 12px;border-top:1px solid rgba(255,255,255,0.04);margin-top:4px}
-.poab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:none;border:none;color:#8899A6;font-size:13px;cursor:pointer;font-family:'Outfit';font-weight:600;padding:8px}
+.poav{width:38px;height:38px;border-radius:11px;background:rgba(0,230,118,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#00E676;flex-shrink:0}
+.poi{flex:1;min-width:0}.pon{font-weight:600;font-size:13px;display:flex;align-items:center;gap:4px}.pot{font-size:11px;color:#556677}
+.poc{padding:0 14px 10px;font-size:14px;line-height:1.5;color:#ECEFF4}
+.pov{margin:0 14px 10px;border-radius:12px;background:linear-gradient(135deg,#0d3320,#0a1a14);height:200px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden}
+.pov::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 60% 40%,rgba(0,230,118,0.1),transparent)}
+.pov-label{font-size:11px;color:#8899A6;text-align:center;font-style:italic}
+.poa{display:flex;padding:6px 14px 12px;gap:16px;border-top:1px solid rgba(255,255,255,0.04);margin-top:6px}
+.poab{display:flex;align-items:center;gap:5px;background:none;border:none;color:#556677;font-size:12px;cursor:pointer;font-family:'Outfit';font-weight:500}
 .poab.lk.on{color:#FF5252}
 
 /* COMMENTS */
@@ -853,11 +676,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .prof-btn.sec{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#ECEFF4}
 
 /* CHAT */
-.cli{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;margin:4px 12px;border-radius:16px;background:#121820;border:1px solid rgba(255,255,255,0.04)}
-.cav{width:48px;height:48px;border-radius:14px;background:rgba(0,230,118,0.1);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#00E676;flex-shrink:0}
-.cav.g{font-size:22px;background:rgba(0,230,118,0.1)}
-.cin{flex:1;min-width:0}.cnm{font-weight:700;font-size:14px;color:#ECEFF4;margin-bottom:3px}.cls{font-size:12px;color:#556677;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ctm{font-size:11px;color:#556677;margin-bottom:2px}
+.cli{display:flex;align-items:center;gap:10px;padding:12px 18px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04)}
+.cav{width:44px;height:44px;border-radius:12px;background:#121820;border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#00E676;flex-shrink:0}
+.cav.g{font-size:20px;background:rgba(0,230,118,0.1)}
+.cin{flex:1;min-width:0}.cnm{font-weight:600;font-size:13px}.cls{font-size:12px;color:#556677;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctm{font-size:10px;color:#556677}
 .cur{background:#00E676;color:#0a0e14;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-top:3px;margin-left:auto;padding:0 5px}
 
 .chat-view{display:flex;flex-direction:column;height:100%}
@@ -880,7 +703,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .ch-name{font-weight:700;font-size:15px;display:flex;align-items:center;gap:5px}
 .ch-role{font-size:11px;color:#8899A6}
 
-.drawer-bg{position:absolute;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);z-index:200;align-items:flex-end}
+.drawer-bg{position:absolute;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);z-index:200;display:${showSpecialists?'flex':'none'};align-items:flex-end}
 .drawer{background:#121820;border-top-left-radius:24px;border-top-right-radius:24px;padding:20px;width:100%;border-top:1px solid rgba(255,255,255,0.08);animation:slideUp 0.25s ease}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .drawer-handle{width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 16px}
@@ -910,9 +733,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .handoff-line{flex:1;height:1px;background:rgba(255,255,255,0.08)}
 .handoff-intro{font-size:12px;color:#ECEFF4;line-height:1.5;font-style:italic}
 
-.sugs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-left:36px}
-.sug{padding:9px 16px;background:rgba(0,230,118,0.08);border:1.5px solid rgba(0,230,118,0.3);border-radius:20px;font-size:13px;color:#00E676;cursor:pointer;font-family:'Outfit';font-weight:600;transition:all 0.2s}
-.sug:hover{background:rgba(0,230,118,0.15);border-color:#00E676}
+.sugs{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;margin-left:36px}
+.sug{padding:7px 13px;background:#121820;border:1px solid rgba(255,255,255,0.08);border-radius:14px;font-size:12px;color:#ECEFF4;cursor:pointer;font-family:'Outfit'}
 
 .spec-sug{background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:12px;margin-top:4px;margin-left:36px;max-width:78%}
 .spec-sug-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
@@ -926,16 +748,16 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .dot:nth-child(2){animation-delay:0.2s}.dot:nth-child(3){animation-delay:0.4s}
 @keyframes blink{0%,60%,100%{opacity:0.3}30%{opacity:1}}
 
-.qp-lbl{font-size:10px;color:#556677;letter-spacing:1px;padding:10px 14px 4px;text-transform:uppercase;font-weight:700}
-.qps{padding:4px 14px 10px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
-.qp{padding:8px 14px;background:rgba(0,230,118,0.06);border:1px solid rgba(0,230,118,0.2);border-radius:20px;font-size:12px;color:#00E676;cursor:pointer;white-space:nowrap;font-family:'Outfit';flex-shrink:0;font-weight:600}
+.qp-lbl{font-size:10px;color:#556677;letter-spacing:1px;padding:10px 14px 4px;text-transform:uppercase;font-weight:600}
+.qps{padding:4px 14px 8px;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.qp{padding:6px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:18px;font-size:11px;color:#8899A6;cursor:pointer;white-space:nowrap;font-family:'Outfit';flex-shrink:0}
 
 .ai-input{padding:10px 14px 14px;border-top:1px solid rgba(255,255,255,0.05);background:#0f1419;display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
 .ai-ibox{flex:1;background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:9px 12px;display:flex;align-items:center;gap:7px}
 .ai-att{background:none;border:none;color:#556677;cursor:pointer;font-size:16px;padding:2px}
 .ai-field{flex:1;background:none;border:none;outline:none;color:#ECEFF4;font-family:'Outfit';font-size:13px;resize:none;max-height:70px;min-height:20px;line-height:1.5}
-.ai-mic{width:40px;height:40px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.ai-send{width:40px;height:40px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:bold}
+.ai-mic{width:40px;height:40px;border-radius:12px;background:${recording?'#FF5252':'#121820'};border:1px solid ${recording?'#FF5252':'rgba(255,255,255,0.06)'};color:${recording?'white':'#8899A6'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ai-send{width:40px;height:40px;border-radius:12px;background:${aiInput.trim()?'#00E676':'#121820'};border:none;color:${aiInput.trim()?'#0a0e14':'#556677'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:bold}
 
 /* HEALTH DISCLAIMER MODAL */
 .disclaimer-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
@@ -973,7 +795,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .ni-emoji{font-size:18px}
 .nbg{position:absolute;top:0;right:0;background:#FF5252;color:white;font-size:8px;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 3px}
 
-.fab{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));right:16px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#00E676,#00C853);box-shadow:0 8px 24px rgba(0,230,118,0.4);border:none;color:#0a0e14;font-size:24px;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;font-weight:300}
+.fab{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#00E676,#00C853);box-shadow:0 8px 24px rgba(0,230,118,0.4);border:none;color:#0a0e14;font-size:26px;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;font-weight:300}
       `}</style>
 
       <div className="app">
@@ -981,7 +803,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         {chatOpen ? (
           <div className="chat-hdr">
             <button className="chat-back" onClick={() => setChatOpen(null)}>←</button>
-            <span style={{fontWeight:600,fontSize:14}}>{chatPartner?.name || 'Chat'}</span>
+            <span style={{fontWeight:600,fontSize:14}}>{CHATS.find(c=>c.id===chatOpen)?.name}</span>
             <div style={{width:30}}/>
           </div>
         ) : viewProfile ? (
@@ -1004,10 +826,20 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         ) : (
           <div className="hdr">
             <div className="logo" onClick={()=>{setTab("home");setViewPost(null);setViewProfile(null);setChatOpen(null);}} style={{cursor:"pointer"}}>
-              <Logo size={32} />
+              <svg width="36" height="36" viewBox="0 0 64 64">
+                <rect width="64" height="64" rx="14" fill="#00E676"/>
+                <path d="M8,32 Q32,6 56,32 Q32,58 8,32 Z" fill="#0a0e14"/>
+                <path d="M13,32 Q32,11 51,32 Q32,53 13,32 Z" fill="#00E676"/>
+                <circle cx="32" cy="32" r="5.5" fill="#0a0e14"/>
+                <line x1="32" y1="32" x2="36.5" y2="27.5" stroke="#00E676" strokeWidth="1.3" strokeLinecap="round"/>
+                <circle cx="37" cy="27" r="1.5" fill="#00E676"/>
+              </svg>
+              <div>
+                <div className="logo-text">MiraFut</div>
+                <div className="logo-tag">{t.tagline}</div>
+              </div>
             </div>
             <div style={{flex:1,margin:"0 12px",position:"relative"}}>
-              {isDesktop ? (
               <input
                 value={searchQuery}
                 onChange={e => { handleSearch(e.target.value); setShowSearch(true); }}
@@ -1015,14 +847,6 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 placeholder={t.search}
                 style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",padding:"7px 12px",color:"#ECEFF4",fontSize:"13px",outline:"none",fontFamily:"Outfit, sans-serif"}}
               />
-              ) : (
-              <div onClick={() => setShowSearch(s => !s)} style={{display:"flex",alignItems:"center",justifyContent:"center",width:"36px",height:"36px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",cursor:"pointer",fontSize:"16px"}}>🔍</div>
-              )}
-              {!isDesktop && showSearch && (
-              <div style={{position:"fixed",top:"60px",left:0,right:0,padding:"10px 16px",background:"#0a0e14",borderBottom:"1px solid rgba(255,255,255,0.08)",zIndex:200}}>
-                <input autoFocus value={searchQuery} onChange={e => { handleSearch(e.target.value); }} onBlur={() => { if(!searchQuery) setShowSearch(false); }} placeholder={t.search} style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",padding:"10px 14px",color:"#ECEFF4",fontSize:"14px",outline:"none",fontFamily:"Outfit, sans-serif"}} />
-              </div>
-              )}
               {showSearch && searchQuery && (searchResults.users.length > 0 || searchResults.posts.length > 0) && (
                 <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",marginTop:"4px",zIndex:1000,maxHeight:"300px",overflowY:"auto"}}>
                   {searchResults.users.length > 0 && <div style={{padding:"8px 12px 4px",fontSize:"10px",color:"#556677",textTransform:"uppercase",letterSpacing:"1px"}}>Usuarios</div>}
@@ -1070,149 +894,31 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="hero-stat-label">Países</div>
               </div>
             </div>
-            {session ? (
-              <div style={{marginTop:'28px'}}>
-                <button onClick={() => setShowNewPost(true)} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'inline-flex',alignItems:'center',gap:'8px'}}>
-                  ✏️ ¿Qué está pasando en el campo?
-                </button>
-              </div>
-            ) : (
-              <div style={{marginTop:'28px',display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
-                <button onClick={() => setShowAuthPrompt(true)} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'inline-flex',alignItems:'center',gap:'8px'}}>
-                  🚀 Únete / Iniciar sesión
-                </button>
-              </div>
-            )}
           </div>
         )}
 
         <div className="mc">
-          {/* ====== FILTROS ====== */}
-          {tab === "home" && !viewPost && !viewProfile && (
-            <div style={{padding:'10px 16px 4px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
-              <div style={{display:'flex',gap:'6px',overflowX:'auto',scrollbarWidth:'none',marginBottom:'8px'}}>
-                {['','POR','DEF','MED','DEL'].map(pos => (
-                  <button key={pos} onClick={() => setFilterPosition(pos)} style={{padding:'7px 16px',background:filterPosition===pos?'#00E676':'#121820',border:filterPosition===pos?'none':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterPosition===pos?'#0a0e14':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
-                    {pos === '' ? 'Todos' : pos === 'POR' ? '🧤 POR' : pos === 'DEF' ? '🛡️ DEF' : pos === 'MED' ? '⚙️ MED' : '⚡ DEL'}
-                  </button>
-                ))}
-              </div>
-              <div style={{display:'flex',gap:'6px',overflowX:'auto',scrollbarWidth:'none'}}>
-                <button onClick={() => setFilterCountry('')} style={{padding:'6px 14px',background:filterCountry===''?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===''?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===''?'#00E676':'#8899A6',fontSize:'11px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>🌍 Todos</button>
-                {COUNTRIES.map(c => (
-                  <button key={c} onClick={() => setFilterCountry(c)} style={{padding:'6px 14px',background:filterCountry===c?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===c?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===c?'#00E676':'#8899A6',fontSize:'11px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {tab === "home" && !viewPost && !viewProfile && session && (<div style={{padding:"8px 16px 0"}}><button onClick={() => setShowNewPost(true)} style={{width:"100%",padding:"12px 16px",background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",color:"#556677",fontSize:"14px",cursor:"pointer",fontFamily:"Outfit,sans-serif",textAlign:"left",display:"flex",alignItems:"center",gap:"10px"}}><div style={{width:"32px",height:"32px",borderRadius:"10px",background:"rgba(0,230,118,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",flexShrink:0}}>✏️</div><span>¿Qué está pasando en el campo?</span></button></div>)}
-
-          {/* ====== DEBATE DE LA SEMANA ====== */}
-          {tab === "home" && !viewPost && !viewProfile && debate && (
-            <div style={{margin:'16px 16px 4px',background:'#121820',borderRadius:'20px',overflow:'hidden',border:'1px solid rgba(255,255,255,0.06)'}}>
-              <div style={{background:'#00E676',padding:'12px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-                  <span style={{fontSize:'18px'}}>🔥</span>
-                  <div>
-                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'#0a0e14',opacity:0.7}}>DEBATE DE LA SEMANA</div>
-                    <div style={{fontSize:'11px',color:'#0a0e14',opacity:0.6}}>{Math.max(0,Math.ceil((new Date(debate.ends_at)-new Date())/(1000*60*60*24)))} días restantes</div>
-                  </div>
-                </div>
-                <div style={{background:'rgba(0,0,0,0.15)',padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} {debateVotes.length === 1 ? 'voto' : 'votos'}</div>
-              </div>
-              <div style={{padding:'16px 16px 12px'}}>
-                <div style={{fontSize:'17px',fontWeight:'800',color:'#ECEFF4',lineHeight:'1.3',marginBottom:'4px'}}>{debate.question}</div>
-                <div style={{fontSize:'12px',color:'#556677'}}>Vota y deja tu opinión 👇</div>
-              </div>
-              <div style={{padding:'0 16px 16px',display:'flex',flexDirection:'column',gap:'10px'}}>
-                {(Array.isArray(debate.options) ? debate.options : JSON.parse(debate.options)).map((opt, i) => {
-                  const count = debateVotes.filter(v => v.option_index === i).length;
-                  const pct = debateVotes.length > 0 ? Math.round(count / debateVotes.length * 100) : 0;
-                  const voted = userVote === i;
-                  return (
-                    <div key={i} onClick={() => voteDebate(i)} style={{position:'relative',borderRadius:'12px',overflow:'hidden',cursor:userVote === null ? 'pointer' : 'default'}}>
-                      {userVote !== null && <div style={{position:'absolute',inset:0,background:voted?'rgba(0,230,118,0.15)':'rgba(255,255,255,0.03)',width:`${pct}%`}}/>}
-                      <div style={{position:'relative',padding:'13px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',border:voted?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.12)',borderRadius:'12px',transition:'all 0.2s'}}>
-                        <span style={{fontSize:'14px',fontWeight:'700',color:voted?'#00E676':'#ECEFF4'}}>{userVote===null?'👆 ':''}{opt}</span>
-                        {userVote !== null && <span style={{fontSize:'14px',fontWeight:'800',color:voted?'#00E676':'#8899A6'}}>{pct}%</span>}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {debateComments.length > 0 && (
-                <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',padding:'12px 16px'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>Opiniones</div>
-                  {debateComments.filter(c => c.content && c.content.trim()).slice(0,2).map((c,i) => (
-                    <div key={i} style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
-                      <div style={{width:'28px',height:'28px',borderRadius:'9px',background:'rgba(0,230,118,0.12)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:'800',color:'#00E676',flexShrink:0}}>{c.profiles?.full_name?c.profiles.full_name.substring(0,2).toUpperCase():'U'}</div>
-                      <div style={{background:'rgba(255,255,255,0.04)',borderRadius:'10px',padding:'8px 10px',flex:1}}>
-                        <div style={{fontSize:'12px',fontWeight:'700',color:'#ECEFF4'}}>{c.profiles?.full_name||'Usuario'}</div>
-                        <div style={{fontSize:'12px',color:'#8899A6',marginTop:'2px'}}>{c.content}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div style={{padding:'10px 16px 14px',display:'flex',gap:'8px'}}>
-                <input value={debateComment} onChange={e=>setDebateComment(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendDebateComment()} placeholder="Tu opinión..." style={{flex:1,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',padding:'8px 12px',fontSize:'13px',color:'#ECEFF4',outline:'none',fontFamily:'Outfit,sans-serif'}} />
-                <button onClick={sendDebateComment} style={{width:'36px',height:'36px',background:'#00E676',border:'none',borderRadius:'10px',color:'#0a0e14',cursor:'pointer',fontSize:'16px'}}>→</button>
-              </div>
-            </div>
-          )}
-
           {/* ====== HOME FEED ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
             <div className="posts-grid">
-              {filteredPosts.map(p => (
+              {allPosts.map(p => (
                 <div key={p.id} className="post">
-                  {p.image ? (
-                    <div className="pov" onClick={() => { if(p.id.toString().startsWith("real-")) { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal}); }); } else setViewProfile(USERS.find(u=>u.id===p.userId)); }}>
-                      <img src={IMG[p.image] || p.image} alt="" />
-                      <div className="pov-overlay"/>
-                      {p.position && <div className="pov-badge">{p.position}</div>}
-                      <div className="pov-user">
-                        {p.avatar_url ? <img src={p.avatar_url} style={{width:'40px',height:'40px',borderRadius:'12px',objectFit:'cover',border:'2px solid #00E676',flexShrink:0}} /> : <div className="poav">{p.av}</div>}
-                        <div>
-                          <div className="pov-name">{p.name} {p.verified && <V/>}</div>
-                          <div className="pov-meta">{p.time}</div>
-                        </div>
-                      </div>
+                  <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===p.userId))}>
+                    {p.avatar_url ? <img src={p.avatar_url} style={{width:"38px",height:"38px",borderRadius:"11px",objectFit:"cover",flexShrink:0}} /> : <div className="poav">{p.av}</div>}
+                    <div className="poi">
+                      <div className="pon">{p.name} {p.verified && <V/>}</div>
+                      <div className="pot">{p.time}</div>
                     </div>
-                  ) : (
-                    <div className="poh" onClick={() => { if(p.id.toString().startsWith("real-")) { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal}); }); } else setViewProfile(USERS.find(u=>u.id===p.userId)); }}>
-                      {p.avatar_url ? <img src={p.avatar_url} style={{width:'40px',height:'40px',borderRadius:'12px',objectFit:'cover',flexShrink:0}} /> : <div className="poav">{p.av}</div>}
-                      <div className="poi">
-                        <div className="pon">{p.name} {p.verified && <V/>}</div>
-                        <div className="pot">{p.time}</div>
-                      </div>
-                      {p.position && <div className="pos-badge">{p.position}</div>}
-                    </div>
-                  )}
+                  </div>
                   <div className="poc">{p.text}</div>
-                  {p.video_url && getVideoThumbnail(p.video_url) && (
-                    <div style={{margin:'0 14px 10px',borderRadius:'12px',overflow:'hidden',position:'relative',height:'200px',cursor:'pointer'}} onClick={() => window.open(p.video_url, '_blank')}>
-                      {getVideoThumbnail(p.video_url).thumb ? <img src={getVideoThumbnail(p.video_url).thumb} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : <div style={{width:'100%',height:'100%',background:'#0a0e14',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px'}}>Video de TikTok</div>}
-                      <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.35)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                        <div style={{width:'52px',height:'52px',borderRadius:'50%',background:'rgba(0,230,118,0.9)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 20px rgba(0,230,118,0.4)'}}>
-                          <div style={{width:0,height:0,borderTop:'10px solid transparent',borderBottom:'10px solid transparent',borderLeft:'18px solid #0a0e14',marginLeft:'4px'}}/>
-                        </div>
-                      </div>
-                      <div style={{position:'absolute',bottom:'10px',right:'10px',background:'rgba(0,0,0,0.7)',padding:'4px 8px',borderRadius:'8px',display:'flex',alignItems:'center',gap:'5px'}}>
-                        <div style={{width:'8px',height:'8px',borderRadius:'50%',background:getVideoThumbnail(p.video_url).type==='YouTube'?'#FF0000':'#000'}}/>
-                        <span style={{fontSize:'11px',color:'#fff',fontWeight:'600'}}>{getVideoThumbnail(p.video_url).type}</span>
-                      </div>
+                  {p.image && (
+                    <div className="pov">
+                      {p.image === 'game' ? <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80fit=crophttps://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image === 'training' ? <img src="https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600&q=80fit=crophttps://images.unsplash.com/photo-1552318965-6e6be7484ada?w=600&q=80auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image === 'goal' ? <img src="https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&q=80fit=crophttps://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&q=80auto=format" style={{width:'100%',height:'200px',objectFit:'cover'}} /> : p.image.startsWith('http') ? <img src={p.image} style={{width:'100%',height:'200px',objectFit:'cover'}} /> : null}
                     </div>
                   )}
                   <div className="poa">
-                    {session && p.id.toString().startsWith('real-') && p.userId === session.user.id && (
-                      <button className="poab" onClick={() => deletePost(p.id)} style={{color:'#FF5252'}}>🗑️</button>
-                    )}
-                    <button className={`poab lk ${(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? 'on' : ''}`} onClick={() => p.id.toString().startsWith('real-') ? toggleRealLike(p.id) : null}>
-                      {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? '❤️' : '🤍'} {p.likes}
+                    <button className={`poab lk ${(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : (likes[p.id] || p.liked)) ? 'on' : ''}`} onClick={() => p.id.toString().startsWith('real-') ? toggleRealLike(p.id) : toggleLike(p.id)}>
+                      {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : (likes[p.id] || p.liked)) ? '❤️' : '🤍'} {p.likes + (likedPosts.includes(p.id.toString().replace('real-','')) ? 1 : 0)}
                     </button>
                     <button className="poab" onClick={() => { setViewPost(p); loadComments(p.id); }}>💬 {p.comments}</button>
                     <button className="poab" onClick={() => sharePost(p)}>{t.share}</button>
@@ -1241,8 +947,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   </div>
                 )}
                 <div className="poa">
-                  <button className={`poab lk ${(viewPost.id.toString().startsWith('real-') ? likedPosts.includes(viewPost.id.toString().replace('real-','')) : viewPost.liked) ? 'on' : ''}`} onClick={() => viewPost.id.toString().startsWith('real-') ? toggleRealLike(viewPost.id) : null}>
-                    {(viewPost.id.toString().startsWith('real-') ? likedPosts.includes(viewPost.id.toString().replace('real-','')) : viewPost.liked) ? '❤️' : '🤍'} {viewPost.likes}
+                  <button className={`poab lk ${(likes[viewPost.id] || viewPost.liked)?'on':''}`} onClick={() => toggleLike(viewPost.id)}>
+                    {(likes[viewPost.id] || viewPost.liked) ? '❤️' : '🤍'} {viewPost.likes + (likes[viewPost.id] && !viewPost.liked ? 1 : 0)}
                   </button>
                   <button className="poab">💬 {viewPost.comments}</button>
                   <button className="poab" onClick={() => sharePost(p)}>{t.share}</button>
@@ -1284,53 +990,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div className="prof-meta">📍 {viewProfile.city}, {viewProfile.country} · {viewProfile.age} años · {viewProfile.position}</div>
               <div className="prof-bio">{viewProfile.bio}</div>
               <div className="prof-stats">
-                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.followers||0}</div><div className="prof-stat-l">Seguidores</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.following||0}</div><div className="prof-stat-l">Siguiendo</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.posts||0}</div><div className="prof-stat-l">Posts</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.followers}</div><div className="prof-stat-l">Seguidores</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.following}</div><div className="prof-stat-l">Siguiendo</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{POSTS.filter(p=>p.userId===viewProfile.id).length}</div><div className="prof-stat-l">Posts</div></div>
               </div>
-              <button className={`prof-btn ${followingList.includes(viewProfile.id) ? 'sec' : 'pri'}`} onClick={() => toggleFollowUser(viewProfile.id)}>
-                {followingList.includes(viewProfile.id) ? 'Siguiendo ✓' : '+ Seguir'}
+              <button className={`prof-btn ${followingList.includes(viewProfile.id) || follows[viewProfile.id] ? 'sec' : 'pri'}`} onClick={() => toggleFollowUser(viewProfile.id)}>
+                {followingList.includes(viewProfile.id) || follows[viewProfile.id] ? 'Siguiendo ✓' : '+ Seguir'}
               </button>
               <button className="prof-btn sec" onClick={() => openChat({id: viewProfile.id, name: viewProfile.name, avatar_url: viewProfile.avatar_url})}>💬 Mensaje</button>
-
-              {(viewProfile.height || viewProfile.weight || viewProfile.dominant_foot) && (
-                <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',textAlign:'left'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>Datos del jugador</div>
-                  {viewProfile.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Altura</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.height} cm</div></div>}
-                  {viewProfile.weight && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Peso</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.weight} kg</div></div>}
-                  {viewProfile.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Pie dominante</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.dominant_foot}</div></div>}
-                  {viewProfile.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Posición</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{viewProfile.position}</div></div>}
-                </div>
-              )}
-              {viewProfile.goal && (
-                <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',textAlign:'left'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>Objetivo</div>
-                  <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                    <span style={{fontSize:'20px'}}>🎯</span>
-                    <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.4'}}>{viewProfile.goal}</div>
-                  </div>
-                </div>
-              )}
-              {viewProfilePosts.length > 0 && (
-                <div style={{width:'100%',marginTop:'16px',textAlign:'left'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'12px'}}>Posts</div>
-                  {viewProfilePosts.map(p => (
-                    <div key={p.id} style={{background:'#0a0e14',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'12px',marginBottom:'10px'}}>
-                      <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.5',marginBottom:'6px'}}>{p.content}</div>
-                      {p.image_url && <img src={p.image_url} style={{width:'100%',borderRadius:'10px',marginBottom:'6px',objectFit:'cover',maxHeight:'160px'}} />}
-                      {p.video_url && getVideoThumbnail(p.video_url) && (
-                        <div style={{position:'relative',height:'120px',borderRadius:'10px',overflow:'hidden',cursor:'pointer',marginBottom:'6px'}} onClick={() => window.open(p.video_url,'_blank')}>
-                          {getVideoThumbnail(p.video_url).thumb && <img src={getVideoThumbnail(p.video_url).thumb} style={{width:'100%',height:'100%',objectFit:'cover'}} />}
-                          <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.35)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                            <div style={{width:'36px',height:'36px',borderRadius:'50%',background:'rgba(0,230,118,0.9)',display:'flex',alignItems:'center',justifyContent:'center'}}>▶</div>
-                          </div>
-                        </div>
-                      )}
-                      <div style={{fontSize:'11px',color:'#556677'}}>{new Date(p.created_at).toLocaleDateString()}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           )}
 
@@ -1346,7 +1013,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               )}
               {chatList.map(c => (
                 <div key={c.id} className="cli" onClick={() => openChat(c)}>
-                  {c.avatar_url ? <img src={c.avatar_url} style={{width:'48px',height:'48px',borderRadius:'14px',objectFit:'cover',flexShrink:0}} /> : <div className="cav">{c.name?.substring(0,2).toUpperCase()}</div>}
+                  {c.avatar_url ? <img src={c.avatar_url} style={{width:'42px',height:'42px',borderRadius:'12px',objectFit:'cover',flexShrink:0}} /> : <div className="cav">{c.name?.substring(0,2).toUpperCase()}</div>}
                   <div className="cin">
                     <div className="cnm">{c.name}</div>
                     <div className="cls">{c.lastMsg?.substring(0,40)}</div>
@@ -1356,21 +1023,6 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   </div>
                 </div>
               ))}
-
-              {/* Jugadores sugeridos */}
-              <div style={{padding:'20px 16px 8px'}}>
-                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'12px'}}>Jugadores que quizás conozcas</div>
-                {USERS.filter(u => !chatList.find(c => c.id === u.id)).slice(0,4).map(u => (
-                  <div key={u.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
-                    <div style={{width:'44px',height:'44px',borderRadius:'13px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px',fontWeight:'800',color:'#00E676',flexShrink:0}}>{u.av}</div>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4'}}>{u.name}</div>
-                      <div style={{fontSize:'12px',color:'#556677'}}>{u.position} · {u.country}</div>
-                    </div>
-                    <button onClick={() => openChat({id:u.id, name:u.name, avatar_url:u.avatar_url})} style={{padding:'7px 14px',background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.3)',borderRadius:'20px',color:'#00E676',fontSize:'12px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',whiteSpace:'nowrap'}}>Mensaje</button>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
@@ -1384,18 +1036,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div style={{fontSize:'10px',opacity:0.5,marginTop:'2px'}}>{timeAgo(m.created_at)}</div>
                   </div>
                 ))}
-                {realChatMsgs.length === 0 && (
-                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flex:1,padding:'40px 20px',textAlign:'center'}}>
-                    <div style={{width:'64px',height:'64px',borderRadius:'20px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px',marginBottom:'14px'}}>
-                      {chatPartner?.avatar_url ? <img src={chatPartner.avatar_url} style={{width:'64px',height:'64px',borderRadius:'20px',objectFit:'cover'}} /> : <span style={{fontSize:'22px',fontWeight:'800',color:'#00E676'}}>{chatPartner?.name?.substring(0,2).toUpperCase()}</span>}
-                    </div>
-                    <div style={{fontSize:'16px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>{chatPartner?.name}</div>
-                    <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5',maxWidth:'220px'}}>Aún no hay mensajes. ¡Sé el primero en escribir!</div>
-                    <div style={{marginTop:'20px',padding:'10px 20px',background:'rgba(0,230,118,0.08)',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'20px',fontSize:'13px',color:'#00E676',cursor:'pointer',fontWeight:'600'}} onClick={() => document.querySelector('.chat-input input')?.focus()}>
-                      Enviar un mensaje 💬
-                    </div>
-                  </div>
-                )}
+                {realChatMsgs.length === 0 && <div style={{textAlign:'center',color:'#556677',fontSize:'13px',marginTop:'40px'}}>No hay mensajes aún. ¡Sé el primero en escribir!</div>}
               </div>
               <div className="chat-input">
                 <input placeholder="Escribe un mensaje..." value={chatMsg} onChange={e => setChatMsg(e.target.value)} onKeyDown={e => e.key==='Enter' && sendRealMessage(chatPartner.id)}/>
@@ -1444,12 +1085,6 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
               {aiMessages.length <= 3 && (
                 <>
-                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px 20px',textAlign:'center'}}>
-                    <div style={{width:'64px',height:'64px',borderRadius:'20px',background:`${agent.color}20`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'32px',marginBottom:'12px'}}>{agent.emoji}</div>
-                    <div style={{fontSize:'16px',fontWeight:'800',color:'#ECEFF4',marginBottom:'6px'}}>{agent.name}</div>
-                    <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5',maxWidth:'240px'}}>{agent.desc}</div>
-                    <div style={{marginTop:'16px',padding:'12px 16px',background:'rgba(255,255,255,0.03)',borderRadius:'12px',border:'1px solid rgba(255,255,255,0.06)',fontSize:'13px',color:'#8899A6',lineHeight:'1.5',maxWidth:'260px',fontStyle:'italic'}}>"{agent.intro}"</div>
-                  </div>
                   <div className="qp-lbl">Sugerencias</div>
                   <div className="qps">{QUICK_PROMPTS[currentAgent].map(p=><button key={p} className="qp" onClick={()=>sendAI(p)}>{p}</button>)}</div>
                 </>
@@ -1457,16 +1092,18 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
               <div className="ai-input">
                 <div className="ai-ibox">
+                  <button className="ai-att" title="Foto">📷</button>
+                  <button className="ai-att" title="Video">🎥</button>
                   <textarea className="ai-field" placeholder={`Escríbele a ${agent.name}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
                 </div>
                 {aiInput.trim() ? (
-                  <button className="ai-send" style={{background:aiInput.trim()?"#00E676":"#121820",color:aiInput.trim()?"#0a0e14":"#556677"}} onClick={()=>sendAI(aiInput)}>→</button>
+                  <button className="ai-send" onClick={()=>sendAI(aiInput)}>→</button>
                 ) : (
-                  <button className="ai-mic" style={{background:recording?"#FF5252":"#121820",border:`1px solid ${recording?"#FF5252":"rgba(255,255,255,0.06)"}`,color:recording?"white":"#8899A6"}} onMouseDown={()=>setRecording(true)} onMouseUp={()=>setRecording(false)} onMouseLeave={()=>setRecording(false)}>🎤</button>
+                  <button className="ai-mic" onMouseDown={()=>setRecording(true)} onMouseUp={()=>setRecording(false)} onMouseLeave={()=>setRecording(false)}>🎤</button>
                 )}
               </div>
 
-              <div className="drawer-bg" style={{display:showSpecialists?"flex":"none"}} onClick={()=>setShowSpecialists(false)}>
+              <div className="drawer-bg" onClick={()=>setShowSpecialists(false)}>
                 <div className="drawer" onClick={e=>e.stopPropagation()}>
                   <div className="drawer-handle"/>
                   <div className="drawer-title">Elige con quién hablar</div>
@@ -1490,64 +1127,24 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="profile">
               {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover"}} /> : <div className="prof-av">{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : "TU"}</div>}
               <div className="prof-name">{userProfile?.full_name || 'Tu nombre'}</div>
-              <div className="prof-meta">{userProfile?.position ? `${userProfile.position} · ` : ''}{userProfile?.city ? `${userProfile.city}, ` : ''}{userProfile?.country}{userProfile?.age ? ` · ${userProfile.age} años` : ''}</div>
-              {!userProfile?.country && <div style={{color:'#00E676',fontSize:'12px',marginTop:'4px'}}>✨ Completa tu perfil para que los scouts te encuentren</div>}
+              <div className="prof-meta">Completa tu perfil para conectar con la comunidad</div>
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">Seguidores</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{followingList.length}</div><div className="prof-stat-l">Siguiendo</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{realPosts.length}</div><div className="prof-stat-l">Posts</div></div>
               </div>
-              {(userProfile?.height || userProfile?.weight || userProfile?.dominant_foot) && (
-                <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',textAlign:'left'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>Datos del jugador</div>
-                  {userProfile?.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Altura</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.height} cm</div></div>}
-                  {userProfile?.weight && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Peso</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.weight} kg</div></div>}
-                  {userProfile?.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Pie dominante</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.dominant_foot}</div></div>}
-                  {userProfile?.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Posición</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{userProfile.position}</div></div>}
-                </div>
-              )}
-              {userProfile?.goal && (
-                <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',textAlign:'left'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>Objetivo</div>
-                  <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                    <span style={{fontSize:'20px'}}>🎯</span>
-                    <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.4'}}>{userProfile.goal}</div>
-                  </div>
-                </div>
-              )}
               <button className="prof-btn pri" onClick={openEditProfile}>{t.editProfile}</button>
-              <button className="prof-btn sec" onClick={() => setShowContact(true)}>✉️ Cuéntanos tu historia</button>
               <button className="prof-btn sec">{t.settings}</button>
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
-              {realPosts.length > 0 && (
-                <div style={{width:'100%',marginTop:'20px',textAlign:'left'}}>
-                  <div style={{fontSize:'11px',color:'#556677',letterSpacing:'1px',textTransform:'uppercase',fontWeight:'700',marginBottom:'12px'}}>{t.myPosts}</div>
-                  {realPosts.map(p => (
-                    <div key={p.id} style={{background:'#0a0e14',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'14px',marginBottom:'10px',cursor:'pointer'}} onClick={() => setViewPost({...p, av: userProfile?.full_name?.substring(0,2).toUpperCase(), name: userProfile?.full_name, time: new Date(p.created_at).toLocaleDateString(), text: p.content, likes: 0, comments: 0})}>
-                      <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.5',marginBottom:'8px'}}>{p.content}</div>
-                      {p.image_url && <img src={p.image_url} style={{width:'100%',borderRadius:'10px',marginBottom:'8px',objectFit:'cover',maxHeight:'160px'}} />}
-                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                        <div style={{fontSize:'11px',color:'#556677'}}>{new Date(p.created_at).toLocaleDateString()}</div>
-                        <div style={{fontSize:'11px',color:'#556677',display:'flex',gap:'12px'}}>
-                          <span>❤️ {p.likes?.[0]?.count || 0}</span>
-                          <span>💬 {p.comments?.[0]?.count || 0}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {realPosts.length > 0 && <div style={{width:"100%",marginTop:"20px",textAlign:"left"}}><div style={{fontSize:"11px",color:"#556677",letterSpacing:"1px",textTransform:"uppercase",fontWeight:"600",marginBottom:"12px"}}>{t.myPosts}</div>{realPosts.map(p => <div key={p.id} style={{background:"#0a0e14",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"14px",padding:"12px",marginBottom:"10px"}}><div style={{fontSize:"14px",color:"#ECEFF4"}}>{p.content}</div><div style={{fontSize:"11px",color:"#556677",marginTop:"6px"}}>{new Date(p.created_at).toLocaleDateString()}</div></div>)}</div>}
             </div>
           )}
         </div>
 
-        {/* SCROLL LOADER */}
-        {tab === "home" && !viewPost && !viewProfile && hasMorePosts && (
-          <div ref={loaderRef} style={{height:'40px',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px',margin:'8px 0'}}>Cargando más...</div>
-        )}
-
         {/* FLOATING ACTION BUTTON */}
-
+        {tab === "home" && !viewPost && !viewProfile && (
+          <button className="fab" onClick={() => { if (requireAuth()) return; setShowNewPost(true); }}>+</button>
+        )}
 
         {/* HEALTH DISCLAIMER MODAL */}
         <div className={`disclaimer-modal-bg ${showHealthDisclaimer ? 'show' : ''}`} onClick={() => setShowHealthDisclaimer(false)}>
@@ -1597,22 +1194,6 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className="modal-close" onClick={() => setShowNewPost(false)}>×</button>
             </div>
             <textarea className="modal-textarea" placeholder={t.whatsHappening} value={newPost} onChange={e => setNewPost(e.target.value)}/>
-            <div style={{marginTop:'12px'}}>
-              <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'6px'}}>Link de video (opcional)</div>
-              <div style={{display:'flex',alignItems:'center',gap:'8px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',padding:'10px 14px'}}>
-                <span style={{fontSize:'16px'}}>🔗</span>
-                <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="Pega tu link de YouTube o TikTok..." style={{flex:1,background:'none',border:'none',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
-              </div>
-              {videoUrl && getVideoThumbnail(videoUrl) && (
-                <div style={{marginTop:'8px',borderRadius:'12px',overflow:'hidden',position:'relative',height:'120px'}}>
-                  {getVideoThumbnail(videoUrl).thumb ? <img src={getVideoThumbnail(videoUrl).thumb} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : <div style={{width:'100%',height:'100%',background:'#0a0e14',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px'}}>Preview de TikTok</div>}
-                  <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    <div style={{width:'40px',height:'40px',borderRadius:'50%',background:'rgba(0,230,118,0.9)',display:'flex',alignItems:'center',justifyContent:'center'}}>▶</div>
-                  </div>
-                  <div style={{position:'absolute',bottom:'8px',right:'8px',background:'rgba(0,0,0,0.7)',padding:'3px 8px',borderRadius:'8px',fontSize:'11px',color:'#fff',fontWeight:'600'}}>{getVideoThumbnail(videoUrl).type}</div>
-                </div>
-              )}
-            </div>
             {postImageUrl && <div style={{marginTop:'10px',borderRadius:'12px',overflow:'hidden',position:'relative'}}>
               <img src={postImageUrl} style={{width:'100%',maxHeight:'200px',objectFit:'cover',borderRadius:'12px'}} />
               <button onClick={()=>{setPostImage(null);setPostImageUrl(null);}} style={{position:'absolute',top:'8px',right:'8px',background:'rgba(0,0,0,0.6)',border:'none',color:'white',borderRadius:'50%',width:'24px',height:'24px',cursor:'pointer',fontSize:'14px'}}>×</button>
@@ -1671,29 +1252,6 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <option value="DEL">Delantero</option>
                 </select>
               </div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'14px'}}>
-                <div>
-                  <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Altura (cm)</label>
-                  <input type="number" value={editForm.height} onChange={e => setEditForm(prev => ({...prev, height: e.target.value}))} placeholder="175" style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
-                </div>
-                <div>
-                  <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Peso (kg)</label>
-                  <input type="number" value={editForm.weight} onChange={e => setEditForm(prev => ({...prev, weight: e.target.value}))} placeholder="68" style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
-                </div>
-              </div>
-              <div style={{marginBottom:'14px'}}>
-                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Pie dominante</label>
-                <select value={editForm.dominant_foot} onChange={e => setEditForm(prev => ({...prev, dominant_foot: e.target.value}))} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}}>
-                  <option value="">Selecciona</option>
-                  <option value="Derecho">Derecho</option>
-                  <option value="Izquierdo">Izquierdo</option>
-                  <option value="Ambos">Ambos</option>
-                </select>
-              </div>
-              <div style={{marginBottom:'20px'}}>
-                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Objetivo</label>
-                <input type="text" value={editForm.goal} onChange={e => setEditForm(prev => ({...prev, goal: e.target.value}))} placeholder="Ej: Busco academia profesional en Europa" style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
-              </div>
               <button onClick={saveProfile} disabled={editLoading} style={{width:'100%',padding:'13px',background:editLoading?'#556677':'linear-gradient(135deg,#00E676,#00C853)',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit, sans-serif'}}>
                 {editLoading ? 'Guardando...' : 'Guardar cambios'}
               </button>
@@ -1710,157 +1268,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <button onClick={()=>setShowNotifications(false)} style={{background:"none",border:"none",color:"#8899A6",fontSize:"20px",cursor:"pointer"}}>×</button>
               </div>
               {notifications.length === 0 ? (
-                <div style={{textAlign:'center',padding:'30px 20px'}}>
-                  <div style={{fontSize:'36px',marginBottom:'12px'}}>🔔</div>
-                  <div style={{color:'#556677',fontSize:'14px',fontWeight:'600'}}>No hay notificaciones aún</div>
-                  <div style={{color:'#556677',fontSize:'12px',marginTop:'6px'}}>Cuando alguien te siga o dé like aparecerá aquí</div>
-                </div>
+                <div style={{color:"#556677",fontSize:"14px",textAlign:"center",padding:"20px"}}>{t.noNotifications}</div>
               ) : (
-                notifications.map(n => {
-                  const icon = n.message?.includes('like') ? '❤️' : n.message?.includes('siguiendo') || n.message?.includes('follow') ? '👤' : n.message?.includes('comentario') || n.message?.includes('comment') ? '💬' : '🔔';
-                  return (
-                  <div key={n.id} onClick={() => { if(n.post_id) { setShowNotifications(false); setViewPost(allPosts.find(p => p.id === "real-"+n.post_id) || null); setTab("home"); } }} style={{padding:"12px",borderRadius:"12px",background:n.read?"transparent":"rgba(0,230,118,0.05)",border:"1px solid",borderColor:n.read?"rgba(255,255,255,0.04)":"rgba(0,230,118,0.15)",marginBottom:"8px",cursor:n.post_id?"pointer":"default",display:'flex',alignItems:'center',gap:'10px'}}>
-                    <div style={{width:'36px',height:'36px',borderRadius:'10px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px',flexShrink:0}}>{icon}</div>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:"13px",color:"#ECEFF4",fontWeight:'600'}}>{n.message}</div>
-                      <div style={{fontSize:"11px",color:"#556677",marginTop:"3px"}}>{timeAgo(n.created_at)}</div>
-                    </div>
-                    {!n.read && <div style={{width:'8px',height:'8px',borderRadius:'50%',background:'#00E676',flexShrink:0}}/>}
+                notifications.map(n => (
+                  <div key={n.id} onClick={() => { if(n.post_id) { setShowNotifications(false); setViewPost(allPosts.find(p => p.id === "real-"+n.post_id) || null); setTab("home"); } }} style={{padding:"12px",borderRadius:"12px",background:n.read?"transparent":"rgba(0,230,118,0.05)",border:"1px solid",borderColor:n.read?"rgba(255,255,255,0.04)":"rgba(0,230,118,0.15)",marginBottom:"8px",cursor:n.post_id?"pointer":"default"}}>
+                    <div style={{fontSize:"13px",color:"#ECEFF4"}}>{n.message}</div>
+                    <div style={{fontSize:"11px",color:"#556677",marginTop:"4px"}}>{new Date(n.created_at).toLocaleDateString()}</div>
                   </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ONBOARDING */}
-        {showOnboarding && (
-          <div style={{position:'fixed',inset:0,background:'#0a0e14',zIndex:99999,display:'flex',flexDirection:'column',padding:'24px',overflowY:'auto'}}>
-            <div style={{textAlign:'center',marginBottom:'24px'}}>
-              <div style={{margin:"0 auto 12px",display:"flex",justifyContent:"center"}}><Logo size={56} iconOnly /></div>
-              <div style={{fontSize:'22px',fontWeight:'900',color:'#ECEFF4'}}>MiraFut</div>
-              <div style={{fontSize:'12px',color:'#556677',letterSpacing:'2px',marginTop:'2px'}}>TALENT WITHOUT BORDERS</div>
-            </div>
-            <div style={{display:'flex',gap:'6px',marginBottom:'28px'}}>
-              {[1,2,3].map(i => <div key={i} style={{flex:1,height:'4px',background:i<=onboardingStep?'#00E676':'rgba(255,255,255,0.1)',borderRadius:'2px'}}/>)}
-            </div>
-            {onboardingStep === 1 && (
-              <div>
-                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>¡Bienvenido! 👋</div>
-                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 1 de 3 — Tu identidad</div>
-                <div style={{textAlign:'center',marginBottom:'24px'}}>
-                  <label style={{cursor:'pointer'}}>
-                    <div style={{width:'80px',height:'80px',borderRadius:'24px',background:'#121820',border:'2px dashed rgba(0,230,118,0.4)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',margin:'0 auto 8px'}}>
-                      <span style={{fontSize:'24px'}}>📷</span>
-                      <span style={{fontSize:'10px',color:'#556677',marginTop:'4px'}}>Subir foto</span>
-                    </div>
-                    <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files[0] && uploadAvatar(e.target.files[0])} />
-                  </label>
-                </div>
-                {[{label:'Nombre completo',key:'full_name',placeholder:'Tu nombre'},{label:'Usuario',key:'username',placeholder:'@usuario'},{label:'Biografía',key:'bio',placeholder:'Cuéntanos sobre ti...'}].map(f => (
-                  <div key={f.key} style={{marginBottom:'14px'}}>
-                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{f.label}</div>
-                    <input type="text" value={editForm[f.key]} onChange={e => setEditForm(prev=>({...prev,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
-                  </div>
-                ))}
-              </div>
-            )}
-            {onboardingStep === 2 && (
-              <div>
-                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>Tu posición ⚽</div>
-                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 2 de 3 — Dónde juegas</div>
-                <div style={{marginBottom:'14px'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Posición</div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
-                    {[{v:'POR',e:'🧤'},{v:'DEF',e:'🛡️'},{v:'MED',e:'⚙️'},{v:'DEL',e:'⚡'}].map(p => (
-                      <div key={p.v} onClick={() => setEditForm(prev=>({...prev,position:p.v}))} style={{padding:'14px',background:editForm.position===p.v?'rgba(0,230,118,0.12)':'#121820',border:editForm.position===p.v?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center'}}>
-                        <div style={{fontSize:'24px',marginBottom:'4px'}}>{p.e}</div>
-                        <div style={{fontSize:'13px',fontWeight:'700',color:editForm.position===p.v?'#00E676':'#ECEFF4'}}>{p.v}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {[{label:'País',key:'country',placeholder:'Tu país'},{label:'Ciudad',key:'city',placeholder:'Tu ciudad'},{label:'Edad',key:'age',placeholder:'Tu edad',type:'number'}].map(f => (
-                  <div key={f.key} style={{marginBottom:'14px'}}>
-                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{f.label}</div>
-                    <input type={f.type||'text'} value={editForm[f.key]} onChange={e => setEditForm(prev=>({...prev,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
-                  </div>
-                ))}
-              </div>
-            )}
-            {onboardingStep === 3 && (
-              <div>
-                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>Datos físicos 💪</div>
-                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 3 de 3 — Para los scouts</div>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'14px'}}>
-                  <div>
-                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Altura (cm)</div>
-                    <input type="number" value={editForm.height} onChange={e=>setEditForm(prev=>({...prev,height:e.target.value}))} placeholder="175" style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
-                  </div>
-                  <div>
-                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Peso (kg)</div>
-                    <input type="number" value={editForm.weight} onChange={e=>setEditForm(prev=>({...prev,weight:e.target.value}))} placeholder="68" style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
-                  </div>
-                </div>
-                <div style={{marginBottom:'14px'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Pie dominante</div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px'}}>
-                    {['Derecho','Izquierdo','Ambos'].map(p => (
-                      <div key={p} onClick={() => setEditForm(prev=>({...prev,dominant_foot:p}))} style={{padding:'10px',background:editForm.dominant_foot===p?'rgba(0,230,118,0.12)':'#121820',border:editForm.dominant_foot===p?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'700',color:editForm.dominant_foot===p?'#00E676':'#ECEFF4'}}>
-                        {p}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div style={{marginBottom:'14px'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Objetivo</div>
-                  <input type="text" value={editForm.goal} onChange={e=>setEditForm(prev=>({...prev,goal:e.target.value}))} placeholder="Ej: Busco academia profesional en Europa" style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
-                </div>
-              </div>
-            )}
-            <div style={{marginTop:'auto',paddingTop:'20px'}}>
-              <button onClick={() => { if(onboardingStep < 3) setOnboardingStep(s=>s+1); else saveOnboarding(); }} style={{width:'100%',padding:'14px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'16px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                {onboardingStep < 3 ? 'Continuar →' : '¡Empezar! 🚀'}
-              </button>
-              <div onClick={() => { setShowOnboarding(false); if(session) { localStorage.setItem('onboarding_skipped_' + session.user.id, '1'); supabase.from('profiles').update({onboarding_seen: true}).eq('id', session.user.id); } }} style={{textAlign:'center',marginTop:'12px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>
-                Completar después
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* CONTACT MODAL */}
-        {showContact && (
-          <div className="modal-bg show" onClick={() => { setShowContact(false); setContactSent(false); }}>
-            <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
-              <div className="modal-hdr">
-                <div className="modal-title">✉️ Cuéntanos tu historia</div>
-                <button className="modal-close" onClick={() => { setShowContact(false); setContactSent(false); }}>✕</button>
-              </div>
-              {contactSent ? (
-                <div style={{textAlign:'center',padding:'24px 0'}}>
-                  <div style={{fontSize:'48px',marginBottom:'12px'}}>🎉</div>
-                  <div style={{fontSize:'18px',fontWeight:'800',color:'#ECEFF4',marginBottom:'8px'}}>¡Mensaje enviado!</div>
-                  <div style={{fontSize:'14px',color:'#556677'}}>Nos pondremos en contacto contigo pronto.</div>
-                </div>
-              ) : (
-                <div>
-                  <p style={{fontSize:'13px',color:'#556677',marginBottom:'16px',lineHeight:'1.5'}}>Queremos conocerte. Cuéntanos tu historia y te haremos un seguimiento personalizado.</p>
-                  {[{label:'Nombre completo',key:'name',type:'text',placeholder:'Tu nombre'},{label:'Email',key:'email',type:'email',placeholder:'tu@email.com'},{label:'País',key:'country',type:'text',placeholder:'Tu país'},{label:'Posición',key:'position',type:'text',placeholder:'Delantero, Mediocampista...'}].map(f => (
-                    <div key={f.key} style={{marginBottom:'12px'}}>
-                      <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'5px'}}>{f.label}</div>
-                      <input type={f.type} value={contactForm[f.key]} onChange={e => setContactForm(p=>({...p,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
-                    </div>
-                  ))}
-                  <div style={{marginBottom:'16px'}}>
-                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'5px'}}>Tu historia</div>
-                    <textarea value={contactForm.story} onChange={e => setContactForm(p=>({...p,story:e.target.value}))} placeholder="Cuéntanos sobre ti, tus sueños, tu trayectoria..." rows={4} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none'}} />
-                  </div>
-                  <button onClick={sendContactForm} disabled={contactSending} style={{width:'100%',padding:'13px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                    {contactSending ? 'Enviando...' : 'Enviar mi historia 🚀'}
-                  </button>
-                </div>
+                ))
               )}
             </div>
           </div>
@@ -1892,5 +1307,4 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
     </>
   );
 }
-// rebuild Fri Jun 19 21:00:10 EDT 2026
-
+// force rebuild Thu Jun 11 18:32:47 EDT 2026
