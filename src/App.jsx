@@ -1434,7 +1434,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {m.from !== 'me' && <div className="ai-av" style={{background:`${ma?.color||'#00E676'}20`,color:ma?.color||'#00E676'}}>{ma?.emoji}</div>}
                       <div className="ai-group">
                         <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`} dangerouslySetInnerHTML={{__html: (m.text||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/
-/g,'<br/>')}} />
+/g,'<br/>')}}></div>
                         <div className="ai-time" style={{textAlign:m.from==='me'?'right':'left'}}>{m.time}</div>
                       </div>
                     </div>
