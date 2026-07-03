@@ -40,3 +40,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Error al conectar con OpenAI' })
   }
 }
+// Fri Jul  3 11:59:34 EDT 2026
