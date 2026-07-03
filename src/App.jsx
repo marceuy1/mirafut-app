@@ -1088,11 +1088,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
             ) : (
               <div style={{marginTop:'28px',display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
-                <button onClick={() => { setIsSignUp(true); setShowAuthPrompt(true); }} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'inline-flex',alignItems:'center',gap:'8px'}}>
-                  🚀 Únete gratis
-                </button>
-                <button onClick={() => { setIsSignUp(false); setShowAuthPrompt(true); }} style={{padding:'12px 28px',background:'transparent',border:'1.5px solid rgba(0,230,118,0.4)',borderRadius:'14px',color:'#00E676',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'inline-flex',alignItems:'center',gap:'8px'}}>
-                  Iniciar sesión
+                <button onClick={() => setShowAuthPrompt(true)} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'inline-flex',alignItems:'center',gap:'8px'}}>
+                  🚀 Únete / Iniciar sesión
                 </button>
               </div>
             )}
