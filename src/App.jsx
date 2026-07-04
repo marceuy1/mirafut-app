@@ -464,19 +464,28 @@ export default function App() {
   const getExerciseDiagram = (text, position) => {
     if (!text) return null;
     const t = text.toLowerCase();
-    const arrow = '<defs><marker id="a" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#00E676"/></marker></defs>';
-    const bg = '<rect width="300" height="90" fill="#0d1f0d" rx="8"/>';
-    const P = (x,y,l,c,tc) => '<circle cx="'+x+'" cy="'+y+'" r="10" fill="'+(c||'#00E676')+'"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="10" fill="'+(tc||'#0a0e14')+'" font-weight="bold">'+l+'</text>';
-    const C = (x,y) => '<polygon points="'+(x-4)+','+(y+6)+' '+(x+4)+','+(y+6)+' '+x+','+(y-4)+'" fill="#FFB300"/>';
-    const B = (x,y) => '<circle cx="'+x+'" cy="'+y+'" r="5" fill="white"/>';
-    const L = (x1,y1,x2,y2) => '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#00E676" stroke-width="2" marker-end="url(#a)"/>';
-    if (t.includes('rondo')) return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+'<circle cx="150" cy="45" r="35" fill="none" stroke="#1a3a1a" stroke-width="1" stroke-dasharray="4"/>'+P(150,10,'1')+P(185,45,'2')+P(150,80,'3')+P(115,45,'4')+P(150,45,'D','#FF5252','white')+B(168,27)+'</svg>';
-    if (t.includes('dribbling')||t.includes('conduccion')||t.includes('control')||t.includes('balon')||t.includes('balón')) return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+C(60,70)+C(120,25)+C(180,70)+C(240,25)+'<polyline points="30,80 60,65 120,20 180,65 240,20 275,35" fill="none" stroke="#00E676" stroke-width="2" stroke-dasharray="5,3"/>'+P(30,80,'J')+B(45,73)+'</svg>';
-    if (t.includes('tiro')||t.includes('disparo')||t.includes('remate')) return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+'<rect x="220" y="20" width="60" height="40" fill="none" stroke="#556677" stroke-width="2"/>'+P(60,70,'J')+B(100,60)+L(105,58,218,35)+'</svg>';
-    if (t.includes('pase')||t.includes('pases')) return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+P(40,45,'A')+P(150,45,'B')+P(260,45,'C')+L(52,40,136,40)+L(164,50,248,50)+B(94,33)+'</svg>';
-    if (t.includes('sprint')||t.includes('velocidad')||t.includes('resistencia')||t.includes('fisic')||t.includes('carrera')) return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+C(50,75)+C(250,75)+'<line x1="50" y1="75" x2="250" y2="75" stroke="#1a3a1a" stroke-width="1" stroke-dasharray="4"/>'+L(50,50,240,50)+P(30,50,'J')+B(65,43)+'</svg>';
-    if (t.includes('portero')||t.includes('arquero')||t.includes('salida')||position==='POR') return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+'<rect x="110" y="5" width="80" height="35" fill="none" stroke="#556677" stroke-width="2"/>'+P(150,20,'P')+P(80,70,'A','#FF5252','white')+P(220,70,'A','#FF5252','white')+L(150,32,110,65)+B(130,48)+'</svg>';
-    if (t.includes('marcacion')||t.includes('anticipacion')||t.includes('tactica')||t.includes('posicionamiento')||t.includes('lectura')||position==='DEF') return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+P(150,45,'D')+P(190,35,'R','#FF5252','white')+L(185,38,158,42)+B(200,25)+'</svg>';
+    const defs = '<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>';
+    const field = (w,h) => '<rect x="0" y="0" width="'+w+'" height="'+h+'" rx="8" fill="#0d1f0d"/>';
+    const player = (x,y,l,c,tc) => '<circle cx="'+x+'" cy="'+y+'" r="11" fill="'+(c||'#00E676')+'"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="11" fill="'+(tc||'#0a0e14')+'" font-weight="bold">'+l+'</text>';
+    const cone = (x,y) => '<polygon points="'+(x-5)+','+(y+7)+' '+(x+5)+','+(y+7)+' '+x+','+(y-5)+'" fill="#FFB300"/>';
+    const ball = (x,y) => '<circle cx="'+x+'" cy="'+y+'" r="5" fill="white"/>';
+    const arr = (x1,y1,x2,y2,dash) => '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#00E676" stroke-width="2" '+(dash?'stroke-dasharray="6,3"':'')+' marker-end="url(#ar)"/>';
+    const label = (x,y,txt) => '<text x="'+x+'" y="'+y+'" text-anchor="middle" font-size="11" fill="#556677">'+txt+'</text>';
+
+    if (t.includes('rondo')) return '<svg width="100%" height="120" viewBox="0 0 280 120">'+defs+field(280,120)+'<circle cx="140" cy="65" r="45" fill="none" stroke="#1a3a1a" stroke-width="1" stroke-dasharray="5"/>'+player(140,22,'1')+player(183,65,'2')+player(140,108,'3')+player(97,65,'4')+player(140,65,'D','#FF5252','white')+ball(162,44)+label(140,16,'Rondo - mantener posesión')+'</svg>';
+
+    if (t.includes('dribbling')||t.includes('conduccion')||t.includes('control')||t.includes('balon')||t.includes('balón')) return '<svg width="100%" height="100" viewBox="0 0 280 100">'+defs+field(280,100)+cone(50,80)+cone(100,30)+cone(150,80)+cone(200,30)+cone(250,80)+'<polyline points="20,90 50,75 100,25 150,75 200,25 250,75 270,65" fill="none" stroke="#00E676" stroke-width="2" stroke-dasharray="5,3"/>'+player(20,90,'J')+ball(15,82)+label(140,12,'Dribbling en zigzag · ambos pies')+'</svg>';
+
+    if (t.includes('tiro')||t.includes('disparo')||t.includes('remate')) return '<svg width="100%" height="100" viewBox="0 0 280 100">'+defs+field(280,100)+'<rect x="220" y="30" width="50" height="45" fill="none" stroke="#556677" stroke-width="2"/>'+player(60,75,'J')+ball(90,65)+arr(95,63,217,42,false)+arr(95,67,217,55,true)+label(140,15,'Tiro a puerta · variar ángulos')+'</svg>';
+
+    if (t.includes('pase')||t.includes('pases')||t.includes('recepcion')||t.includes('recepción')) return '<svg width="100%" height="90" viewBox="0 0 280 90">'+defs+field(280,90)+player(35,55,'A')+player(140,55,'B')+player(245,55,'C')+arr(48,48,126,48,false)+arr(154,62,231,62,true)+ball(88,45)+label(140,20,'Pases cortos y largos · precisión')+'</svg>';
+
+    if (t.includes('sprint')||t.includes('velocidad')||t.includes('resistencia')||t.includes('fisic')||t.includes('carrera')) return '<svg width="100%" height="90" viewBox="0 0 280 90">'+defs+field(280,90)+cone(40,70)+cone(240,70)+'<line x1="40" y1="70" x2="240" y2="70" stroke="#1a3a1a" stroke-width="1" stroke-dasharray="4"/>'+arr(40,45,228,45,false)+player(25,45,'J')+ball(58,37)+label(140,15,'Sprint ida y vuelta · intensidad')+'</svg>';
+
+    if (t.includes('portero')||t.includes('arquero')||position==='POR') return '<svg width="100%" height="110" viewBox="0 0 280 110">'+defs+field(280,110)+'<rect x="100" y="10" width="80" height="40" fill="none" stroke="#556677" stroke-width="2"/>'+player(140,28,'P')+player(60,85,'A','#FF5252','white')+player(220,85,'A','#FF5252','white')+arr(140,50,100,78,false)+arr(220,74,165,52,true)+ball(170,58)+label(140,102,'Salidas · posicionamiento · reflejos')+'</svg>';
+
+    if (t.includes('marcacion')||t.includes('anticipacion')||t.includes('tactica')||t.includes('posicionamiento')||t.includes('lectura')||position==='DEF') return '<svg width="100%" height="100" viewBox="0 0 280 100">'+defs+field(280,100)+player(140,60,'D')+player(190,45,'R','#FF5252','white')+'<path d="M205,55 Q170,40 153,57" fill="none" stroke="#FF5252" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#ar)"/>'+arr(183,48,153,57,false)+ball(210,35)+label(140,15,'Anticipación · lectura del juego')+'</svg>';
+
     return null;
   };
 
