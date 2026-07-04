@@ -1470,9 +1470,17 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {m.from !== 'me' && <div className="ai-av" style={{background:`${ma?.color||'#00E676'}20`,color:ma?.color||'#00E676'}}>{ma?.emoji}</div>}
                       <div className="ai-group">
                         <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`}>{renderMarkdown(m.text)}</div>
-                        {m.from !== 'me' && getExerciseDiagram(m.text, userProfile?.position) && (
-                          <div style={{marginTop:'8px',borderRadius:'12px',overflow:'hidden'}} dangerouslySetInnerHTML={{__html: getExerciseDiagram(m.text, userProfile?.position)}} />
-                        )}
+                        {m.from !== 'me' && (() => {
+                          const lines = (m.text||'').split('\n').filter(l => /^\d+\./.test(l.trim()));
+                          const diagrams = lines.map(l => getExerciseDiagram(l, userProfile?.position)).filter(Boolean);
+                          if (diagrams.length === 0) {
+                            const d = getExerciseDiagram(m.text, userProfile?.position);
+                            return d ? <div style={{marginTop:'8px',borderRadius:'12px',overflow:'hidden'}} dangerouslySetInnerHTML={{__html:d}} /> : null;
+                          }
+                          return <div style={{display:'flex',flexDirection:'column',gap:'8px',marginTop:'8px'}}>
+                            {diagrams.map((d,i) => <div key={i} style={{borderRadius:'12px',overflow:'hidden'}} dangerouslySetInnerHTML={{__html:d}} />)}
+                          </div>;
+                        })()}
                         <div className="ai-time" style={{textAlign:m.from==='me'?'right':'left'}}>{m.time}</div>
                       </div>
                     </div>
