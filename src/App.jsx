@@ -461,17 +461,23 @@ export default function App() {
   // ── Debate ────────────────────────────────────────────
 
 
-  const EXERCISE_IMAGES = {
-    'pase': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80&fit=crop',
-    'dribbling': 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&q=80&fit=crop',
-    'tiro': 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=400&q=80&fit=crop',
-    'posición': 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=400&q=80&fit=crop',
-    'visión': 'https://images.unsplash.com/photo-1516522024948-2f3a0e4e4d9c?w=400&q=80&fit=crop',
-    'resistencia': 'https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=400&q=80&fit=crop',
-    'portero': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&q=80&fit=crop',
-    'defensa': 'https://images.unsplash.com/photo-1508098682722-e99c643e7f76?w=400&q=80&fit=crop',
-    'velocidad': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&q=80&fit=crop',
-    'rondo': 'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=400&q=80&fit=crop',
+  const getExerciseDiagram = (text, position) => {
+    if (!text) return null;
+    const t = text.toLowerCase();
+    const arrow = '<defs><marker id="a" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#00E676"/></marker></defs>';
+    const bg = '<rect width="300" height="90" fill="#0d1f0d" rx="8"/>';
+    const P = (x,y,l,c,tc) => '<circle cx="'+x+'" cy="'+y+'" r="10" fill="'+(c||'#00E676')+'"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="10" fill="'+(tc||'#0a0e14')+'" font-weight="bold">'+l+'</text>';
+    const C = (x,y) => '<polygon points="'+(x-4)+','+(y+6)+' '+(x+4)+','+(y+6)+' '+x+','+(y-4)+'" fill="#FFB300"/>';
+    const B = (x,y) => '<circle cx="'+x+'" cy="'+y+'" r="5" fill="white"/>';
+    const L = (x1,y1,x2,y2) => '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#00E676" stroke-width="2" marker-end="url(#a)"/>';
+    if (t.includes('rondo')) return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+'<circle cx="150" cy="45" r="35" fill="none" stroke="#1a3a1a" stroke-width="1" stroke-dasharray="4"/>'+P(150,10,'1')+P(185,45,'2')+P(150,80,'3')+P(115,45,'4')+P(150,45,'D','#FF5252','white')+B(168,27)+'</svg>';
+    if (t.includes('dribbling')||t.includes('conduccion')) return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+C(60,70)+C(120,25)+C(180,70)+C(240,25)+'<polyline points="30,80 60,65 120,20 180,65 240,20 275,35" fill="none" stroke="#00E676" stroke-width="2" stroke-dasharray="5,3"/>'+P(30,80,'J')+B(45,73)+'</svg>';
+    if (t.includes('tiro')||t.includes('disparo')||t.includes('remate')) return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+'<rect x="220" y="20" width="60" height="40" fill="none" stroke="#556677" stroke-width="2"/>'+P(60,70,'J')+B(100,60)+L(105,58,218,35)+'</svg>';
+    if (t.includes('pase')||t.includes('pases')) return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+P(40,45,'A')+P(150,45,'B')+P(260,45,'C')+L(52,40,136,40)+L(164,50,248,50)+B(94,33)+'</svg>';
+    if (t.includes('sprint')||t.includes('velocidad')||t.includes('resistencia')) return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+C(50,75)+C(250,75)+'<line x1="50" y1="75" x2="250" y2="75" stroke="#1a3a1a" stroke-width="1" stroke-dasharray="4"/>'+L(50,50,240,50)+P(30,50,'J')+B(65,43)+'</svg>';
+    if (t.includes('portero')||position==='POR') return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+'<rect x="110" y="5" width="80" height="35" fill="none" stroke="#556677" stroke-width="2"/>'+P(150,20,'P')+P(80,70,'A','#FF5252','white')+P(220,70,'A','#FF5252','white')+L(150,32,110,65)+B(130,48)+'</svg>';
+    if (t.includes('marcacion')||position==='DEF') return '<svg width="100%" height="90" viewBox="0 0 300 90">'+bg+arrow+P(150,45,'D')+P(190,35,'R','#FF5252','white')+L(185,38,158,42)+B(200,25)+'</svg>';
+    return null;
   };
 
   const getExerciseImage = (text) => {
@@ -1464,8 +1470,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {m.from !== 'me' && <div className="ai-av" style={{background:`${ma?.color||'#00E676'}20`,color:ma?.color||'#00E676'}}>{ma?.emoji}</div>}
                       <div className="ai-group">
                         <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`}>{renderMarkdown(m.text)}</div>
-                        {m.from !== 'me' && getExerciseImage(m.text) && (
-                          <img src={getExerciseImage(m.text)} alt="ejercicio" style={{width:'100%',borderRadius:'12px',marginTop:'8px',objectFit:'cover',maxHeight:'160px'}} />
+                        {m.from !== 'me' && getExerciseDiagram(m.text, userProfile?.position) && (
+                          <div style={{marginTop:'8px',borderRadius:'12px',overflow:'hidden'}} dangerouslySetInnerHTML={{__html: getExerciseDiagram(m.text, userProfile?.position)}} />
                         )}
                         <div className="ai-time" style={{textAlign:m.from==='me'?'right':'left'}}>{m.time}</div>
                       </div>
