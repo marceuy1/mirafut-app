@@ -489,6 +489,24 @@ export default function App() {
     return null;
   };
 
+  const renderCoachMessage = (text, position) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return lines.map((line, i) => {
+      const isExercise = /^\d+\./.test(line.trim());
+      const diagram = isExercise ? getExerciseDiagram(line, position) : null;
+      return (
+        <span key={i}>
+          {line}<br/>
+          {diagram && (
+            <span style={{display:'block',marginTop:'6px',marginBottom:'10px',borderRadius:'10px',overflow:'hidden'}}
+              dangerouslySetInnerHTML={{__html: diagram}} />
+          )}
+        </span>
+      );
+    });
+  };
+
   const renderMarkdown = (text) => {
     if (!text) return null;
     return text.split('\n').map((line, i) => {
@@ -1469,18 +1487,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div key={m.id} className={`ai-row ${m.from==='me'?'me':''}`}>
                       {m.from !== 'me' && <div className="ai-av" style={{background:`${ma?.color||'#00E676'}20`,color:ma?.color||'#00E676'}}>{ma?.emoji}</div>}
                       <div className="ai-group">
-                        <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`}>{renderMarkdown(m.text)}</div>
-                        {m.from !== 'me' && (() => {
-                          const lines = (m.text||'').split('\n').filter(l => /^\d+\./.test(l.trim()));
-                          const diagrams = lines.map(l => getExerciseDiagram(l, userProfile?.position)).filter(Boolean);
-                          if (diagrams.length === 0) {
-                            const d = getExerciseDiagram(m.text, userProfile?.position);
-                            return d ? <div style={{marginTop:'8px',borderRadius:'12px',overflow:'hidden'}} dangerouslySetInnerHTML={{__html:d}} /> : null;
-                          }
-                          return <div style={{display:'flex',flexDirection:'column',gap:'8px',marginTop:'8px'}}>
-                            {diagrams.map((d,i) => <div key={i} style={{borderRadius:'12px',overflow:'hidden'}} dangerouslySetInnerHTML={{__html:d}} />)}
-                          </div>;
-                        })()}
+                        <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`}>{m.from==='me' ? renderMarkdown(m.text) : renderCoachMessage(m.text, userProfile?.position)}</div>
+
                         <div className="ai-time" style={{textAlign:m.from==='me'?'right':'left'}}>{m.time}</div>
                       </div>
                     </div>
