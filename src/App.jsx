@@ -1109,6 +1109,15 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 🔔
                 {notifications.filter(n => !n.read).length > 0 && <span style={{position:"absolute",top:"-2px",right:"-2px",background:"#FF5252",color:"white",fontSize:"9px",fontWeight:"700",minWidth:"16px",height:"16px",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 3px"}}>{notifications.filter(n => !n.read).length}</span>}
               </button>
+              {session && (
+                <div onClick={() => setTab('profile')} style={{display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',padding:'4px 8px',borderRadius:'20px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)'}}>
+                  {userProfile?.avatar_url
+                    ? <img src={userProfile.avatar_url} style={{width:'26px',height:'26px',borderRadius:'8px',objectFit:'cover'}} />
+                    : <div style={{width:'26px',height:'26px',borderRadius:'8px',background:'rgba(0,230,118,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10px',fontWeight:'800',color:'#00E676'}}>{userProfile?.full_name?.substring(0,2).toUpperCase()||'TU'}</div>
+                  }
+                  {isDesktop && <span style={{fontSize:'12px',fontWeight:'600',color:'#ECEFF4',maxWidth:'80px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{userProfile?.full_name?.split(' ')[0]||'Perfil'}</span>}
+                </div>
+              )}
           </div>
         )}
 
