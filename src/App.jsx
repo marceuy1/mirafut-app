@@ -166,6 +166,12 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showSorteo, setShowSorteo] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [sorteo, setSorteo] = useState(null);
+  const [adminTab, setAdminTab] = useState('debate');
+  const [adminDebate, setAdminDebate] = useState({question:'', options:'', days:7});
+  const [adminSorteo, setAdminSorteo] = useState({premio:'', descripcion:'', days:30});
+  const ADMIN_EMAIL = 'marceuy1@gmail.com';
   const [viewProfilePosts, setViewProfilePosts] = useState([]);
   const [contactForm, setContactForm] = useState({name:'',email:'',country:'',position:'',story:''});
   const [contactSending, setContactSending] = useState(false);
@@ -276,6 +282,31 @@ export default function App() {
     if (data) { setUserProfile(data); loadRealPosts(); }
   };
 
+  const loadSorteo = async () => {
+    const { data } = await supabase.from('sorteos').select('*').eq('activo', true).order('created_at', {ascending:false}).limit(1).single();
+    if (data) setSorteo(data);
+  };
+
+  const saveAdminDebate = async () => {
+    if (!adminDebate.question.trim()) return;
+    const options = adminDebate.options.split(',').map(o => o.trim()).filter(Boolean);
+    if (options.length < 2) { alert('Necesitas al menos 2 opciones separadas por coma'); return; }
+    await supabase.from('debates').update({ends_at: new Date(0).toISOString()}).gte('ends_at', new Date().toISOString());
+    await supabase.from('debates').insert([{question: adminDebate.question, options: JSON.stringify(options), ends_at: new Date(Date.now() + adminDebate.days * 86400000).toISOString()}]);
+    setAdminDebate({question:'', options:'', days:7});
+    loadDebate();
+    alert('Debate actualizado');
+  };
+
+  const saveAdminSorteo = async () => {
+    if (!adminSorteo.premio.trim()) return;
+    await supabase.from('sorteos').update({activo: false}).eq('activo', true);
+    await supabase.from('sorteos').insert([{premio: adminSorteo.premio, descripcion: adminSorteo.descripcion, ends_at: new Date(Date.now() + adminSorteo.days * 86400000).toISOString(), activo: true}]);
+    setAdminSorteo({premio:'', descripcion:'', days:30});
+    loadSorteo();
+    alert('Sorteo actualizado');
+  };
+
   const loadDebate = async () => {
     const { data } = await supabase
       .from('debates')
@@ -368,6 +399,7 @@ export default function App() {
 
     loadRealPosts();
     loadDebate();
+    loadSorteo();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -1109,6 +1141,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 🔔
                 {notifications.filter(n => !n.read).length > 0 && <span style={{position:"absolute",top:"-2px",right:"-2px",background:"#FF5252",color:"white",fontSize:"9px",fontWeight:"700",minWidth:"16px",height:"16px",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 3px"}}>{notifications.filter(n => !n.read).length}</span>}
               </button>
+              {session && session.user.email === ADMIN_EMAIL && (
+                <button onClick={() => setShowAdmin(true)} style={{background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.3)',borderRadius:'8px',color:'#00E676',fontSize:'11px',fontWeight:'700',padding:'5px 10px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>⚙️ Admin</button>
+              )}
               {session && (
                 <div onClick={() => setTab('profile')} style={{display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',padding:'4px 8px',borderRadius:'20px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)'}}>
                   {userProfile?.avatar_url
@@ -1900,6 +1935,60 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div onClick={() => { setShowOnboarding(false); if(session) { localStorage.setItem('onboarding_skipped_' + session.user.id, '1'); supabase.from('profiles').update({onboarding_seen: true}).eq('id', session.user.id); } }} style={{textAlign:'center',marginTop:'12px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>
                 Completar después
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ADMIN PANEL */}
+        {showAdmin && (
+          <div className="modal-bg show" onClick={() => setShowAdmin(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
+              <div className="modal-hdr">
+                <div className="modal-title">⚙️ Panel Admin</div>
+                <button className="modal-close" onClick={() => setShowAdmin(false)}>✕</button>
+              </div>
+              <div style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
+                <button onClick={() => setAdminTab('debate')} style={{flex:1,padding:'8px',background:adminTab==='debate'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:adminTab==='debate'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🔥 Debate</button>
+                <button onClick={() => setAdminTab('sorteo')} style={{flex:1,padding:'8px',background:adminTab==='sorteo'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:adminTab==='sorteo'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🎁 Sorteo</button>
+              </div>
+
+              {adminTab === 'debate' && (
+                <div>
+                  <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'12px'}}>
+                    <div style={{fontSize:'11px',color:'#556677',marginBottom:'4px'}}>Debate activo</div>
+                    <div style={{fontSize:'13px',color:'#ECEFF4'}}>{debate?.question || 'Ninguno'}</div>
+                    <div style={{fontSize:'11px',color:'#556677',marginTop:'4px'}}>{debate ? Math.max(0, Math.ceil((new Date(debate.ends_at) - new Date()) / (1000*60*60*24))) + ' días restantes' : ''}</div>
+                  </div>
+                  <div style={{fontSize:'11px',color:'#556677',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Nuevo debate</div>
+                  <textarea value={adminDebate.question} onChange={e=>setAdminDebate(p=>({...p,question:e.target.value}))} placeholder="Pregunta del debate..." rows={2} style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none',marginBottom:'8px'}}/>
+                  <input value={adminDebate.options} onChange={e=>setAdminDebate(p=>({...p,options:e.target.value}))} placeholder="Opciones separadas por coma: Portero, Defensa, Mediocampista" style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',marginBottom:'8px'}}/>
+                  <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}}>
+                    <span style={{fontSize:'13px',color:'#556677'}}>Duración:</span>
+                    <input type="number" value={adminDebate.days} onChange={e=>setAdminDebate(p=>({...p,days:parseInt(e.target.value)}))} style={{width:'60px',padding:'6px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'8px',color:'#ECEFF4',fontSize:'13px',outline:'none',textAlign:'center'}}/>
+                    <span style={{fontSize:'13px',color:'#556677'}}>días</span>
+                  </div>
+                  <button onClick={saveAdminDebate} style={{width:'100%',padding:'12px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Publicar debate</button>
+                </div>
+              )}
+
+              {adminTab === 'sorteo' && (
+                <div>
+                  <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'12px'}}>
+                    <div style={{fontSize:'11px',color:'#556677',marginBottom:'4px'}}>Sorteo activo</div>
+                    <div style={{fontSize:'13px',color:'#ECEFF4'}}>{sorteo?.premio || 'Ninguno'}</div>
+                    <div style={{fontSize:'11px',color:'#556677',marginTop:'4px'}}>{sorteo ? Math.max(0, Math.ceil((new Date(sorteo.ends_at) - new Date()) / (1000*60*60*24))) + ' días restantes' : ''}</div>
+                  </div>
+                  <div style={{fontSize:'11px',color:'#556677',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Nuevo sorteo</div>
+                  <input value={adminSorteo.premio} onChange={e=>setAdminSorteo(p=>({...p,premio:e.target.value}))} placeholder="Premio (ej: Camiseta Real Madrid 2026)" style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',marginBottom:'8px'}}/>
+                  <input value={adminSorteo.descripcion} onChange={e=>setAdminSorteo(p=>({...p,descripcion:e.target.value}))} placeholder="Descripción (ej: Original · Talla a elección)" style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',marginBottom:'8px'}}/>
+                  <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}}>
+                    <span style={{fontSize:'13px',color:'#556677'}}>Duración:</span>
+                    <input type="number" value={adminSorteo.days} onChange={e=>setAdminSorteo(p=>({...p,days:parseInt(e.target.value)}))} style={{width:'60px',padding:'6px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',textAlign:'center'}}/>
+                    <span style={{fontSize:'13px',color:'#556677'}}>días</span>
+                  </div>
+                  <button onClick={saveAdminSorteo} style={{width:'100%',padding:'12px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Publicar sorteo</button>
+                </div>
+              )}
             </div>
           </div>
         )}
