@@ -170,7 +170,9 @@ export default function App() {
   const [sorteo, setSorteo] = useState(null);
   const [adminTab, setAdminTab] = useState('debate');
   const [adminDebate, setAdminDebate] = useState({question:'', options:'', days:7});
-  const [adminSorteo, setAdminSorteo] = useState({premio:'', descripcion:'', days:30});
+  const [adminSorteo, setAdminSorteo] = useState({premio:'', descripcion:'', days:30, imagen_url:''});
+  const [sorteoImageFile, setSorteoImageFile] = useState(null);
+  const [sorteoImagePreview, setSorteoImagePreview] = useState(null);
   const ADMIN_EMAIL = 'marceuy1@gmail.com';
   const [viewProfilePosts, setViewProfilePosts] = useState([]);
   const [contactForm, setContactForm] = useState({name:'',email:'',country:'',position:'',story:''});
@@ -298,11 +300,24 @@ export default function App() {
     alert('Debate actualizado');
   };
 
+  const uploadSorteoImage = async (file) => {
+    const ext = file.name.split('.').pop();
+    const path = 'sorteo-' + Date.now() + '.' + ext;
+    const { error } = await supabase.storage.from('posts').upload(path, file, {upsert: true});
+    if (error) return null;
+    const { data } = supabase.storage.from('posts').getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   const saveAdminSorteo = async () => {
     if (!adminSorteo.premio.trim()) return;
+    let imagen_url = null;
+    if (sorteoImageFile) imagen_url = await uploadSorteoImage(sorteoImageFile);
     await supabase.from('sorteos').update({activo: false}).eq('activo', true);
-    await supabase.from('sorteos').insert([{premio: adminSorteo.premio, descripcion: adminSorteo.descripcion, ends_at: new Date(Date.now() + adminSorteo.days * 86400000).toISOString(), activo: true}]);
-    setAdminSorteo({premio:'', descripcion:'', days:30});
+    await supabase.from('sorteos').insert([{premio: adminSorteo.premio, descripcion: adminSorteo.descripcion, ends_at: new Date(Date.now() + adminSorteo.days * 86400000).toISOString(), activo: true, imagen_url}]);
+    setAdminSorteo({premio:'', descripcion:'', days:30, imagen_url:''});
+    setSorteoImageFile(null);
+    setSorteoImagePreview(null);
     loadSorteo();
     alert('Sorteo actualizado');
   };
@@ -1981,6 +1996,12 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div style={{fontSize:'11px',color:'#556677',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Nuevo sorteo</div>
                   <input value={adminSorteo.premio} onChange={e=>setAdminSorteo(p=>({...p,premio:e.target.value}))} placeholder="Premio (ej: Camiseta Real Madrid 2026)" style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',marginBottom:'8px'}}/>
                   <input value={adminSorteo.descripcion} onChange={e=>setAdminSorteo(p=>({...p,descripcion:e.target.value}))} placeholder="Descripción (ej: Original · Talla a elección)" style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',marginBottom:'8px'}}/>
+                  <label style={{display:'block',marginBottom:'8px',cursor:'pointer'}}>
+                    <div style={{padding:'10px',background:'#0a0e14',border:'1px dashed rgba(0,230,118,0.3)',borderRadius:'10px',color:'#556677',fontSize:'13px',textAlign:'center'}}>
+                      {sorteoImagePreview ? <img src={sorteoImagePreview} style={{width:'100%',maxHeight:'120px',objectFit:'contain',borderRadius:'8px'}} /> : '📷 Subir foto del premio'}
+                    </div>
+                    <input type="file" accept="image/*" style={{display:'none'}} onChange={e => { const f = e.target.files[0]; if(f){ setSorteoImageFile(f); setSorteoImagePreview(URL.createObjectURL(f)); } }} />
+                  </label>
                   <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}}>
                     <span style={{fontSize:'13px',color:'#556677'}}>Duración:</span>
                     <input type="number" value={adminSorteo.days} onChange={e=>setAdminSorteo(p=>({...p,days:parseInt(e.target.value)}))} style={{width:'60px',padding:'6px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',textAlign:'center'}}/>
@@ -2012,8 +2033,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
               <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'10px'}}>
                 <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>Premio de este mes</div>
+                {sorteo?.imagen_url && <img src={sorteo.imagen_url} style={{width:'100%',maxHeight:'160px',objectFit:'contain',borderRadius:'10px',marginBottom:'10px'}} />}
                 <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                  <div style={{width:'48px',height:'48px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'24px',flexShrink:0}}>👕</div>
+                  {!sorteo?.imagen_url && <div style={{width:'48px',height:'48px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'24px',flexShrink:0}}>👕</div>}
                   <div>
                     <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4'}}>Camiseta de tu club favorito</div>
                     <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>Original · Talla a elección del ganador</div>
