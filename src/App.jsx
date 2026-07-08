@@ -156,9 +156,8 @@ function AuthInline({ onSuccess, onClose, postLoginTab }) {
           {loading ? 'Cargando...' : isSignUp ? 'Crear cuenta' : 'Iniciar sesión'}
         </button>
       </form>
-      <button onClick={() => setIsSignUp(!isSignUp)} style={{width:'100%',background:'none',border:'none',color:'#00E676',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>
-        {isSignUp ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
-      </button>
+      <button onClick={() => setIsSignUp(!isSignUp)} style={{width:'100%',background:'none',border:'none',color:'#00E676',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>{isSignUp ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}</button>
+      {!isSignUp && <button onClick={async () => { if(!email) { setError('Ingresa tu email primero'); return; } const {error} = await supabase.auth.resetPasswordForEmail(email, {redirectTo:'https://mirafut.com'}); if(error) setError(error.message); else setError('✅ Te enviamos un link para restablecer tu contraseña'); }} style={{width:'100%',background:'none',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>¿Olvidaste tu contraseña?</button>}
       <button onClick={onClose} style={{width:'100%',background:'none',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit, sans-serif'}}>
         Seguir explorando →
       </button>
