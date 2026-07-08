@@ -2058,7 +2058,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div style={{fontSize:'20px',fontWeight:'900',color:'#0a0e14'}}>MiraFut Scouting</div>
                   </div>
                 </div>
-                <div style={{fontSize:'13px',color:'rgba(0,0,0,0.75)',lineHeight:'1.5',fontWeight:'600'}}>La plataforma donde el talento sin fronteras encuentra su oportunidad</div>
+                <div style={{fontSize:'13px',color:'#0a0e14',lineHeight:'1.5',fontWeight:'600'}}>La plataforma donde el talento sin fronteras encuentra su oportunidad</div>
               </div>
 
               {[
