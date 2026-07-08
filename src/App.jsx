@@ -166,6 +166,7 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showSorteo, setShowSorteo] = useState(false);
+  const [showScouting, setShowScouting] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [sorteo, setSorteo] = useState(null);
   const [adminTab, setAdminTab] = useState('debate');
@@ -1221,6 +1222,17 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         )}
 
         <div className="mc">
+          {/* BANNER SCOUTING */}
+          {tab === "home" && !viewPost && !viewProfile && !session && (
+            <div style={{margin:'10px 16px 0',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'12px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div>
+                <div style={{fontSize:'14px',fontWeight:'800',color:'#ECEFF4'}}>Tu talento merece ser visto</div>
+                <div style={{fontSize:'11px',color:'#556677',marginTop:'2px'}}>Scouts y agentes de todo el mundo</div>
+              </div>
+              <button onClick={() => setShowScouting(true)} style={{background:'#00E676',border:'none',borderRadius:'20px',padding:'7px 14px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif',whiteSpace:'nowrap'}}>Ver cómo →</button>
+            </div>
+          )}
+
           {/* ====== FILTROS ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
             <div style={{padding:'10px 16px 4px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
@@ -2022,6 +2034,49 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <button onClick={saveAdminSorteo} style={{width:'100%',padding:'12px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Publicar sorteo</button>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* SCOUTING MODAL */}
+        {showScouting && (
+          <div className="modal-bg show" onClick={() => setShowScouting(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
+              <div style={{background:'#00E676',borderRadius:'14px',padding:'20px 16px 16px',marginBottom:'16px'}}>
+                <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'10px'}}>
+                  <Logo size={36} iconOnly />
+                  <div>
+                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.5)'}}>CÓMO FUNCIONA</div>
+                    <div style={{fontSize:'20px',fontWeight:'900',color:'#0a0e14'}}>MiraFut Scouting</div>
+                  </div>
+                </div>
+                <div style={{fontSize:'13px',color:'rgba(0,0,0,0.6)',lineHeight:'1.5'}}>La plataforma donde el talento sin fronteras encuentra su oportunidad</div>
+              </div>
+
+              {[
+                {n:'1',title:'Crea tu perfil de jugador',desc:'Agrega tu posición, datos físicos, país y objetivo. Un perfil completo tiene mucha más visibilidad ante scouts.'},
+                {n:'2',title:'Comparte tus jugadas',desc:'Sube fotos y videos de tus mejores momentos. Los scouts buscan activamente jugadores con contenido real.'},
+                {n:'3',title:'Conecta con la comunidad',desc:'Participa en debates, recibe apoyo 24/7 y conecta con jugadores de más de 8 países.'},
+                {n:'4',title:'Sé descubierto',desc:'Scouts y agentes navegan la plataforma buscando talento. Tu perfil es tu carta de presentación profesional.'}
+              ].map((s,i) => (
+                <div key={i} style={{display:'flex',gap:'12px',marginBottom:'16px'}}>
+                  <div style={{width:'36px',height:'36px',borderRadius:'10px',background:'#00E676',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',fontWeight:'900',color:'#0a0e14',flexShrink:0}}>{s.n}</div>
+                  <div>
+                    <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4',marginBottom:'3px'}}>{s.title}</div>
+                    <div style={{fontSize:'12px',color:'#556677',lineHeight:'1.5'}}>{s.desc}</div>
+                  </div>
+                </div>
+              ))}
+
+              <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',borderLeft:'3px solid #00E676',marginBottom:'16px'}}>
+                <div style={{fontSize:'13px',color:'#ECEFF4',fontWeight:'600'}}>"El talento sin fronteras merece oportunidades sin fronteras"</div>
+                <div style={{fontSize:'11px',color:'#556677',marginTop:'4px'}}>— Equipo MiraFut</div>
+              </div>
+
+              <button onClick={() => { setShowScouting(false); setShowAuthPrompt(true); }} style={{width:'100%',padding:'13px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
+                Crear mi perfil ahora 🚀
+              </button>
+              <div onClick={() => setShowScouting(false)} style={{textAlign:'center',marginTop:'10px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>Cerrar</div>
             </div>
           </div>
         )}
