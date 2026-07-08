@@ -2054,11 +2054,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <circle cx="50" cy="50" r="15" fill="#00E676"/>
                   </svg>
                   <div>
-                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.5)'}}>CÓMO FUNCIONA</div>
+                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.6)'}}>CÓMO FUNCIONA</div>
                     <div style={{fontSize:'20px',fontWeight:'900',color:'#0a0e14'}}>MiraFut Scouting</div>
                   </div>
                 </div>
-                <div style={{fontSize:'13px',color:'rgba(0,0,0,0.6)',lineHeight:'1.5'}}>La plataforma donde el talento sin fronteras encuentra su oportunidad</div>
+                <div style={{fontSize:'13px',color:'rgba(0,0,0,0.75)',lineHeight:'1.5',fontWeight:'600'}}>La plataforma donde el talento sin fronteras encuentra su oportunidad</div>
               </div>
 
               {[
