@@ -1,8 +1,8 @@
 export const translations = {
   es: {
     tagline: 'TALENTO SIN FRONTERAS',
-    heroTitle: 'Talento sin fronteras',
-    heroSubtitle: 'La red social donde jóvenes futbolistas de todo el mundo comparten su pasión, conectan con su comunidad y desarrollan su carrera con AI Coach 24/7',
+    heroTitle: 'Tu talento merece ser visto',
+    heroSubtitle: 'La plataforma donde jóvenes futbolistas consiguen visibilidad ante scouts y agentes de todo el mundo',
     players: 'Jugadores',
     activePosts: 'Posts activos',
     countries: 'Países',
@@ -48,8 +48,8 @@ export const translations = {
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
-    heroTitle: 'Talent without borders',
-    heroSubtitle: 'The social network where young footballers from around the world share their passion, connect with their community and develop their career with AI Coach 24/7',
+    heroTitle: 'Your talent deserves to be seen',
+    heroSubtitle: 'The platform where young footballers get visibility from scouts and agents around the world',
     players: 'Players',
     activePosts: 'Active posts',
     countries: 'Countries',

@@ -1184,13 +1184,25 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="hero-stat-label">Jugadores</div>
               </div>
               <div className="hero-stat">
-                <div className="hero-stat-value">{allPosts.length}</div>
-                <div className="hero-stat-label">Posts activos</div>
-              </div>
-              <div className="hero-stat">
                 <div className="hero-stat-value">8</div>
                 <div className="hero-stat-label">Países</div>
               </div>
+              <div className="hero-stat">
+                <div className="hero-stat-value">24/7</div>
+                <div className="hero-stat-label">Apoyo</div>
+              </div>
+            </div>
+
+            <div style={{display:'flex',gap:'16px',justifyContent:'center',marginTop:'28px',flexWrap:'wrap',maxWidth:'700px',marginLeft:'auto',marginRight:'auto'}}>
+              {[{icon:'🎯',title:'Visibilidad real',desc:'Tu perfil llega a scouts y agentes'},{icon:'💬',title:'Apoyo 24/7',desc:'Orientación y consejos cuando los necesites'},{icon:'🌍',title:'Comunidad global',desc:'Conecta con jugadores de todo el mundo'}].map((p,i) => (
+                <div key={i} style={{display:'flex',alignItems:'center',gap:'10px',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'12px 16px',flex:'1',minWidth:'180px',textAlign:'left'}}>
+                  <div style={{fontSize:'22px',flexShrink:0}}>{p.icon}</div>
+                  <div>
+                    <div style={{fontSize:'13px',fontWeight:'700',color:'#ECEFF4'}}>{p.title}</div>
+                    <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>{p.desc}</div>
+                  </div>
+                </div>
+              ))}
             </div>
             {session ? (
               <div style={{marginTop:'28px'}}>
