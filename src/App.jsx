@@ -2044,7 +2044,13 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div style={{background:'#00E676',borderRadius:'14px',padding:'20px 16px 16px',marginBottom:'16px'}}>
                 <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'10px'}}>
-                  <Logo size={36} iconOnly />
+                  <svg width="36" height="36" viewBox="0 0 64 64">
+                    <rect width="64" height="64" rx="14" fill="#0a0e14"/>
+                    <path d="M8,32 Q32,6 56,32 Q32,58 8,32 Z" fill="#00E676"/>
+                    <path d="M13,32 Q32,11 51,32 Q32,53 13,32 Z" fill="#0a0e14"/>
+                    <circle cx="32" cy="32" r="5.5" fill="#00E676"/>
+                    <circle cx="32" cy="32" r="2" fill="#0a0e14"/>
+                  </svg>
                   <div>
                     <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.5)'}}>CÓMO FUNCIONA</div>
                     <div style={{fontSize:'20px',fontWeight:'900',color:'#0a0e14'}}>MiraFut Scouting</div>
