@@ -1222,17 +1222,6 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         )}
 
         <div className="mc">
-          {/* BANNER SCOUTING */}
-          {tab === "home" && !viewPost && !viewProfile && !session && (
-            <div style={{margin:'10px 16px 0',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'12px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-              <div>
-                <div style={{fontSize:'14px',fontWeight:'800',color:'#ECEFF4'}}>Tu talento merece ser visto</div>
-                <div style={{fontSize:'11px',color:'#556677',marginTop:'2px'}}>Scouts y agentes de todo el mundo</div>
-              </div>
-              <button onClick={() => setShowScouting(true)} style={{background:'#00E676',border:'none',borderRadius:'20px',padding:'7px 14px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif',whiteSpace:'nowrap'}}>Ver cómo →</button>
-            </div>
-          )}
-
           {/* ====== FILTROS ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
             <div style={{padding:'10px 16px 4px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
@@ -1255,6 +1244,17 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           )}
 
           {tab === "home" && !viewPost && !viewProfile && session && (<div style={{padding:"8px 16px 0"}}><button onClick={() => setShowNewPost(true)} style={{width:"100%",padding:"12px 16px",background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",color:"#556677",fontSize:"14px",cursor:"pointer",fontFamily:"Outfit,sans-serif",textAlign:"left",display:"flex",alignItems:"center",gap:"10px"}}><div style={{width:"32px",height:"32px",borderRadius:"10px",background:"rgba(0,230,118,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",flexShrink:0}}>✏️</div><span>¿Qué está pasando en el campo?</span></button></div>)}
+
+          {/* BANNER SCOUTING */}
+          {tab === "home" && !viewPost && !viewProfile && !session && (
+            <div style={{margin:'10px 16px 0',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'12px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div>
+                <div style={{fontSize:'14px',fontWeight:'800',color:'#ECEFF4'}}>Tu talento merece ser visto</div>
+                <div style={{fontSize:'11px',color:'#556677',marginTop:'2px'}}>Scouts y agentes de todo el mundo</div>
+              </div>
+              <button onClick={() => setShowScouting(true)} style={{background:'#00E676',border:'none',borderRadius:'20px',padding:'7px 14px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif',whiteSpace:'nowrap'}}>Ver cómo →</button>
+            </div>
+          )}
 
           {/* ====== DEBATE DE LA SEMANA ====== */}
           {tab === "home" && !viewPost && !viewProfile && debate && (
