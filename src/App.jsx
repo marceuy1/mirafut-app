@@ -109,6 +109,16 @@ function AuthInline({ onSuccess, onClose, postLoginTab }) {
         if (err) throw err;
         if (data.user) {
           await supabase.from('profiles').insert([{ id: data.user.id, username: email.split('@')[0], email, full_name: fullName, avatar_url: null, bio: '', age: null, country: '', city: '', position: '', verified: false, followers_count: 0, following_count: 0 }]);
+          fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer re_AQ7unFq2_FnXgbTeKAbRQs4Fvc6svY5w6' },
+            body: JSON.stringify({
+              from: 'MiraFut <noreply@mirafut.com>',
+              to: [email],
+              subject: '¡Bienvenido a MiraFut! 🎯',
+              html: '<div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#0a0e14;color:#ECEFF4;padding:32px;border-radius:16px"><div style="text-align:center;margin-bottom:24px"><svg width="56" height="56" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="22" fill="#080808"/><circle cx="50" cy="50" r="30" stroke="#00E676" stroke-width="6" fill="none"/><line x1="50" y1="8" x2="50" y2="18" stroke="#00E676" stroke-width="6" stroke-linecap="round"/><line x1="50" y1="82" x2="50" y2="92" stroke="#00E676" stroke-width="6" stroke-linecap="round"/><line x1="8" y1="50" x2="18" y2="50" stroke="#00E676" stroke-width="6" stroke-linecap="round"/><line x1="82" y1="50" x2="92" y2="50" stroke="#00E676" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="50" r="15" fill="#00E676"/></svg><h1 style="color:#00E676;margin:12px 0 4px">MiraFut</h1><p style="color:#556677;margin:0;font-size:12px;letter-spacing:2px">TALENT WITHOUT BORDERS</p></div><h2 style="color:#ECEFF4">¡Bienvenido, ' + (fullName || 'jugador') + '! 👋</h2><p style="color:#8899A6;line-height:1.6">Tu talento merece ser visto. Acabas de unirte a la plataforma donde jóvenes futbolistas consiguen visibilidad ante scouts y agentes de todo el mundo.</p><div style="background:#121820;border-radius:12px;padding:16px;margin:20px 0"><p style="color:#ECEFF4;font-weight:700;margin:0 0 12px">Primeros pasos:</p><p style="color:#8899A6;margin:6px 0">🎯 Completa tu perfil con tu posición y datos</p><p style="color:#8899A6;margin:6px 0">📹 Sube fotos o videos de tus jugadas</p><p style="color:#8899A6;margin:6px 0">💬 Participa en el debate de la semana</p><p style="color:#8899A6;margin:6px 0">🤝 Conecta con otros jugadores</p></div><a href="https://mirafut.com" style="display:block;background:#00E676;color:#0a0e14;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;margin-top:20px">Ir a MiraFut →</a><p style="color:#556677;font-size:12px;text-align:center;margin-top:20px">MiraFut — Talent Without Borders</p></div>'
+            })
+          }).catch(() => {});
           onSuccess();
         }
       } else {
