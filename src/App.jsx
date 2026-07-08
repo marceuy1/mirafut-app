@@ -1224,18 +1224,17 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         <div className="mc">
           {/* ====== FILTROS ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
-            <div style={{padding:'10px 16px 4px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
-              <div style={{display:'flex',gap:'6px',overflowX:'auto',scrollbarWidth:'none',marginBottom:'8px'}}>
+            <div style={{padding:'8px 16px 4px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+              <div style={{display:'flex',gap:'6px',overflowX:'auto',scrollbarWidth:'none'}}>
                 {['','POR','DEF','MED','DEL'].map(pos => (
-                  <button key={pos} onClick={() => setFilterPosition(pos)} style={{padding:'7px 16px',background:filterPosition===pos?'#00E676':'#121820',border:filterPosition===pos?'none':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterPosition===pos?'#0a0e14':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
+                  <button key={pos} onClick={() => setFilterPosition(pos)} style={{padding:'6px 14px',background:filterPosition===pos?'#00E676':'#121820',border:filterPosition===pos?'none':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterPosition===pos?'#0a0e14':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
                     {pos === '' ? 'Todos' : pos === 'POR' ? '🧤 POR' : pos === 'DEF' ? '🛡️ DEF' : pos === 'MED' ? '⚙️ MED' : '⚡ DEL'}
                   </button>
                 ))}
-              </div>
-              <div style={{display:'flex',gap:'6px',overflowX:'auto',scrollbarWidth:'none'}}>
-                <button onClick={() => setFilterCountry('')} style={{padding:'6px 14px',background:filterCountry===''?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===''?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===''?'#00E676':'#8899A6',fontSize:'11px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>🌍 Todos</button>
+                <div style={{width:'1px',background:'rgba(255,255,255,0.08)',flexShrink:0,margin:'4px 2px'}}/>
+                <button onClick={() => setFilterCountry('')} style={{padding:'6px 14px',background:filterCountry===''?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===''?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===''?'#00E676':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>🌍</button>
                 {COUNTRIES.map(c => (
-                  <button key={c} onClick={() => setFilterCountry(c)} style={{padding:'6px 14px',background:filterCountry===c?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===c?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===c?'#00E676':'#8899A6',fontSize:'11px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
+                  <button key={c} onClick={() => setFilterCountry(c)} style={{padding:'6px 14px',background:filterCountry===c?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===c?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===c?'#00E676':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
                     {c}
                   </button>
                 ))}
