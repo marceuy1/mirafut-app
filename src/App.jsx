@@ -1250,7 +1250,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div style={{margin:'10px 16px 0',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'12px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
               <div>
                 <div style={{fontSize:'14px',fontWeight:'800',color:'#ECEFF4'}}>Tu talento merece ser visto</div>
-                <div style={{fontSize:'11px',color:'#556677',marginTop:'2px'}}>Scouts y agentes de todo el mundo</div>
+                <div style={{fontSize:'11px',color:'#ECEFF4',marginTop:'2px'}}>Scouts y agentes de todo el mundo</div>
               </div>
               <button onClick={() => setShowScouting(true)} style={{background:'#00E676',border:'none',borderRadius:'20px',padding:'7px 14px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif',whiteSpace:'nowrap'}}>Ver cómo →</button>
             </div>
