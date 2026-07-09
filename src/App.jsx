@@ -2177,7 +2177,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div style={{fontSize:'12px',color:'#00E676',marginTop:'2px'}}>hola@mirafut.com</div>
                 </div>
               </a>
-              <div style={{fontSize:'11px',color:'#556677',textAlign:'center'}}>Respondemos en menos de 24 horas</div>
+
             </div>
           </div>
         )}
