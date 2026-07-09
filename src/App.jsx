@@ -1676,7 +1676,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className="prof-btn sec">{t.settings}</button>
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
               <div style={{height:'1px',background:'rgba(255,255,255,0.04)',margin:'12px 0'}}/>
-              <button onClick={() => setShowContact(true)} style={{width:'100%',padding:'11px',background:'transparent',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',color:'#556677',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
+              <button onClick={() => setShowContact(true)} style={{width:'100%',padding:'11px',background:'transparent',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',color:'#ECEFF4',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
                 <span>💬</span> ¿Necesitas ayuda? Contáctanos
               </button>
               {realPosts.length > 0 && (
