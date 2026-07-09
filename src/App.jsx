@@ -174,6 +174,7 @@ export default function App() {
   // App state - TODOS los useState ANTES de los useEffect
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [showSorteo, setShowSorteo] = useState(false);
   const [showScouting, setShowScouting] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
@@ -1676,7 +1677,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className="prof-btn sec">{t.settings}</button>
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
               <div style={{height:'1px',background:'rgba(255,255,255,0.04)',margin:'12px 0'}}/>
-              <button onClick={() => setShowContact(true)} style={{width:'100%',padding:'11px',background:'transparent',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',color:'#ECEFF4',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
+              <button onClick={() => setShowHelp(true)} style={{width:'100%',padding:'11px',background:'transparent',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',color:'#ECEFF4',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
                 <span>💬</span> ¿Necesitas ayuda? Contáctanos
               </button>
               {realPosts.length > 0 && (
@@ -2156,6 +2157,31 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           </div>
         )}
 
+        {/* HELP MODAL */}
+        {showHelp && (
+          <div className="modal-bg show" onClick={() => setShowHelp(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-hdr">
+                <div className="modal-title">💬 ¿Necesitas ayuda?</div>
+                <button className="modal-close" onClick={() => setShowHelp(false)}>✕</button>
+              </div>
+              <div style={{textAlign:'center',marginBottom:'20px'}}>
+                <div style={{fontSize:'40px',marginBottom:'8px'}}>👋</div>
+                <div style={{fontSize:'15px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>Estamos aquí para ayudarte</div>
+                <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5'}}>Escríbenos y te respondemos en menos de 24 horas</div>
+              </div>
+              <a href="mailto:hola@mirafut.com" style={{display:'flex',alignItems:'center',gap:'12px',background:'#0a0e14',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'12px',padding:'16px',textDecoration:'none',marginBottom:'12px'}}>
+                <div style={{width:'40px',height:'40px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'20px',flexShrink:0}}>✉️</div>
+                <div>
+                  <div style={{fontSize:'13px',fontWeight:'700',color:'#ECEFF4'}}>Escríbenos por email</div>
+                  <div style={{fontSize:'12px',color:'#00E676',marginTop:'2px'}}>hola@mirafut.com</div>
+                </div>
+              </a>
+              <div style={{fontSize:'11px',color:'#556677',textAlign:'center'}}>Respondemos en menos de 24 horas</div>
+            </div>
+          </div>
+        )}
+
         {/* CONTACT MODAL */}
         {showContact && (
           <div className="modal-bg show" onClick={() => { setShowContact(false); setContactSent(false); }}>
@@ -2172,21 +2198,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
               ) : (
                 <div>
-                  <div style={{textAlign:'center',marginBottom:'16px'}}>
-                <div style={{fontSize:'32px',marginBottom:'8px'}}>👋</div>
-                <div style={{fontSize:'15px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>¿En qué podemos ayudarte?</div>
-                <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5'}}>Estamos aquí para ayudarte a mostrar tu talento al mundo</div>
-              </div>
-              <a href="mailto:hola@mirafut.com" style={{display:'flex',alignItems:'center',gap:'12px',background:'#0a0e14',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'12px',padding:'14px',textDecoration:'none',marginBottom:'16px'}}>
-                <div style={{width:'36px',height:'36px',borderRadius:'10px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px',flexShrink:0}}>✉️</div>
-                <div>
-                  <div style={{fontSize:'13px',fontWeight:'700',color:'#ECEFF4'}}>Email</div>
-                  <div style={{fontSize:'12px',color:'#00E676',marginTop:'2px'}}>hola@mirafut.com</div>
-                </div>
-              </a>
-              <div style={{fontSize:'11px',color:'#556677',textAlign:'center',marginBottom:'16px'}}>Respondemos en menos de 24 horas</div>
-              <div style={{height:'1px',background:'rgba(255,255,255,0.06)',marginBottom:'16px'}}/>
-              <p style={{fontSize:'13px',color:'#556677',marginBottom:'16px',lineHeight:'1.5'}}>O cuéntanos tu historia y te haremos un seguimiento personalizado.</p>
+                  <p style={{fontSize:'13px',color:'#556677',marginBottom:'16px',lineHeight:'1.5'}}>Queremos conocerte. Cuéntanos tu historia y te haremos un seguimiento personalizado.</p>
                   {[{label:'Nombre completo',key:'name',type:'text',placeholder:'Tu nombre'},{label:'Email',key:'email',type:'email',placeholder:'tu@email.com'},{label:'País',key:'country',type:'text',placeholder:'Tu país'},{label:'Posición',key:'position',type:'text',placeholder:'Delantero, Mediocampista...'}].map(f => (
                     <div key={f.key} style={{marginBottom:'12px'}}>
                       <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'5px'}}>{f.label}</div>
