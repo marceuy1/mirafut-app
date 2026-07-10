@@ -156,6 +156,16 @@ function AuthInline({ onSuccess, onClose, postLoginTab }) {
           {loading ? 'Cargando...' : isSignUp ? 'Crear cuenta' : 'Iniciar sesión'}
         </button>
       </form>
+      {isSignUp && (
+        <div style={{display:'flex',alignItems:'flex-start',gap:'8px',margin:'8px 0',padding:'10px',background:'rgba(255,255,255,0.03)',borderRadius:'10px'}}>
+          <input type="checkbox" id="terms" required style={{marginTop:'2px',accentColor:'#00E676',flexShrink:0}} />
+          <label htmlFor="terms" style={{fontSize:'12px',color:'#8899A6',lineHeight:'1.5',cursor:'pointer'}}>
+            Confirmo que tengo 13 años o más y acepto los{' '}
+            <span onClick={() => setShowTerms(true)} style={{color:'#00E676',cursor:'pointer',textDecoration:'underline'}}>Términos y Privacidad</span>
+            {' '}de MiraFut
+          </label>
+        </div>
+      )}
       <button onClick={() => setIsSignUp(!isSignUp)} style={{width:'100%',background:'none',border:'none',color:'#00E676',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>{isSignUp ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}</button>
       {!isSignUp && <button onClick={async () => { if(!email) { setError('Ingresa tu email primero'); return; } const {error} = await supabase.auth.resetPasswordForEmail(email, {redirectTo:'https://mirafut.com'}); if(error) setError(error.message); else setError('✅ Te enviamos un link para restablecer tu contraseña'); }} style={{width:'100%',background:'none',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>¿Olvidaste tu contraseña?</button>}
       <button onClick={onClose} style={{width:'100%',background:'none',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit, sans-serif'}}>
@@ -175,6 +185,7 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [showSorteo, setShowSorteo] = useState(false);
   const [showScouting, setShowScouting] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
@@ -1680,6 +1691,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button onClick={() => setShowHelp(true)} style={{width:'100%',padding:'11px',background:'transparent',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',color:'#ECEFF4',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
                 <span>💬</span> ¿Necesitas ayuda? Contáctanos
               </button>
+              <button onClick={() => setShowTerms(true)} style={{width:'100%',padding:'8px',background:'transparent',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
+                📋 Términos y Privacidad
+              </button>
               {realPosts.length > 0 && (
                 <div style={{width:'100%',marginTop:'20px',textAlign:'left'}}>
                   <div style={{fontSize:'11px',color:'#556677',letterSpacing:'1px',textTransform:'uppercase',fontWeight:'700',marginBottom:'12px'}}>{t.myPosts}</div>
@@ -2153,6 +2167,32 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   Ir al debate para participar 🗳️
                 </button>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* TERMS MODAL */}
+        {showTerms && (
+          <div className="modal-bg show" onClick={() => setShowTerms(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
+              <div className="modal-hdr">
+                <div className="modal-title">📋 Términos y Privacidad</div>
+                <button className="modal-close" onClick={() => setShowTerms(false)}>✕</button>
+              </div>
+              {[
+                {title:'1. Edad mínima',text:'Debes tener al menos 13 años para usar MiraFut. Al registrarte confirmas que tienes 13 años o más.'},
+                {title:'2. Tu cuenta',text:'Eres responsable de mantener tu contraseña segura. No compartas tu cuenta con otros.'},
+                {title:'3. Contenido',text:'Al publicar fotos o videos confirmas que tienes los derechos sobre ese contenido y que no viola derechos de terceros.'},
+                {title:'4. Privacidad',text:'Recopilamos tu email, nombre y datos de perfil para operar la plataforma. No vendemos tus datos a terceros.'},
+                {title:'5. Conducta',text:'Está prohibido publicar contenido ofensivo, spam o acosar a otros usuarios. MiraFut puede suspender cuentas que violen estas normas.'},
+                {title:'6. Tus derechos',text:'Puedes solicitar eliminar tu cuenta y todos tus datos escribiendo a hola@mirafut.com'},
+              ].map((s,i) => (
+                <div key={i} style={{marginBottom:'16px',paddingBottom:'16px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                  <div style={{fontSize:'13px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>{s.title}</div>
+                  <div style={{fontSize:'13px',color:'#8899A6',lineHeight:'1.6'}}>{s.text}</div>
+                </div>
+              ))}
+              <div style={{fontSize:'12px',color:'#556677',textAlign:'center',marginTop:'8px'}}>Última actualización: julio 2026 · hola@mirafut.com</div>
             </div>
           </div>
         )}
