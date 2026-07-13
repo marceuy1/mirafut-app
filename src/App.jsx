@@ -306,20 +306,7 @@ export default function App() {
     if (data) { setUserProfile(data); loadRealPosts(); }
   };
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const u = params.get('u');
-    if (u) {
-      setTimeout(() => {
-        supabase.from('profiles').select('*').or('username.eq.' + u + ',id.eq.' + u).single().then(({data}) => {
-          if (data) {
-            setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||'',country:data.country||'',city:data.city||'',age:data.age||'',bio:data.bio||'',verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal});
-            setTab('home');
-          }
-        });
-      }, 1000);
-    }
-  }, []);
+
 
   const loadSorteo = async () => {
     const { data } = await supabase.from('sorteos').select('*').eq('activo', true).order('created_at', {ascending:false}).limit(1).single();
@@ -452,6 +439,13 @@ export default function App() {
     loadRealPosts();
     loadDebate();
     loadSorteo();
+    const params = new URLSearchParams(window.location.search);
+    const u = params.get('u');
+    if (u) {
+      supabase.from('profiles').select('*').eq('username', u).single().then(({data}) => {
+        if (data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||'',country:data.country||'',city:data.city||'',age:data.age||'',bio:data.bio||'',verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal});
+      });
+    }
 
     return () => subscription.unsubscribe();
   }, []);
