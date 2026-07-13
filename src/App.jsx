@@ -306,6 +306,19 @@ export default function App() {
     if (data) { setUserProfile(data); loadRealPosts(); }
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const u = params.get('u');
+    if (u) {
+      supabase.from('profiles').select('*').or('username.eq.' + u + ',id.eq.' + u).single().then(({data}) => {
+        if (data) {
+          setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||'',country:data.country||'',city:data.city||'',age:data.age||'',bio:data.bio||'',verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal});
+          setTab('home');
+        }
+      });
+    }
+  }, []);
+
   const loadSorteo = async () => {
     const { data } = await supabase.from('sorteos').select('*').eq('activo', true).order('created_at', {ascending:false}).limit(1).single();
     if (data) setSorteo(data);
@@ -1459,6 +1472,13 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 {followingList.includes(viewProfile.id) ? 'Siguiendo ✓' : '+ Seguir'}
               </button>
               <button className="prof-btn sec" onClick={() => openChat({id: viewProfile.id, name: viewProfile.name, avatar_url: viewProfile.avatar_url})}>💬 Mensaje</button>
+              {!session && (
+                <div style={{marginTop:'12px',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'14px',textAlign:'center'}}>
+                  <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>¿Eres scout o agente?</div>
+                  <div style={{fontSize:'12px',color:'#556677',marginBottom:'12px',lineHeight:'1.5'}}>Regístrate en MiraFut para conectar con este jugador y acceder a miles de talentos</div>
+                  <button onClick={() => setShowAuthPrompt(true)} style={{width:'100%',padding:'11px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🚀 Únete gratis</button>
+                </div>
+              )}
 
               {(viewProfile.height || viewProfile.weight || viewProfile.dominant_foot) && (
                 <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',textAlign:'left'}}>
@@ -1684,6 +1704,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
               )}
               <button className="prof-btn pri" onClick={openEditProfile}>{t.editProfile}</button>
+              <button className="prof-btn sec" onClick={() => {
+                const url = window.location.origin + '?u=' + (userProfile?.username || session?.user?.id);
+                navigator.clipboard.writeText(url).then(() => alert('✅ Link copiado — compártelo con scouts y agentes'));
+              }}>🔗 Compartir mi perfil</button>
               <button className="prof-btn sec" onClick={() => setShowContact(true)}>✉️ Cuéntanos tu historia</button>
               <button className="prof-btn sec">{t.settings}</button>
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
