@@ -1471,7 +1471,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {!session && (
                 <div style={{marginTop:'12px',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'14px',textAlign:'center'}}>
                   <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>¿Eres scout o agente?</div>
-                  <div style={{fontSize:'12px',color:'#556677',marginBottom:'12px',lineHeight:'1.5'}}>Regístrate en MiraFut para conectar con este jugador y acceder a miles de talentos</div>
+                  <div style={{fontSize:'12px',color:'#ECEFF4',marginBottom:'12px',lineHeight:'1.5'}}>Regístrate en MiraFut para conectar con este jugador y acceder a miles de talentos</div>
                   <button onClick={() => setShowAuthPrompt(true)} style={{width:'100%',padding:'11px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🚀 Únete gratis</button>
                 </div>
               )}
