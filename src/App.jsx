@@ -358,7 +358,7 @@ export default function App() {
       setDebate(data);
       const { data: votes } = await supabase
         .from('debate_votes')
-        .select('option_index, user_id')
+        .select('option_index, user_id, profiles(full_name, avatar_url)')
         .eq('debate_id', data.id);
       if (votes) setDebateVotes(votes);
       if (session) {
@@ -2181,6 +2181,19 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div>
                     <div style={{fontSize:'13px',fontWeight:'700',color:'#00E676'}}>¡Estás participando!</div>
                     <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>Votaste en el debate de esta semana</div>
+                  </div>
+                </div>
+              )}
+              {debateVotes.length > 0 && (
+                <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'10px'}}>
+                  <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>Participantes ({debateVotes.length})</div>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:'6px'}}>
+                    {debateVotes.map((v,i) => (
+                      <div key={i} style={{display:'flex',alignItems:'center',gap:'6px',background:'#121820',borderRadius:'20px',padding:'4px 10px 4px 4px'}}>
+                        <div style={{width:'22px',height:'22px',borderRadius:'50%',background:'rgba(0,230,118,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'9px',fontWeight:'800',color:'#00E676'}}>{v.profiles?.full_name?.substring(0,2).toUpperCase()||'??'}</div>
+                        <span style={{fontSize:'11px',color:'#ECEFF4',fontWeight:'600'}}>{v.profiles?.full_name?.split(' ')[0]||'Jugador'}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
