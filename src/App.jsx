@@ -109,9 +109,9 @@ function AuthInline({ onSuccess, onClose, postLoginTab }) {
         if (err) throw err;
         if (data.user) {
           await supabase.from('profiles').insert([{ id: data.user.id, username: email.split('@')[0], email, full_name: fullName, avatar_url: null, bio: '', age: null, country: '', city: '', position: '', verified: false, followers_count: 0, following_count: 0 }]);
-          fetch('https://api.resend.com/emails', {
+          fetch('/api/send-email', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer re_AQ7unFq2_FnXgbTeKAbRQs4Fvc6svY5w6' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               from: 'MiraFut <noreply@mirafut.com>',
               to: [email],
@@ -544,6 +544,16 @@ export default function App() {
   // ── Debate ────────────────────────────────────────────
 
 
+  const sendEmail = async (to, subject, html) => {
+    try {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, html })
+      });
+    } catch(e) { console.error('Email error:', e); }
+  };
+
   const getExerciseDiagram = (text, position) => {
     if (!text) return null;
     const t = text.toLowerCase();
@@ -712,9 +722,9 @@ export default function App() {
     if (!contactForm.name || !contactForm.email || !contactForm.story) return;
     setContactSending(true);
     try {
-      const res = await fetch('https://api.resend.com/emails', {
+      const res = await fetch('/api/send-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer re_AQ7unFq2_FnXgbTeKAbRQs4Fvc6svY5w6' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: 'MiraFut <noreply@mirafut.com>',
           to: ['hola@mirafut.com'],
