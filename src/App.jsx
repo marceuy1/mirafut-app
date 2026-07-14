@@ -1646,8 +1646,6 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
                 {aiInput.trim() ? (
                   <button className="ai-send" style={{background:aiInput.trim()?"#00E676":"#121820",color:aiInput.trim()?"#0a0e14":"#556677"}} onClick={()=>sendAI(aiInput)}>→</button>
-                ) : (
-
                 )}
               </div>
 
