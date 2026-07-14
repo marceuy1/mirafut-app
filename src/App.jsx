@@ -666,7 +666,8 @@ export default function App() {
     const { error: uploadError } = await supabase.storage.from('Avatars').upload(path, file, { upsert: true });
     if (uploadError) { alert('Error subiendo foto: ' + uploadError.message); return; }
     const { data: urlData } = supabase.storage.from('Avatars').getPublicUrl(path);
-    const { error: updateError } = await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('id', session.user.id);
+    await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('id', session.user.id);
+    setUserProfile(prev => prev ? {...prev, avatar_url: urlData.publicUrl} : prev);
   };
 
   const openEditProfile = async () => {
