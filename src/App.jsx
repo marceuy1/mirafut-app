@@ -1947,10 +1947,13 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 1 de 3 — Tu identidad</div>
                 <div style={{textAlign:'center',marginBottom:'24px'}}>
                   <label style={{cursor:'pointer'}}>
-                    <div style={{width:'80px',height:'80px',borderRadius:'24px',background:'#121820',border:'2px dashed rgba(0,230,118,0.4)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',margin:'0 auto 8px'}}>
-                      <span style={{fontSize:'24px'}}>📷</span>
-                      <span style={{fontSize:'10px',color:'#556677',marginTop:'4px'}}>Subir foto</span>
-                    </div>
+                    {userProfile?.avatar_url
+                      ? <img src={userProfile.avatar_url} style={{width:'80px',height:'80px',borderRadius:'24px',objectFit:'cover',margin:'0 auto 8px',display:'block'}} />
+                      : <div style={{width:'80px',height:'80px',borderRadius:'24px',background:'#121820',border:'2px dashed rgba(0,230,118,0.4)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',margin:'0 auto 8px'}}>
+                          <span style={{fontSize:'24px'}}>📷</span>
+                          <span style={{fontSize:'10px',color:'#556677',marginTop:'4px'}}>Subir foto</span>
+                        </div>
+                    }
                     <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files[0] && uploadAvatar(e.target.files[0])} />
                   </label>
                 </div>
