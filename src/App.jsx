@@ -185,6 +185,7 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showSorteo, setShowSorteo] = useState(false);
   const [showScouting, setShowScouting] = useState(false);
@@ -1705,7 +1706,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 navigator.clipboard.writeText(url).then(() => alert('✅ Link copiado — compártelo con scouts y agentes'));
               }}>🔗 Compartir mi perfil</button>
               <button className="prof-btn sec" onClick={() => setShowContact(true)}>✉️ Cuéntanos tu historia</button>
-              <button className="prof-btn sec">{t.settings}</button>
+              <button className="prof-btn sec" onClick={() => setShowSettings(true)}>{t.settings}</button>
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
               <div style={{height:'1px',background:'rgba(255,255,255,0.04)',margin:'12px 0'}}/>
               <button onClick={() => setShowHelp(true)} style={{width:'100%',padding:'11px',background:'transparent',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',color:'#ECEFF4',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
@@ -2216,6 +2217,40 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
               ))}
               <div style={{fontSize:'12px',color:'#556677',textAlign:'center',marginTop:'8px'}}>Última actualización: julio 2026 · hola@mirafut.com</div>
+            </div>
+          </div>
+        )}
+
+        {/* SETTINGS MODAL */}
+        {showSettings && (
+          <div className="modal-bg show" onClick={() => setShowSettings(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-hdr">
+                <div className="modal-title">⚙️ Configuración</div>
+                <button className="modal-close" onClick={() => setShowSettings(false)}>✕</button>
+              </div>
+
+              <div style={{marginBottom:'20px'}}>
+                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>Idioma</div>
+                <div style={{display:'flex',gap:'8px'}}>
+                  <button onClick={() => { setLang('es'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='es'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='es'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇪🇸 Español</button>
+                  <button onClick={() => { setLang('en'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='en'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='en'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇺🇸 English</button>
+                </div>
+              </div>
+
+              <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'20px',marginBottom:'20px'}}>
+                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>Cuenta</div>
+                <button onClick={() => { setShowSettings(false); setShowAuthPrompt(true); }} style={{width:'100%',padding:'12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',textAlign:'left',marginBottom:'8px'}}>
+                  🔒 Cambiar contraseña
+                </button>
+              </div>
+
+              <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'20px'}}>
+                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>Zona de peligro</div>
+                <button onClick={() => { if(window.confirm('¿Estás seguro? Esta acción es irreversible.')) { supabase.from('profiles').delete().eq('id', session.user.id).then(() => { supabase.auth.signOut(); setSession(null); setTab('home'); setShowSettings(false); }); } }} style={{width:'100%',padding:'12px',background:'rgba(255,82,82,0.08)',border:'1px solid rgba(255,82,82,0.2)',borderRadius:'12px',color:'#FF5252',fontSize:'14px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',textAlign:'left'}}>
+                  🗑️ Eliminar mi cuenta
+                </button>
+              </div>
             </div>
           </div>
         )}
