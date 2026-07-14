@@ -358,9 +358,14 @@ export default function App() {
       setDebate(data);
       const { data: votes } = await supabase
         .from('debate_votes')
-        .select('option_index, user_id, profiles(full_name, avatar_url)')
+        .select('option_index, user_id')
         .eq('debate_id', data.id);
-      if (votes) setDebateVotes(votes);
+      if (votes) {
+        const userIds = votes.map(v => v.user_id);
+        const { data: profs } = await supabase.from('profiles').select('id, full_name, avatar_url').in('id', userIds);
+        const votesWithProfiles = votes.map(v => ({...v, profiles: profs?.find(p => p.id === v.user_id)}));
+        setDebateVotes(votesWithProfiles);
+      }
       if (session) {
         const myVote = votes?.find(v => v.user_id === session.user.id);
         if (myVote) setUserVote(myVote.option_index);
