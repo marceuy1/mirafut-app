@@ -249,7 +249,6 @@ export default function App() {
   const [aiInput, setAiInput] = useState("");
   const [showSpecialists, setShowSpecialists] = useState(false);
   const [thinking, setThinking] = useState(false);
-  const [recording, setRecording] = useState(false);
   const aiEnd = useRef(null);
   const pendingTabRef = useRef('home');
   const agent = SPECIALISTS.find(s => s.id === currentAgent);
@@ -1647,7 +1646,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 {aiInput.trim() ? (
                   <button className="ai-send" style={{background:aiInput.trim()?"#00E676":"#121820",color:aiInput.trim()?"#0a0e14":"#556677"}} onClick={()=>sendAI(aiInput)}>→</button>
                 ) : (
-                  <button className="ai-mic" style={{background:recording?"#FF5252":"#121820",border:`1px solid ${recording?"#FF5252":"rgba(255,255,255,0.06)"}`,color:recording?"white":"#8899A6"}} onMouseDown={()=>setRecording(true)} onMouseUp={()=>setRecording(false)} onMouseLeave={()=>setRecording(false)}>🎤</button>
+
                 )}
               </div>
 
