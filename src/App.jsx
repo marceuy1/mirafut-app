@@ -1644,8 +1644,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="ai-ibox">
                   <textarea className="ai-field" placeholder={`Escríbele a ${agent.name}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
                 </div>
-                {aiInput.trim() ? (
-                  <button className="ai-send" style={{background:aiInput.trim()?"#00E676":"#121820",color:aiInput.trim()?"#0a0e14":"#556677"}} onClick={()=>sendAI(aiInput)}>→</button>
+                {aiInput.trim() && (
+                  <button className="ai-send" style={{background:'#00E676',color:'#0a0e14'}} onClick={()=>sendAI(aiInput)}>→</button>
                 )}
               </div>
 
