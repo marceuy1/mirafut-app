@@ -2153,10 +2153,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
               <div style={{background:'linear-gradient(135deg,#00E676,#00C853)',borderRadius:'14px',padding:'16px',marginBottom:'12px',position:'relative',overflow:'hidden'}}>
                 <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.5)',marginBottom:'4px'}}>SORTEO DEL MES</div>
-                <div style={{fontSize:'18px',fontWeight:'900',color:'#0a0e14',marginBottom:'4px'}}>Camiseta oficial ⚽</div>
-                <div style={{fontSize:'12px',color:'rgba(0,0,0,0.6)',marginBottom:'12px'}}>Participa en el debate y entra al sorteo</div>
+                <div style={{fontSize:'18px',fontWeight:'900',color:'#0a0e14',marginBottom:'4px'}}>{sorteo?.premio || 'Premio del mes'} ⚽</div>
+                <div style={{fontSize:'12px',color:'rgba(0,0,0,0.6)',marginBottom:'12px'}}>{sorteo?.descripcion || 'Participa en el debate y entra al sorteo'}</div>
                 <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
-                  <div style={{background:'rgba(0,0,0,0.15)',borderRadius:'20px',padding:'5px 12px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>⏱ 12 días restantes</div>
+                  <div style={{background:'rgba(0,0,0,0.15)',borderRadius:'20px',padding:'5px 12px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>⏱ {sorteo ? Math.max(0, Math.ceil((new Date(sorteo.ends_at) - new Date()) / (1000*60*60*24))) : 0} días restantes</div>
                   <div style={{background:'rgba(0,0,0,0.15)',borderRadius:'20px',padding:'5px 12px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} participantes</div>
                 </div>
               </div>
@@ -2166,8 +2166,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
                   {!sorteo?.imagen_url && <div style={{width:'48px',height:'48px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'24px',flexShrink:0}}>👕</div>}
                   <div>
-                    <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4'}}>Camiseta de tu club favorito</div>
-                    <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>Original · Talla a elección del ganador</div>
+                    <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4'}}>{sorteo?.premio || 'Premio del mes'}</div>
+                    <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>{sorteo?.descripcion || ''}</div>
                   </div>
                 </div>
               </div>
