@@ -1,8 +1,8 @@
 export const translations = {
   es: {
     tagline: 'TALENTO SIN FRONTERAS',
-    heroTitle: 'Desarrollate. Demuéstralo. Consigue tu oportunidad.',
-    heroSubtitle: 'Tu sueño profesional empieza aquí. Mejora, demuestra tu talento y consigue tu oportunidad.',
+    heroTitle: 'Desarrollate. Demuéstralo. Consigue tu oportunidad',
+    heroSubtitle: 'Tu sueño profesional empieza aquí. Mejora, demuestra tu talento y consigue tu oportunidad',
     players: 'Jugadores',
     activePosts: 'Posts activos',
     countries: 'Países',
@@ -48,8 +48,8 @@ export const translations = {
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
-    heroTitle: 'Develop. Get Seen. Get Your Opportunity.',
-    heroSubtitle: 'Your professional dream starts here. Improve, showcase your talent, and get your opportunity.',
+    heroTitle: 'Develop. Get Seen. Get Your Opportunity',
+    heroSubtitle: 'Your professional dream starts here. Improve, showcase your talent, and get your opportunity',
     players: 'Players',
     activePosts: 'Active posts',
     countries: 'Countries',
