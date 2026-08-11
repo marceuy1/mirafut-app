@@ -1225,6 +1225,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <p className="hero-subtitle">
               {t.heroSubtitle}
             </p>
+            <p style={{fontSize:'15px',color:'rgba(255,255,255,0.4)',marginTop:'-16px',marginBottom:'24px',fontStyle:'italic',maxWidth:'600px',margin:'-16px auto 24px'}}>
+              {t.lang === 'en' ? "We don't promise to get you discovered. We help you become the player who deserves to be discovered — and then we work to get you there." : "No te prometemos que te van a descubrir. Te ayudamos a convertirte en el jugador que merece ser descubierto — y después trabajamos para acercarte a esa oportunidad."}
+            </p>
             <div className="hero-stats">
               <div className="hero-stat">
                 <div className="hero-stat-value">20</div>
@@ -1957,7 +1960,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             {onboardingStep === 1 && (
               <div>
                 <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>¡Bienvenido! 👋</div>
-                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 1 de 3 — Tu identidad</div>
+                <div style={{fontSize:'14px',color:'#556677',marginBottom:'12px'}}>Paso 1 de 3 — Tu identidad</div>
+                <div style={{fontSize:'13px',color:'rgba(255,255,255,0.35)',fontStyle:'italic',marginBottom:'20px',lineHeight:'1.5',padding:'0 8px'}}>No te prometemos que te van a descubrir. Te ayudamos a convertirte en el jugador que merece ser descubierto.</div>
                 <div style={{textAlign:'center',marginBottom:'24px'}}>
                   <label style={{cursor:'pointer'}}>
                     {userProfile?.avatar_url
@@ -2122,7 +2126,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div style={{fontSize:'20px',fontWeight:'900',color:'#0a0e14'}}>MiraFut Scouting</div>
                   </div>
                 </div>
-                <div style={{fontSize:'13px',color:'#0a0e14',lineHeight:'1.5',fontWeight:'600'}}>La plataforma donde el talento sin fronteras encuentra su oportunidad</div>
+                <div style={{fontSize:'13px',color:'#0a0e14',lineHeight:'1.5',fontWeight:'600'}}>No te prometemos que te van a descubrir. Te ayudamos a convertirte en el jugador que merece ser descubierto — y después trabajamos para acercarte a esa oportunidad.</div>
               </div>
 
               {[
