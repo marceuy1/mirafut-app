@@ -140,3 +140,34 @@ Eso cambia completamente una conversacion de inversion.
 
 Documento creado: agosto 2026
 MiraFut - Develop. Get Seen. Get Your Opportunity.
+
+---
+
+## La regla de oro
+
+No gastar dinero para ocultar un problema de producto.
+Gastar dinero unicamente para acelerar algo que ya funciona.
+
+## El camino claro
+
+MiraFut
+→ lanzamiento austero
+→ primeros usuarios
+→ validar retencion
+→ primeros profesionales
+→ primeras oportunidades
+→ demostrar resultados
+→ buscar capital
+→ escalar
+
+## Pendiente — Plan operativo de 90 dias
+
+Semana por semana con acciones concretas para conseguir:
+- Los primeros 100 jugadores
+- Los primeros 500 jugadores
+- Los primeros 1.000 jugadores
+- Los primeros scouts/agentes
+
+Sin necesidad de gran presupuesto.
+
+Agregado: agosto 2026
