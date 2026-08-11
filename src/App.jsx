@@ -1226,7 +1226,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {t.heroSubtitle}
             </p>
             <p style={{fontSize:'15px',color:'rgba(255,255,255,0.4)',marginTop:'-16px',marginBottom:'24px',fontStyle:'italic',maxWidth:'600px',margin:'-16px auto 24px'}}>
-              {t.lang === 'en' ? "We don't promise to get you discovered. We help you become the player who deserves to be discovered — and then we work to get you there." : "No te prometemos que te van a descubrir. Te ayudamos a convertirte en el jugador que merece ser descubierto — y después trabajamos para acercarte a esa oportunidad."}
+              {lang === 'en' ? "We don't promise to get you discovered. We help you become the player who deserves to be discovered — and then we work to get you there." : "No te prometemos que te van a descubrir. Te ayudamos a convertirte en el jugador que merece ser descubierto — y después trabajamos para acercarte a esa oportunidad."}
             </p>
             <div className="hero-stats">
               <div className="hero-stat">
