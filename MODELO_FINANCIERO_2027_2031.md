@@ -241,3 +241,89 @@ Base: $60M-$180M de valoracion
 Breakout: $200M-$600M de valoracion
 
 Agregado: agosto 2026
+
+---
+
+## Estrategia de adquisicion ampliada
+
+No solo: Jugador → MiraFut
+
+Tambien:
+Academia → MiraFut → cientos de jugadores
+Torneo → MiraFut → cientos de jugadores
+Scout → MiraFut → jugadores
+Agente → MiraFut → jugadores
+
+Esto reduce enormemente el coste de adquisicion (CAC).
+
+## El MOAT mas fuerte
+
+OPENsport: analiza y desarrolla jugadores
+Elite Player Hub: conecta jugadores con scouts
+Scout52: herramientas de scouting profesional
+
+MiraFut: el historial completo del jugador desde desarrollo hasta oportunidad.
+Ese es el activo que ninguno tiene.
+
+## Valoracion potencial — rangos de planificacion
+
+$1M ARR → empresa de $3M-$8M
+$5M ARR → empresa de $20M-$50M
+$10M ARR → empresa de $40M-$100M+
+$20M+ ARR → posibilidades de $100M+ con buenas metricas
+
+La valoracion depende de: ARR, crecimiento, retencion, margen,
+B2B mix, network effects, oportunidades generadas, calidad de datos.
+
+## Los tres negocios dentro de MiraFut
+
+1. B2C: desarrollo del jugador
+2. Marketplace: talento — profesionales
+3. B2B SaaS: herramientas para academias, agentes y clubes
+
+El tercero puede financiar el primero.
+
+## Investment Score actualizado
+
+Score: 86/100
+
+Execution risk: MUY ALTO
+
+Lo que todavia falta validar:
+- Retencion real
+- Usuarios reales
+- Profesionales activos
+- Ingresos
+- Oportunidades generadas
+- CAC real
+- LTV real
+
+## Probabilidades de exito estimadas
+
+Negocio viable: 75%
+Empresa internacional relevante: 50-55%
+Empresa de $50M+ de valoracion: 25-35%
+Empresa de $100M+: 15-20%
+
+Estas probabilidades pueden cambiar enormemente en los primeros 12 meses.
+
+## Proximo paso — Unit Economics
+
+Calcular:
+- CAC jugador
+- CAC profesional
+- Coste IA por usuario (OpenAI)
+- Coste servidores (Vercel + Supabase)
+- Coste soporte
+- Coste adquisicion mediante academias
+- ARPU
+- LTV
+- Gross Margin
+- Break-even
+
+## Pregunta pendiente
+
+Cuanto capital inicial tienen para los primeros 12 meses?
+Modelar con: $50K / $100K / $250K / $500K
+
+Agregado: agosto 2026
