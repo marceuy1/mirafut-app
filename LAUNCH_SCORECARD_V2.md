@@ -192,3 +192,43 @@ cambia radicalmente la conversacion sobre valoracion empresarial.
 
 Documento creado: agosto 2026
 MiraFut - Develop. Get Seen. Get Your Opportunity.
+
+---
+
+## Conclusion — Por que lanzar MiraFut
+
+Despues de todo el analisis: SI lanzar MiraFut.
+Pero NO con campana masiva desde el dia uno.
+
+La estrategia correcta:
+100 → 1.000 → 10.000
+
+Cada etapa demuestra una hipotesis:
+
+100 jugadores: "Los jugadores quieren utilizarlo."
+1.000 jugadores: "Los jugadores se quedan."
+10.000 jugadores: "El ecosistema profesional empieza a necesitarlo."
+100.000 jugadores: cuestion de escala, no de descubrimiento.
+
+## Modelo financiero MiraFut 2027-2031 — pendiente
+
+Calcular ingresos potenciales con:
+- 10.000 / 50.000 / 100.000 / 500.000 jugadores
+- Jugadores premium
+- Agentes y scouts
+- Clubes y academias
+- Patrocinadores
+
+Incluir:
+- Ingresos por escenario
+- Costes operativos
+- Punto de equilibrio
+- Valoracion estimada de la empresa
+
+Pregunta a responder:
+Que probabilidades tiene MiraFut de convertirse en
+una empresa de $10M, $50M o $100M+ de valoracion?
+
+Pendiente: construir con el equipo.
+
+Agregado: agosto 2026
