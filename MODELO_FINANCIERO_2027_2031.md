@@ -92,3 +92,63 @@ Profesionales:
 2.000 → ingresos B2B
 
 Agregado: agosto 2026
+
+---
+
+## Los 3 modelos de pricing a evaluar
+
+MODELO CRECIMIENTO:
+- Jugador: Free + Premium accesible
+- Profesional: Suscripcion profesional
+- Estrategia: maximizar usuarios, monetizar lado profesional
+
+MODELO EQUILIBRADO:
+- Jugador: Free + Pro + Elite
+- Profesional: Pro + Club/Agent
+- Estrategia: ingresos de ambos lados
+
+MODELO PREMIUM:
+- Jugador: Free muy potente + Elite
+- Profesional: B2B de mayor valor
+- Estrategia: calidad sobre cantidad
+
+## La estrategia mas potente para crecimiento rapido
+
+Jugadores gratuitos o muy accesibles → talento de calidad
+→ profesionales atraidos → monetizacion B2B
+
+Muchos jugadores + desarrollo gratuito = talento de calidad
+= profesionales dispuestos a pagar = monetizacion B2B
+
+Ese modelo puede hacer que el crecimiento sea mucho mas rapido.
+
+## Proyecciones a calcular
+
+Jugadores: 10.000 / 50.000 / 100.000 / 500.000
+Profesionales: 100 / 500 / 2.000 / 10.000
+
+## Costes a incluir en el modelo
+
+- Tecnologia y servidores
+- IA (OpenAI)
+- Marketing y adquisicion
+- Personal
+- Scouting
+- Soporte
+- Administracion
+- Compliance
+- Expansion internacional
+
+## Lo que el modelo debe responder
+
+- Ingresos potenciales por escenario
+- Perdidas iniciales
+- Punto de equilibrio
+- Valoracion potencial
+- Capital necesario
+
+## La pregunta final
+
+Puede MiraFut convertirse en una empresa de $10M, $50M o $100M+?
+
+Agregado: agosto 2026
