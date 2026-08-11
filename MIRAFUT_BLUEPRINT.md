@@ -259,3 +259,34 @@ MES 11-12: Primer B2B + evaluar financiamiento
 Documento creado: agosto 2026
 En colaboracion con el equipo MiraFut
 MiraFut - Develop. Get Seen. Get Your Opportunity.
+
+---
+
+## La filosofia central de MiraFut
+
+"MiraFut no promete descubrirte.
+MiraFut te ayuda a convertirte en el jugador que merece ser descubierto
+y despues trabaja para acercarte a esa oportunidad."
+
+Esta es la filosofia que diferencia a MiraFut de cualquier otra plataforma.
+
+## Las 6 piezas estrategicas
+
+1. Desarrollo del jugador → Coach IA
+2. Descubrimiento → perfiles + scouting
+3. Oportunidades → scouts + agentes + clubes
+4. Comunidad futbolistica → debates + desafios
+5. Engagement → puntos + reconocimientos + sorteos
+6. Evolucion → historial de desarrollo del jugador
+
+## La escala
+
+USA → LatAm → Europa
+
+## La pregunta que debemos responder
+
+Vale la pena invertir tiempo y capital en lanzar MiraFut?
+Y si la respuesta es si: que hacer en los primeros 12 meses
+para maximizar las probabilidades de exito?
+
+Agregado: agosto 2026
