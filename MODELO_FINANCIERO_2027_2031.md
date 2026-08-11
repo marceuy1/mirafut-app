@@ -152,3 +152,92 @@ Profesionales: 100 / 500 / 2.000 / 10.000
 Puede MiraFut convertirse en una empresa de $10M, $50M o $100M+?
 
 Agregado: agosto 2026
+
+---
+
+## Contexto competitivo actualizado
+
+OPENsport: analisis de video, seguimiento de progreso, entrenamiento personalizado
+Elite Player Hub: perfiles gratuitos a jugadores, monetiza acceso scouts/clubes
+Scout Me Pro: perfiles, video, IA y descubrimiento para jovenes
+
+Conclusion: MiraFut tiene que ganar por ejecucion y ecosistema,
+no simplemente por tener IA.
+
+## Modelo economico preliminar — en dolares (mercado USA)
+
+### Escenario CONSERVADOR
+
+Ano 1: 5.000 registrados / 2.000 activos / 40 profesionales / $100k-$180k
+Ano 2: 15.000 / 6.000 / 120 / $300k-$500k
+Ano 3: 35.000 / 14.000 / 300 / $800k-$1.3M
+Ano 4: 70.000 / 28.000 / 600 / $1.7M-$2.7M
+Ano 5: 120.000 / 48.000 / 1.000 / $3M-$5M
+
+Resultado: buen negocio, pero no empresa de gran escala.
+
+### Escenario BASE — donde debemos apuntar
+
+Ano 1: 10k / 4k / 100 profesionales / $250k-$400k
+Ano 2: 35k / 15k / 300 / $900k-$1.4M
+Ano 3: 100k / 45k / 800 / $2.5M-$4M
+Ano 4: 250k / 110k / 1.800 / $6M-$9M
+Ano 5: 500k / 225k / 4.000 / $12M-$18M
+
+Resultado: empresa interesante. Con 500k jugadores y 4k profesionales
+la conversacion cambia completamente.
+
+### Escenario BREAKOUT — requiere ejecucion excepcional
+
+Ano 1: 15k / 7k / 150 / $400k-$600k
+Ano 2: 75k / 35k / 600 / $2M-$3M
+Ano 3: 250k / 120k / 2.000 / $7M-$10M
+Ano 4: 600k / 300k / 5.000 / $18M-$28M
+Ano 5: 1.5M / 750k / 10.000 / $40M-$60M
+
+Resultado: compania internacional de tecnologia deportiva.
+
+## Hipotesis de pricing
+
+Jugador: Free → Pro accesible → Elite opcional
+Profesional: suscripcion B2B
+Club: SaaS / recruitment intelligence
+Academia: desarrollo + gestion
+Sponsors: marca + eventos + premios
+
+## Ejemplo de monetizacion con 100.000 jugadores
+
+5% paga $10/mes = 5.000 x $10 x 12 = $600.000/ano
+1.000 profesionales x $50/mes = $600.000/ano
+100 organizaciones x $500/mes = $600.000/ano
+TOTAL: $1.8M/ano sin contar publicidad ni eventos
+
+Conclusion: el verdadero multiplicador esta en B2B.
+
+## La oportunidad de las academias
+
+Una academia con 100 jugadores usa MiraFut para:
+perfiles, evaluaciones, planes individuales, Coach IA,
+seguimiento, comunicacion, desarrollo, historial.
+
+Si una academia paga $500/mes:
+100 academias = $600.000/ano
+1.000 academias = $6M/ano
+
+Y ademas introduce miles de jugadores directamente en MiraFut.
+Mucho mas eficiente que adquirir jugadores individualmente.
+
+## Respuesta a la pregunta original
+
+Puede MiraFut convertirse en empresa de $10M, $50M o $100M+?
+
+Escenario conservador ano 5: $3M-$5M en ingresos
+Escenario base ano 5: $12M-$18M en ingresos
+Escenario breakout ano 5: $40M-$60M en ingresos
+
+Con multiples de valoracion de 5-10x ingresos (tipico en SaaS):
+Conservador: $15M-$50M de valoracion
+Base: $60M-$180M de valoracion
+Breakout: $200M-$600M de valoracion
+
+Agregado: agosto 2026
