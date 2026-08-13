@@ -227,6 +227,7 @@ export default function App() {
   const [postComments, setPostComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '', height: '', weight: '', dominant_foot: '', goal: '', units: 'metric', club: '', level: '', training_freq: '' });
+  const [onboardingForm, setOnboardingForm] = useState({ full_name: '', position: '', country: '', city: '', age: '', dominant_foot: '', goal: '', height: '', weight: '', units: 'metric', club: '', level: '', training_freq: '' });
   const [editLoading, setEditLoading] = useState(false);
   const [tab, setTab] = useState(() => {
     const saved = sessionStorage.getItem('activeTab');
@@ -793,21 +794,21 @@ export default function App() {
   const saveOnboarding = async () => {
     if (!session) return;
     await supabase.from('profiles').update({
-      full_name: editForm.full_name || null,
-      username: editForm.username || null,
-      bio: editForm.bio || null,
-      age: editForm.age ? parseInt(editForm.age) : null,
-      country: editForm.country || null,
-      city: editForm.city || null,
-      position: editForm.position || null,
-      height: editForm.height || null,
-      weight: editForm.weight || null,
-      units: editForm.units || 'metric',
-      club: editForm.club || null,
-      level: editForm.level || null,
-      training_freq: editForm.training_freq || null,
-      dominant_foot: editForm.dominant_foot || null,
-      goal: editForm.goal || null,
+      full_name: onboardingForm.full_name || null,
+      username: onboardingForm.username || null,
+      bio: onboardingForm.bio || null,
+      age: onboardingForm.age ? parseInt(onboardingForm.age) : null,
+      country: onboardingForm.country || null,
+      city: onboardingForm.city || null,
+      position: onboardingForm.position || null,
+      height: onboardingForm.height || null,
+      weight: onboardingForm.weight || null,
+      units: onboardingForm.units || 'metric',
+      club: onboardingForm.club || null,
+      level: onboardingForm.level || null,
+      training_freq: onboardingForm.training_freq || null,
+      dominant_foot: onboardingForm.dominant_foot || null,
+      goal: onboardingForm.goal || null,
     }).eq('id', session.user.id);
     await supabase.from('profiles').update({onboarding_seen: true}).eq('id', session.user.id);
     setShowOnboarding(false);
@@ -1994,9 +1995,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Posición</div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                     {[{v:'POR',e:'🧤'},{v:'DEF',e:'🛡️'},{v:'MED',e:'⚙️'},{v:'DEL',e:'⚡'}].map(p => (
-                      <div key={p.v} onClick={() => setEditForm(prev=>({...prev,position:p.v}))} style={{padding:'14px',background:editForm.position===p.v?'rgba(0,230,118,0.12)':'#121820',border:editForm.position===p.v?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center'}}>
+                      <div key={p.v} onClick={() => setOnboardingForm(prev=>({...prev,position:p.v}))} style={{padding:'14px',background:onboardingForm.position===p.v?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.position===p.v?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center'}}>
                         <div style={{fontSize:'24px',marginBottom:'4px'}}>{p.e}</div>
-                        <div style={{fontSize:'13px',fontWeight:'700',color:editForm.position===p.v?'#00E676':'#ECEFF4'}}>{p.v}</div>
+                        <div style={{fontSize:'13px',fontWeight:'700',color:onboardingForm.position===p.v?'#00E676':'#ECEFF4'}}>{p.v}</div>
                       </div>
                     ))}
                   </div>
@@ -2011,7 +2012,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Nivel competitivo</div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                     {['Recreativo','Amateur','Semi-profesional','Académia'].map(n => (
-                      <div key={n} onClick={()=>setEditForm(prev=>({...prev,level:n}))} style={{padding:'10px',background:editForm.level===n?'rgba(0,230,118,0.12)':'#121820',border:editForm.level===n?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'600',color:editForm.level===n?'#00E676':'#8899A6'}}>{n}</div>
+                      <div key={n} onClick={()=>setOnboardingForm(prev=>({...prev,level:n}))} style={{padding:'10px',background:onboardingForm.level===n?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.level===n?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'600',color:onboardingForm.level===n?'#00E676':'#8899A6'}}>{n}</div>
                     ))}
                   </div>
                 </div>
@@ -2019,7 +2020,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>¿Cuántas veces entrenas por semana?</div>
                   <div style={{display:'flex',gap:'8px'}}>
                     {['1-2','3-4','5+'].map(f => (
-                      <div key={f} onClick={()=>setEditForm(prev=>({...prev,training_freq:f}))} style={{flex:1,padding:'10px',background:editForm.training_freq===f?'rgba(0,230,118,0.12)':'#121820',border:editForm.training_freq===f?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'13px',fontWeight:'600',color:editForm.training_freq===f?'#00E676':'#8899A6'}}>{f} días</div>
+                      <div key={f} onClick={()=>setOnboardingForm(prev=>({...prev,training_freq:f}))} style={{flex:1,padding:'10px',background:onboardingForm.training_freq===f?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.training_freq===f?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'13px',fontWeight:'600',color:onboardingForm.training_freq===f?'#00E676':'#8899A6'}}>{f} días</div>
                     ))}
                   </div>
                 </div>
@@ -2030,24 +2031,24 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>Datos físicos 💪</div>
                 <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 3 de 3 — Para los scouts</div>
                 <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
-                  <button onClick={()=>setEditForm(prev=>({...prev,units:'metric'}))} style={{flex:1,padding:'8px',background:editForm.units!=='imperial'?'#00E676':'#121820',border:'none',borderRadius:'10px',color:editForm.units!=='imperial'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',fontSize:'12px'}}>cm / kg</button>
-                  <button onClick={()=>setEditForm(prev=>({...prev,units:'imperial'}))} style={{flex:1,padding:'8px',background:editForm.units==='imperial'?'#00E676':'#121820',border:'none',borderRadius:'10px',color:editForm.units==='imperial'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',fontSize:'12px'}}>ft / lbs</button>
+                  <button onClick={()=>setOnboardingForm(prev=>({...prev,units:'metric'}))} style={{flex:1,padding:'8px',background:onboardingForm.units!=='imperial'?'#00E676':'#121820',border:'none',borderRadius:'10px',color:onboardingForm.units!=='imperial'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',fontSize:'12px'}}>cm / kg</button>
+                  <button onClick={()=>setOnboardingForm(prev=>({...prev,units:'imperial'}))} style={{flex:1,padding:'8px',background:onboardingForm.units==='imperial'?'#00E676':'#121820',border:'none',borderRadius:'10px',color:onboardingForm.units==='imperial'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',fontSize:'12px'}}>ft / lbs</button>
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'14px'}}>
                   <div>
-                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Altura ({editForm.units==='imperial'?'ft':'cm'})</div>
-                    <input type="number" value={editForm.height} onChange={e=>setEditForm(prev=>({...prev,height:e.target.value}))} placeholder={editForm.units==='imperial'?'5.9':'175'} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Altura ({onboardingForm.units==='imperial'?'ft':'cm'})</div>
+                    <input type="number" value={onboardingForm.height} onChange={e=>setOnboardingForm(prev=>({...prev,height:e.target.value}))} placeholder={onboardingForm.units==='imperial'?'5.9':'175'} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
                   </div>
                   <div>
-                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Peso ({editForm.units==='imperial'?'lbs':'kg'})</div>
-                    <input type="number" value={editForm.weight} onChange={e=>setEditForm(prev=>({...prev,weight:e.target.value}))} placeholder={editForm.units==='imperial'?'150':'68'} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Peso ({onboardingForm.units==='imperial'?'lbs':'kg'})</div>
+                    <input type="number" value={onboardingForm.weight} onChange={e=>setOnboardingForm(prev=>({...prev,weight:e.target.value}))} placeholder={onboardingForm.units==='imperial'?'150':'68'} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
                   </div>
                 </div>
                 <div style={{marginBottom:'14px'}}>
                   <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Pie dominante</div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px'}}>
                     {['Derecho','Izquierdo','Ambos'].map(p => (
-                      <div key={p} onClick={() => setEditForm(prev=>({...prev,dominant_foot:p}))} style={{padding:'10px',background:editForm.dominant_foot===p?'rgba(0,230,118,0.12)':'#121820',border:editForm.dominant_foot===p?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'700',color:editForm.dominant_foot===p?'#00E676':'#ECEFF4'}}>
+                      <div key={p} onClick={() => setOnboardingForm(prev=>({...prev,dominant_foot:p}))} style={{padding:'10px',background:onboardingForm.dominant_foot===p?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.dominant_foot===p?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'700',color:onboardingForm.dominant_foot===p?'#00E676':'#ECEFF4'}}>
                         {p}
                       </div>
                     ))}
@@ -2055,7 +2056,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
                 <div style={{marginBottom:'14px'}}>
                   <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Objetivo</div>
-                  <input type="text" value={editForm.goal} onChange={e=>setEditForm(prev=>({...prev,goal:e.target.value}))} placeholder="Ej: Busco academia profesional en Europa" style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                  <input type="text" value={onboardingForm.goal} onChange={e=>setOnboardingForm(prev=>({...prev,goal:e.target.value}))} placeholder="Ej: Busco academia profesional en Europa" style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
                 </div>
               </div>
             )}
