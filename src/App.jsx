@@ -689,13 +689,13 @@ export default function App() {
   const openEditProfile = async () => {
     if (!session) return;
     const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-    if (data) setEditForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', age: data.age || '', country: data.country || '', city: data.city || '', position: data.position || '', height: data.height || '', weight: data.weight || '', dominant_foot: data.dominant_foot || '', goal: data.goal || '' });
+    if (data) setEditForm({ full_name: data.full_name || '', username: data.username || '', bio: data.bio || '', age: data.age || '', country: data.country || '', city: data.city || '', position: data.position || '', height: data.height || '', weight: data.weight || '', dominant_foot: data.dominant_foot || '', goal: data.goal || '', units: data.units || 'metric', club: data.club || '', level: data.level || '', training_freq: data.training_freq || '' });
     setShowEditProfile(true);
   };
 
   const saveProfile = async () => {
     setEditLoading(true);
-    const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, age: editForm.age ? parseInt(editForm.age) : null, country: editForm.country, city: editForm.city, position: editForm.position, height: editForm.height ? parseInt(editForm.height) : null, weight: editForm.weight ? parseInt(editForm.weight) : null, dominant_foot: editForm.dominant_foot || null, goal: editForm.goal || null }).eq('id', session.user.id);
+    const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, age: editForm.age ? parseInt(editForm.age) : null, country: editForm.country, city: editForm.city, position: editForm.position, height: editForm.height || null, weight: editForm.weight || null, dominant_foot: editForm.dominant_foot || null, goal: editForm.goal || null, units: editForm.units || 'metric', club: editForm.club || null, level: editForm.level || null, training_freq: editForm.training_freq || null }).eq('id', session.user.id);
     setEditLoading(false);
     if (error) { console.error('Error actualizando perfil:', error.message); } else { setShowEditProfile(false); loadUserProfile(session.user.id); }
   };
