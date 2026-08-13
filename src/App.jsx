@@ -226,7 +226,7 @@ export default function App() {
   const [userVote, setUserVote] = useState(null);
   const [postComments, setPostComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '', height: '', weight: '', dominant_foot: '', goal: '', units: 'metric' });
+  const [editForm, setEditForm] = useState({ full_name: '', username: '', bio: '', age: '', country: '', city: '', position: '', height: '', weight: '', dominant_foot: '', goal: '', units: 'metric', club: '', level: '', training_freq: '' });
   const [editLoading, setEditLoading] = useState(false);
   const [tab, setTab] = useState(() => {
     const saved = sessionStorage.getItem('activeTab');
@@ -1997,12 +1997,28 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     ))}
                   </div>
                 </div>
-                {[{label:'País',key:'country',placeholder:'Tu país'},{label:'Ciudad',key:'city',placeholder:'Tu ciudad'},{label:'Edad',key:'age',placeholder:'Tu edad',type:'number'}].map(f => (
+                {[{label:'País',key:'country',placeholder:'Tu país'},{label:'Ciudad',key:'city',placeholder:'Tu ciudad'},{label:'Edad',key:'age',placeholder:'Tu edad',type:'number'},{label:'Club o equipo',key:'club',placeholder:'Nombre de tu club o equipo'}].map(f => (
                   <div key={f.key} style={{marginBottom:'14px'}}>
                     <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{f.label}</div>
-                    <input type={f.type||'text'} value={editForm[f.key]} onChange={e => setEditForm(prev=>({...prev,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                    <input type={f.type||'text'} value={editForm[f.key]||''} onChange={e => setEditForm(prev=>({...prev,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
                   </div>
                 ))}
+                <div style={{marginBottom:'14px'}}>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Nivel competitivo</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
+                    {['Recreativo','Amateur','Semi-profesional','Académia'].map(n => (
+                      <div key={n} onClick={()=>setEditForm(prev=>({...prev,level:n}))} style={{padding:'10px',background:editForm.level===n?'rgba(0,230,118,0.12)':'#121820',border:editForm.level===n?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'600',color:editForm.level===n?'#00E676':'#8899A6'}}>{n}</div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{marginBottom:'14px'}}>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>¿Cuántas veces entrenas por semana?</div>
+                  <div style={{display:'flex',gap:'8px'}}>
+                    {['1-2','3-4','5+'].map(f => (
+                      <div key={f} onClick={()=>setEditForm(prev=>({...prev,training_freq:f}))} style={{flex:1,padding:'10px',background:editForm.training_freq===f?'rgba(0,230,118,0.12)':'#121820',border:editForm.training_freq===f?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'13px',fontWeight:'600',color:editForm.training_freq===f?'#00E676':'#8899A6'}}>{f} días</div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
             {onboardingStep === 3 && (
