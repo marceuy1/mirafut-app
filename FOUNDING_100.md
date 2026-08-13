@@ -85,3 +85,43 @@ Founding 100 → aprender → ajustar
 
 Documento creado: agosto 2026
 MiraFut - Find Your Next Level.
+
+---
+
+## Las tres preguntas que debe responder el Founding 100
+
+1. Los chicos vuelven?
+2. El Coach IA realmente les aporta valor?
+3. MiraFut les hace sentir que estan progresando
+   independientemente de su nivel?
+
+Si esas tres respuestas empiezan a ser positivas,
+tendremos una senal mucho mas valiosa que cualquier proyeccion financiera.
+
+## La tesis central
+
+MiraFut debe demostrar primero que genera desarrollo y engagement.
+Despues escalamos scouting, monetizacion y adquisicion.
+
+## Las dos senales mas importantes
+
+SENAL 1 — Valor:
+Los Founding Players dicen despues de unas semanas:
+"MiraFut me esta ayudando a ser mejor jugador."
+
+SENAL 2 — Crecimiento organico:
+Los Founding Players invitan companeros sin que tengamos que pagar.
+
+Valor + crecimiento organico = tenemos algo real.
+
+## El proximo paso concreto
+
+Desarrollar el programa Founding 100 de 30 dias con:
+- Acciones concretas semana por semana
+- Metricas especificas
+- Criterios claros para decidir:
+  * Avanzar a 300 usuarios
+  * O corregir el producto primero
+
+Documento actualizado: agosto 2026
+MiraFut - Find Your Next Level.
