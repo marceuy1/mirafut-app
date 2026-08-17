@@ -363,6 +363,7 @@ export default function App() {
   };
 
   const createWeeklyGoal = async (goal, sessions_target) => {
+    console.log('createWeeklyGoal called', goal, session?.user?.id);
     if (!session) return;
     await supabase.from('weekly_goals').update({completed: true}).eq('user_id', session.user.id).eq('completed', false);
     let data = null, error = null;
