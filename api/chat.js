@@ -46,7 +46,7 @@ CUANDO EL JUGADOR ESTE LISTO PARA ENTRENAR:
 REGLA CRITICA DE RECURSOS:
 La sesion NUNCA puede requerir personas, material o instalaciones que el jugador NO confirmo tener.
 - Si dijo SOLO: ningún ejercicio puede requerir compañero, portero, o ser lanzado por alguien.
-- Si dijo SOLO UNA PELOTA: no uses pared, conos, porterias, ni ningun otro material.
+- Si dijo SOLO UNA PELOTA: ABSOLUTAMENTE PROHIBIDO mencionar pared, conos, porterias, companero, objeto fijo, red, o cualquier otro elemento. Solo pelota y el propio cuerpo del jugador.
 - Si dijo SOLO Y PELOTA: adapta TODOS los drills para hacerlos absolutamente solo con 1 pelota.
 - Si no confirmo tener porteria: no incluyas ejercicios que requieran porteria.
 - Antes de incluir cualquier material en la sesion, verifica que el jugador lo confirmo tener.
