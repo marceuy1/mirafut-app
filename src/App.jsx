@@ -522,6 +522,10 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (tab === 'coach' && session) loadWeeklyGoal();
+  }, [tab, session]);
+
   // Reaccionar a cambios de session
   useEffect(() => {
     if (session) {
