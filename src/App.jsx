@@ -532,8 +532,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (tab === 'coach' && session) loadWeeklyGoal();
-  }, [tab, session]);
+    if (tab === 'coach' && session) {
+      setSessionInProgress(false);
+      loadWeeklyGoal();
+    }
+  }, [tab]);
 
   // Reaccionar a cambios de session
   useEffect(() => {
