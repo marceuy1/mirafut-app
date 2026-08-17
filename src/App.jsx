@@ -314,7 +314,11 @@ export default function App() {
 
   const loadWeeklyGoal = async () => {
     if (!session) return;
-    const { data } = await supabase.from('weekly_goals').select('*').eq('user_id', session.user.id).eq('completed', false).order('created_at', {ascending: false}).limit(1).single();
+    let data = null;
+    try {
+      const result = await supabase.from('weekly_goals').select('*').eq('user_id', session.user.id).eq('completed', false).order('created_at', {ascending: false}).limit(1).single();
+      data = result.data;
+    } catch(e) { data = null; }
     if (data) {
       setWeeklyGoal(data);
       const remaining = data.sessions_target - data.sessions_done;
