@@ -365,7 +365,8 @@ export default function App() {
   const createWeeklyGoal = async (goal, sessions_target) => {
     if (!session) return;
     await supabase.from('weekly_goals').update({completed: true}).eq('user_id', session.user.id).eq('completed', false);
-    const { data } = await supabase.from('weekly_goals').insert([{ user_id: session.user.id, goal, position: userProfile?.position, sessions_target: sessions_target || 3 }]).select().single();
+    const { data, error } = await supabase.from('weekly_goals').insert([{ user_id: session.user.id, goal, position: userProfile?.position, sessions_target: sessions_target || 3 }]).select().single();
+    console.log('createWeeklyGoal:', data, error);
     if (data) setWeeklyGoal(data);
     setShowWeeklyGoal(false);
     setSessionInProgress(false);
