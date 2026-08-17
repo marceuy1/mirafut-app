@@ -185,6 +185,8 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [weeklyGoal, setWeeklyGoal] = useState(null);
+  const [showWeeklyGoal, setShowWeeklyGoal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showSorteo, setShowSorteo] = useState(false);
@@ -308,6 +310,28 @@ export default function App() {
   };
 
 
+
+  const loadWeeklyGoal = async () => {
+    if (!session) return;
+    const { data } = await supabase.from('weekly_goals').select('*').eq('user_id', session.user.id).eq('completed', false).order('created_at', {ascending: false}).limit(1).single();
+    if (data) setWeeklyGoal(data);
+  };
+
+  const completeSession = async () => {
+    if (!weeklyGoal) return;
+    const newDone = Math.min(weeklyGoal.sessions_done + 1, weeklyGoal.sessions_target);
+    const completed = newDone >= weeklyGoal.sessions_target;
+    await supabase.from('weekly_goals').update({ sessions_done: newDone, completed }).eq('id', weeklyGoal.id);
+    setWeeklyGoal(prev => ({...prev, sessions_done: newDone, completed}));
+  };
+
+  const createWeeklyGoal = async (goal, sessions_target) => {
+    if (!session) return;
+    await supabase.from('weekly_goals').update({completed: true}).eq('user_id', session.user.id).eq('completed', false);
+    const { data } = await supabase.from('weekly_goals').insert([{ user_id: session.user.id, goal, position: userProfile?.position, sessions_target: sessions_target || 3 }]).select().single();
+    if (data) setWeeklyGoal(data);
+    setShowWeeklyGoal(false);
+  };
 
   const loadSorteo = async () => {
     const { data } = await supabase.from('sorteos').select('*').eq('activo', true).order('created_at', {ascending:false}).limit(1).single();
@@ -445,6 +469,7 @@ export default function App() {
     loadRealPosts();
     loadDebate();
     loadSorteo();
+    loadWeeklyGoal();
     const params = new URLSearchParams(window.location.search);
     const u = params.get('u');
     if (u) {
@@ -1663,6 +1688,28 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </>
               )}
 
+              {session && tab === 'coach' && (
+                <div style={{padding:'8px 12px',borderTop:'1px solid rgba(255,255,255,0.04)'}}>
+                  {weeklyGoal && !weeklyGoal.completed ? (
+                    <div style={{background:'rgba(0,230,118,0.06)',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',padding:'10px 12px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                      <div>
+                        <div style={{fontSize:'10px',color:'#00E676',fontWeight:'700',letterSpacing:'1px',marginBottom:'2px'}}>🎯 OBJETIVO ESTA SEMANA</div>
+                        <div style={{fontSize:'13px',color:'#ECEFF4',fontWeight:'600'}}>{weeklyGoal.goal}</div>
+                        <div style={{display:'flex',gap:'4px',marginTop:'6px'}}>
+                          {Array.from({length: weeklyGoal.sessions_target}).map((_,i) => (
+                            <div key={i} style={{width:'20px',height:'6px',borderRadius:'3px',background:i < weeklyGoal.sessions_done?'#00E676':'rgba(255,255,255,0.1)'}}/>
+                          ))}
+                        </div>
+                      </div>
+                      <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>✓ Listo</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setShowWeeklyGoal(true)} style={{width:'100%',padding:'8px',background:'transparent',border:'1px dashed rgba(0,230,118,0.3)',borderRadius:'12px',color:'#00E676',fontSize:'12px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
+                      🎯 Establecer objetivo de la semana
+                    </button>
+                  )}
+                </div>
+              )}
               <div className="ai-input">
                 <div className="ai-ibox">
                   <textarea className="ai-field" placeholder={`Escríbele a ${agent.name}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
@@ -2306,6 +2353,33 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   🗑️ Eliminar mi cuenta
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* WEEKLY GOAL MODAL */}
+        {showWeeklyGoal && (
+          <div className="modal-bg show" onClick={() => setShowWeeklyGoal(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-hdr">
+                <div className="modal-title">🎯 Objetivo de la semana</div>
+                <button className="modal-close" onClick={() => setShowWeeklyGoal(false)}>✕</button>
+              </div>
+              <div style={{fontSize:'13px',color:'#556677',marginBottom:'16px'}}>¿Qué quieres trabajar esta semana?</div>
+              {[
+                'Mejorar mis reflejos',
+                'Trabajar el control orientado',
+                'Mejorar mis salidas',
+                'Potenciar mi pie débil',
+                'Mejorar mi posicionamiento',
+                'Aumentar mi velocidad',
+                'Trabajar la toma de decisiones',
+                'Mejorar mi definición'
+              ].map(g => (
+                <div key={g} onClick={() => createWeeklyGoal(g, 3)} style={{padding:'12px 14px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',fontSize:'14px',color:'#ECEFF4',marginBottom:'8px'}}>
+                  {g}
+                </div>
+              ))}
             </div>
           </div>
         )}
