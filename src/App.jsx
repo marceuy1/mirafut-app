@@ -701,13 +701,13 @@ export default function App() {
     // will be handled in nav click
   }
 
-  const sendAI = async (text) => {
-    if (text === 'Sí, vamos' && weeklyGoal) {
-      text = 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Estoy listo para entrenar.';
-    }
-    if (text === 'Hoy no puedo' && weeklyGoal) {
-      text = 'Hoy no puedo entrenar mis ' + weeklyGoal.goal + '. Lo hago otro dia.';
-    }
+  const sendAI = async (displayText) => {
+    const promptText = (displayText === 'Sí, vamos' && weeklyGoal)
+      ? 'Sesion ' + (weeklyGoal.sessions_done + 1) + ' de ' + weeklyGoal.goal + '. Entreno solo. Genera la sesion ahora sin preguntar mas.'
+      : (displayText === 'Hoy no puedo' && weeklyGoal)
+      ? 'Hoy no puedo entrenar ' + weeklyGoal.goal + '. Responde con comprension y recuerda cuantas sesiones quedan.'
+      : displayText;
+    const text = displayText;
     if (requireAuth()) return;
     if (!text.trim()) return;
 
@@ -724,10 +724,8 @@ export default function App() {
 
     try {
       const perfilConObjetivo = weeklyGoal ? {...(userProfile||{}), weekly_goal: weeklyGoal.goal, sessions_done: weeklyGoal.sessions_done, sessions_target: weeklyGoal.sessions_target} : userProfile;
-      const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join('
-');
-      const mensajeConContexto = historial ? historial + '
-Jugador: ' + text : text;
+      const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
+      const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
       const response = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo);
       setAiMessages(m => [...m, { 
         id:Date.now()+1, 
