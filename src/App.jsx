@@ -321,6 +321,7 @@ export default function App() {
     } catch(e) { data = null; }
     if (data) {
       setWeeklyGoal(data);
+      setSessionInProgress(false);
       const remaining = data.sessions_target - data.sessions_done;
       const nombre = userProfile?.full_name?.split(' ')[0] || '';
       setAiMessages([
