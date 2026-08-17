@@ -719,7 +719,7 @@ export default function App() {
       const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
       const response = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo);
-      const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && response.length > 100;
+      const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && response.length > 150 && (response.includes('Series:') || response.includes('Reps:') || response.includes('min'));
       setAiMessages(m => {
         const msgs = [...m, { 
           id:Date.now()+1, 
