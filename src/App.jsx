@@ -332,27 +332,17 @@ export default function App() {
     await supabase.from('weekly_goals').update({ sessions_done: newDone, completed }).eq('id', weeklyGoal.id);
     setWeeklyGoal(prev => ({...prev, sessions_done: newDone, completed}));
     setTab('coach');
-    if (completed) {
-      setTimeout(() => {
-        setAiMessages(prev => [...prev, {
-          id: Date.now(),
-          from: 'coach',
-          text: '🏆 Completaste tu objetivo de la semana: ' + weeklyGoal.goal + '. ¿Sientes que mejoraste?',
-          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
-          type: 'suggestions',
-          options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto']
-        }]);
-      }, 300);
-    } else {
-      setTimeout(() => {
-        setAiMessages(prev => [...prev, {
-          id: Date.now(),
-          from: 'coach',
-          text: '✓ Sesión ' + newDone + '/' + weeklyGoal.sessions_target + ' completada. ¿Qué fue lo que más te costó?',
-          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
-        }]);
-      }, 300);
-    }
+    setTimeout(() => {
+      setAiMessages(prev => [...prev, {
+        id: Date.now(),
+        from: 'coach',
+        text: completed
+          ? '🏆 Completaste las 3 sesiones de: ' + weeklyGoal.goal + '. ¿Sientes que mejoraste esta semana?'
+          : '✓ Sesión ' + newDone + '/' + weeklyGoal.sessions_target + ' completada. ¿Qué fue lo que más te costó?',
+        time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
+        ...(completed ? {type: 'suggestions', options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto']} : {})
+      }]);
+    }, 300);
   };
 
   const createWeeklyGoal = async (goal, sessions_target) => {
@@ -699,7 +689,7 @@ export default function App() {
       return;
     }
     const promptText = (displayText === 'Sí, vamos' && weeklyGoal)
-      ? 'Sesion ' + (weeklyGoal.sessions_done + 1) + ' de ' + weeklyGoal.goal + '. Entreno solo. Genera la sesion ahora sin preguntar mas.'
+      ? 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Antes de darme la sesion, preguntame si entreno solo o con alguien y que material tengo disponible.'
       : (displayText === 'Hoy no puedo' && weeklyGoal)
       ? 'Hoy no puedo entrenar ' + weeklyGoal.goal + '. Responde con comprension y recuerda cuantas sesiones quedan.'
       : displayText;
@@ -737,7 +727,7 @@ export default function App() {
             id:Date.now()+2,
             from:currentAgent,
             type:"suggestions",
-            options:['✓ Terminé mi sesión','😓 Estuvo difícil','Tengo una pregunta'],
+            options:['✓ Terminé mi sesión','Tengo una pregunta'],
             time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
           });
         }
