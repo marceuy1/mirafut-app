@@ -344,6 +344,7 @@ export default function App() {
     await supabase.from('weekly_goals').update({ sessions_done: newDone, completed }).eq('id', weeklyGoal.id);
     if (completed) {
       setWeeklyGoal(null);
+      setSessionInProgress(false);
     } else {
       setWeeklyGoal(prev => ({...prev, sessions_done: newDone, completed}));
     }
