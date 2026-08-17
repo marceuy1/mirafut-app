@@ -359,15 +359,11 @@ export default function App() {
     const { data } = await supabase.from('weekly_goals').insert([{ user_id: session.user.id, goal, position: userProfile?.position, sessions_target: sessions_target || 3 }]).select().single();
     if (data) setWeeklyGoal(data);
     setShowWeeklyGoal(false);
+    setSessionInProgress(false);
     setTab('coach');
-    setTimeout(() => {
-      setAiMessages(prev => [...prev, {
-        id: Date.now(),
-        from: 'coach',
-        text: 'Perfecto, ' + (userProfile?.full_name?.split(' ')[0] || '') + '. Esta semana vamos a trabajar: ' + goal + '. ¿Entrenas normalmente solo o con alguien?',
-        time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
-      }]);
-    }, 300);
+    setAiMessages([
+      { id:1, from:'coach', type:'text', text:'Perfecto, ' + (userProfile?.full_name?.split(' ')[0] || '') + '. Esta semana vamos a trabajar: ' + goal + '. ¿Entrenas normalmente solo o con alguien?', time:new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}) }
+    ]);
   };
 
   const loadSorteo = async () => {
