@@ -322,6 +322,12 @@ export default function App() {
         { id:1, from:'coach', type:'text', text:'Hola ' + nombre + ' 👋 Te quedan ' + remaining + ' ' + (remaining !== 1 ? 'sesiones' : 'sesión') + ' de tu objetivo: ' + data.goal + '. ¿La hacemos hoy?', time:'14:20' },
         { id:2, from:'coach', type:'suggestions', options:['Sí, vamos', 'Hoy no puedo', 'Vengo de entrenar', '🏟️ Vengo de jugar'], time:'14:20' }
       ]);
+    } else {
+      setWeeklyGoal(null);
+      setAiMessages([
+        { id:1, from:'coach', type:'text', text:'Hola 👋 ¿Cómo estás hoy?', time:'14:20' },
+        { id:2, from:'coach', type:'suggestions', options:['Todo bien','Vengo de entrenar','🏟️ Vengo de jugar','Nervioso/a'], time:'14:20' }
+      ]);
     }
   };
 
