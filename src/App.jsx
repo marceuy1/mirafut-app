@@ -345,7 +345,7 @@ export default function App() {
         id: Date.now(),
         from: 'coach',
         text: completed
-          ? '🏆 Completaste las 3 sesiones de: ' + weeklyGoal.goal + '. ¿Sientes que mejoraste esta semana?'
+          ? '🏆 Completaste las ' + weeklyGoal.sessions_target + ' sesiones de: ' + weeklyGoal.goal + '. ¿Sientes que mejoraste esta semana?'
           : '✓ Sesión ' + newDone + '/' + weeklyGoal.sessions_target + ' completada. ¿Qué fue lo que más te costó?',
         time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
         ...(completed ? {type: 'suggestions', options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto']} : {})
