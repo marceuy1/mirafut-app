@@ -664,15 +664,9 @@ export default function App() {
     if (!text) return null;
     const lines = text.split('\n');
     return lines.map((line, i) => {
-      const isExercise = /^\d+\./.test(line.trim());
-      const diagram = isExercise ? getExerciseDiagram(line, position) : null;
       return (
         <span key={i}>
           {line}<br/>
-          {diagram && (
-            <span style={{display:'block',marginTop:'6px',marginBottom:'10px',borderRadius:'10px',overflow:'hidden'}}
-              dangerouslySetInnerHTML={{__html: diagram}} />
-          )}
         </span>
       );
     });
@@ -1771,7 +1765,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                         </div>
                       </div>
                       <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                        ✓ Completar sesión {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}
+                        ▶ Iniciar sesión {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}
                       </button>
                     </div>
                   ) : (

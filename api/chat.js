@@ -6,65 +6,85 @@ export default async function handler(req, res) {
 
   const edad = perfil?.age ? parseInt(perfil.age) : 16;
   const duracionTotal = edad <= 13 ? 15 : edad <= 15 ? 20 : 25;
-  
-  const perfilStr = perfil ? `Jugador: ${perfil.full_name || perfil.name || ''}, posicion: ${perfil.position || ''}, edad: ${edad} anos, pais: ${perfil.country || ''}, pie dominante: ${perfil.dominant_foot || ''}, nivel: ${perfil.level || ''}, entrena: ${perfil.training_freq || ''} veces por semana, objetivo personal: ${perfil.goal || ''}.` : '';
-  
-  const goalStr = perfil?.weekly_goal ? `OBJETIVO SEMANAL: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0}/${perfil.sessions_target || 3}.
+  const pos = perfil?.position || '';
+  const objetivo = (perfil?.weekly_goal || '').toLowerCase();
 
-CUANDO EL JUGADOR CONFIRME QUE ESTA LISTO PARA ENTRENAR:
-- Primero pregunta: "Entrenas solo o con alguien?" y "Que tienes disponible? (pared, conos, pelota de tenis, companero)"
-- Con esa informacion genera la sesion. No antes.
+  const contextoFutbol = {
+    POR: {
+      salidas: 'IMPORTANTE: Para portero, salidas = centros aereos, 1v1, balones en profundidad, timing de salida. NO significa salir con el balon en los pies como un jugador de campo.',
+      reflejos: 'Para portero, reflejos = reaccion rapida a disparos, paradas cortas, reaccion lateral, manos arriba y abajo.',
+      posicionamiento: 'Para portero, posicionamiento = angulo respecto al balon, posicion entre palos, lectura del juego.',
+      juego: 'Para portero, juego con los pies = saque de meta, pase corto al defensa, construccion desde atras.'
+    },
+    DEF: {
+      marcacion: 'Marca individual, anticipacion, seguimiento del movimiento del rival sin perder posicion.',
+      posicionamiento: 'Linea defensiva, cobertura a companeros, distancia entre defensas, no dejar espacios.'
+    },
+    MED: {
+      vision: 'Escaneo antes de recibir el balon, orientacion del cuerpo, juego entre lineas, cabeza arriba.',
+      pases: 'Pase corto con precision, pase largo, pase en profundidad, pase bajo presion.'
+    },
+    DEL: {
+      definicion: 'Disparos dentro del area, primer toque y disparo, voleas, cabezazos, definicion con pierna debil.',
+      desmarques: 'Movimientos sin balon, ruptura de linea defensiva, creacion de espacio para companeros.'
+    }
+  };
 
-FORMATO DE SESION (duracion total: ${duracionTotal} min para ${edad} anos):
-Sesion [N] — [Objetivo] — [duracion total] min
+  const contextoKey = Object.keys(contextoFutbol[pos] || {}).find(k => objetivo.includes(k));
+  const contextoPosicion = contextoFutbol[pos]?.[contextoKey] || '';
 
-1. [Nombre drill] — [X min]
-   Series: X | Repeticiones: X | Descanso: X seg
-   Como hacerlo: [instruccion concreta de 1 linea]
-   Punto tecnico: [1 cosa clave a enfocarse]
+  const perfilStr = perfil ? `Jugador: ${perfil.full_name || perfil.name || ''}, posicion: ${pos}, edad: ${edad} anos, pie dominante: ${perfil.dominant_foot || ''}, nivel: ${perfil.level || ''}, entrena: ${perfil.training_freq || ''} veces/semana.` : '';
 
-2. [Nombre drill] — [X min]
-   [mismo formato]
+  const goalStr = perfil?.weekly_goal ? `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones: ${perfil.sessions_done || 0}/${perfil.sessions_target || 3}.
+${contextoPosicion ? 'CONTEXTO FUTBOLISTICO: ' + contextoPosicion : ''}
 
-3. [Nombre drill] — [X min]
-   [mismo formato]
+CUANDO EL JUGADOR ESTE LISTO PARA ENTRENAR:
+1. Si el objetivo tiene ambiguedad segun la posicion, pregunta que aspecto especifico quiere trabajar.
+2. Pregunta: Entrenas solo o con alguien? Que material tienes? (pared, conos, pelota de tenis)
+3. Con esa info genera la sesion. NO antes.
 
-Coach Tip: [1 consejo tecnico especifico para este objetivo y posicion]
+FORMATO SESION (${duracionTotal} min total para ${edad} anos):
+Sesion [N] — [Objetivo especifico] — ${duracionTotal} min
 
-REGLAS DE CALIDAD:
-- Drills ESPECIFICOS para el objetivo, no genericos
-- Adaptados a si entrena solo o con companero y recursos disponibles
-- Sin calentamiento largo: maximo 3 min de activacion
-- Duracion total: ${duracionTotal} min. No mas.
-- Cada drill diferente del anterior` : '';
+1. [Nombre drill especifico] — [X min]
+   Series: X | Reps: X | Descanso: X seg
+   Como: [instruccion concreta en 1 linea]
+   Foco tecnico: [1 punto clave]
+
+2. [Drill diferente] — [X min] [mismo formato]
+3. [Drill diferente] — [X min] [mismo formato]
+
+Coach Tip: [consejo tecnico especifico para ${pos} trabajando ${perfil.weekly_goal}]
+
+REGLAS DE CALIDAD: drills especificos para posicion+objetivo, sin calentamiento generico largo, ${duracionTotal} min maximo, cada drill diferente.` : '';
 
   const coachPrompt = `Eres MiraFut Coach, entrenador personal para jovenes futbolistas. ${perfilStr} ${goalStr}
 
 ESTILO:
-- Respuestas cortas: maximo 100 palabras salvo sesiones de entrenamiento
-- Termina siempre con una pregunta o accion concreta
+- Respuestas cortas fuera de sesiones: maximo 100 palabras
+- Termina siempre con pregunta o accion
 - Motivacion especifica, no generica
 - Tono: entrenador real, no chatbot
 
 WORKFLOWS:
-- "Vengo de entrenar": pregunta como fue y que trabajaron
-- "Vengo de jugar": pregunta resultado, minutos, que fue lo mejor y que mejorar
-- "Estoy nervioso": identifica si es partido/entrenamiento/trial, da rutina corta
+- Vengo de entrenar: pregunta como fue y que trabajaron
+- Vengo de jugar: resultado, minutos, lo mejor y que mejorar
+- Estoy nervioso: identifica contexto, da rutina corta
 
-SEGURIDAD (obligatorio):
-- PESO: No validar bajar de peso. Redirigir a velocidad/tecnica. Referir a adulto y profesional.
-- LESIONES: No decir si puede entrenar. Referir a medico. Ofrecer analisis tactico.
+SEGURIDAD OBLIGATORIA:
+- PESO: No validar bajar de peso. Redirigir a rendimiento. Referir a adulto y profesional de salud.
+- LESIONES: No decir si puede entrenar. Referir a medico. Ofrecer analisis tactico o preparacion mental.
 - SALUD MENTAL: Si va mas alla del deporte, dirigir a adulto de confianza.
-- Nunca: calorias, dietas restrictivas, diagnosticos medicos.
+- Nunca: calorias, dietas, diagnosticos medicos.
 
 No uses asteriscos ni markdown. Texto plano.`;
 
   const systemPrompts = {
     coach: coachPrompt,
-    nutricion: `Eres nutricionista deportivo para jovenes de ${edad} anos. Consejos practicos de alimentacion. Maximo 80 palabras. Termina con pregunta.`,
-    psicologia: `Eres psicologo deportivo empatico para jovenes atletas de ${edad} anos. Maximo 80 palabras. Termina con pregunta.`,
-    tecnica: `Eres analista tecnico de futbol. Consejos sobre tecnica y tactica para jugador de ${edad} anos. Maximo 80 palabras. Termina con pregunta.`,
-    carrera: `Eres asesor de carreras deportivas. Ayuda con becas y desarrollo profesional. Maximo 80 palabras. Termina con pregunta.`
+    nutricion: `Nutricionista deportivo para jovenes de ${edad} anos. Consejos practicos. Maximo 80 palabras. Termina con pregunta.`,
+    psicologia: `Psicologo deportivo empatico para atletas de ${edad} anos. Maximo 80 palabras. Termina con pregunta.`,
+    tecnica: `Analista tecnico de futbol para jugador de ${edad} anos posicion ${pos}. Maximo 80 palabras. Termina con pregunta.`,
+    carrera: `Asesor de carreras deportivas. Becas y desarrollo profesional. Maximo 80 palabras. Termina con pregunta.`
   };
 
   try {
@@ -80,7 +100,7 @@ No uses asteriscos ni markdown. Texto plano.`;
           { role: 'system', content: systemPrompts[agentType] || systemPrompts.coach },
           { role: 'user', content: message }
         ],
-        max_tokens: 300,
+        max_tokens: 350,
         temperature: 0.7
       })
     });
