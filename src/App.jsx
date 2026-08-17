@@ -338,7 +338,11 @@ export default function App() {
     const newDone = Math.min(weeklyGoal.sessions_done + 1, weeklyGoal.sessions_target);
     const completed = newDone >= weeklyGoal.sessions_target;
     await supabase.from('weekly_goals').update({ sessions_done: newDone, completed }).eq('id', weeklyGoal.id);
-    setWeeklyGoal(prev => ({...prev, sessions_done: newDone, completed}));
+    if (completed) {
+      setWeeklyGoal(null);
+    } else {
+      setWeeklyGoal(prev => ({...prev, sessions_done: newDone, completed}));
+    }
     setTab('coach');
     setTimeout(() => {
       setAiMessages(prev => [...prev, {
