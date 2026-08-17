@@ -143,7 +143,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab }) {
     <div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
         <div>
-          <Logo size={28} />
+          <Logo size={40} />
         </div>
         <button onClick={onClose} style={{background:'none',border:'none',color:'#8899A6',fontSize:'22px',cursor:'pointer'}}>×</button>
       </div>
@@ -1069,7 +1069,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .hdr{padding:10px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(10,14,20,0.95);backdrop-filter:blur(20px);z-index:100;min-height:60px}
 .logo{display:flex;align-items:center;gap:10px}
 .logo-text{font-family:'Inter','SF Pro Display',-apple-system,system-ui,sans-serif;font-weight:900;font-size:20px;color:#FFFFFF;line-height:1;letter-spacing:-0.02em}
-.logo-tag{font-size:8px;letter-spacing:2.5px;color:#00E676;font-weight:700;margin-top:2px;font-family:'Inter',sans-serif}
+.logo-tag{font-size:9px;letter-spacing:1.5px;color:#00E676;font-weight:700;margin-top:2px;font-family:'Inter',sans-serif;white-space:nowrap}
 .hb{background:none;border:none;color:#8899A6;cursor:pointer;padding:6px;border-radius:10px;font-size:18px}
 
 .mc{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:70px}
@@ -1277,7 +1277,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         ) : (
           <div className="hdr">
             <div className="logo" onClick={()=>{setTab("home");setViewPost(null);setViewProfile(null);setChatOpen(null);}} style={{cursor:"pointer"}}>
-              <Logo size={32} />
+              <Logo size={44} />
             </div>
             <div style={{flex:1,margin:"0 12px",position:"relative"}}>
               {isDesktop ? (
