@@ -314,7 +314,15 @@ export default function App() {
   const loadWeeklyGoal = async () => {
     if (!session) return;
     const { data } = await supabase.from('weekly_goals').select('*').eq('user_id', session.user.id).eq('completed', false).order('created_at', {ascending: false}).limit(1).single();
-    if (data) setWeeklyGoal(data);
+    if (data) {
+      setWeeklyGoal(data);
+      const remaining = data.sessions_target - data.sessions_done;
+      const nombre = userProfile?.full_name?.split(' ')[0] || '';
+      setAiMessages([
+        { id:1, from:'coach', type:'text', text:'Hola ' + nombre + ' 👋 Te quedan ' + remaining + ' sesión' + (remaining !== 1 ? 'es' : '') + ' de tu objetivo: ' + data.goal + '. ¿La hacemos hoy?', time:'14:20' },
+        { id:2, from:'coach', type:'suggestions', options:['Sí, vamos', 'Hoy no puedo', 'Vengo de entrenar', '🏟️ Vengo de jugar'], time:'14:20' }
+      ]);
+    }
   };
 
   const completeSession = async () => {
@@ -323,6 +331,30 @@ export default function App() {
     const completed = newDone >= weeklyGoal.sessions_target;
     await supabase.from('weekly_goals').update({ sessions_done: newDone, completed }).eq('id', weeklyGoal.id);
     setWeeklyGoal(prev => ({...prev, sessions_done: newDone, completed}));
+    setTab('coach');
+    if (completed) {
+      setTimeout(() => {
+        setAiMessages(prev => [...prev, {
+          id: Date.now(),
+          from: 'coach',
+          text: '🏆 Completaste tu objetivo de la semana: ' + weeklyGoal.goal + '. ¿Sientes que mejoraste?',
+          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
+          type: 'suggestions',
+          options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto']
+        }]);
+      }, 300);
+    } else {
+      setTimeout(() => {
+        setAiMessages(prev => [...prev, {
+          id: Date.now(),
+          from: 'coach',
+          text: '✓ Sesión ' + newDone + '/' + weeklyGoal.sessions_target + ' completada. ¿Cómo estuvo el entrenamiento?',
+          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
+          type: 'suggestions',
+          options: ['Fácil', 'Bien', 'Difícil']
+        }]);
+      }, 300);
+    }
   };
 
   const createWeeklyGoal = async (goal, sessions_target) => {
@@ -332,7 +364,14 @@ export default function App() {
     if (data) setWeeklyGoal(data);
     setShowWeeklyGoal(false);
     setTab('coach');
-    setTimeout(() => sendAI('Mi objetivo esta semana es: ' + goal + '. Entrenas solo o con alguien?'), 500);
+    setTimeout(() => {
+      setAiMessages(prev => [...prev, {
+        id: Date.now(),
+        from: 'coach',
+        text: 'Perfecto, ' + (userProfile?.full_name?.split(' ')[0] || '') + '. Esta semana vamos a trabajar: ' + goal + '. ¿Entrenas normalmente solo o con alguien?',
+        time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
+      }]);
+    }, 300);
   };
 
   const loadSorteo = async () => {
@@ -1703,7 +1742,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                           ))}
                         </div>
                       </div>
-                      <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>✓ Listo</button>
+                      <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
+                        ✓ Sesión {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}
+                      </button>
                     </div>
                   ) : (
                     <button onClick={() => setShowWeeklyGoal(true)} style={{width:'100%',padding:'8px',background:'transparent',border:'1px dashed rgba(0,230,118,0.3)',borderRadius:'12px',color:'#00E676',fontSize:'12px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
