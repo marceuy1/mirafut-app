@@ -724,7 +724,11 @@ export default function App() {
 
     try {
       const perfilConObjetivo = weeklyGoal ? {...(userProfile||{}), weekly_goal: weeklyGoal.goal, sessions_done: weeklyGoal.sessions_done, sessions_target: weeklyGoal.sessions_target} : userProfile;
-      const response = await sendMessageToCoach(text, currentAgent, perfilConObjetivo);
+      const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join('
+');
+      const mensajeConContexto = historial ? historial + '
+Jugador: ' + text : text;
+      const response = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo);
       setAiMessages(m => [...m, { 
         id:Date.now()+1, 
         from:currentAgent, 
