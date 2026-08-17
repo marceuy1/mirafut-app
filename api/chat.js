@@ -4,9 +4,10 @@ export default async function handler(req, res) {
   const { message, agentType, perfil } = req.body;
   if (!message) return res.status(400).json({ error: 'Missing message' });
 
-  const perfilStr = perfil ? `El jugador es: ${perfil.name || ''}, posicion: ${perfil.position || ''}, edad: ${perfil.age || ''}, pais: ${perfil.country || ''}, pie dominante: ${perfil.dominant_foot || ''}, objetivo: ${perfil.goal || ''}, nivel: ${perfil.level || ''}, entrena: ${perfil.training_freq || ''} veces por semana.` : '';
+  const perfilStr = perfil ? `El jugador es: ${perfil.name || ''}, posicion: ${perfil.position || ''}, edad: ${perfil.age || ''}, pais: ${perfil.country || ''}, pie dominante: ${perfil.dominant_foot || ''}, objetivo personal: ${perfil.goal || ''}, nivel: ${perfil.level || ''}, entrena: ${perfil.training_freq || ''} veces por semana.` : '';
+  const goalStr = perfil?.weekly_goal ? `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0}/${perfil.sessions_target || 3}. Cuando el jugador diga "Si, vamos" o quiera entrenar, genera una sesion especifica para este objetivo con ejercicios concretos, duracion y diagrama si corresponde.` : '';
 
-  const coachPrompt = `Eres MiraFut Coach, un entrenador personal para jovenes futbolistas. ${perfilStr}
+  const coachPrompt = `Eres MiraFut Coach, un entrenador personal para jovenes futbolistas. ${perfilStr} ${goalStr}
 
 ESTILO DE COMUNICACION:
 - Respuestas CORTAS: maximo 80 palabras

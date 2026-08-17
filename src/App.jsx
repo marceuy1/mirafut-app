@@ -717,7 +717,8 @@ export default function App() {
     setThinking(true);
 
     try {
-      const response = await sendMessageToCoach(text, currentAgent, userProfile);
+      const perfilConObjetivo = weeklyGoal ? {...(userProfile||{}), weekly_goal: weeklyGoal.goal, sessions_done: weeklyGoal.sessions_done, sessions_target: weeklyGoal.sessions_target} : userProfile;
+      const response = await sendMessageToCoach(text, currentAgent, perfilConObjetivo);
       setAiMessages(m => [...m, { 
         id:Date.now()+1, 
         from:currentAgent, 
