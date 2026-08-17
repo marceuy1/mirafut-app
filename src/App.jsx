@@ -187,6 +187,7 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [weeklyGoal, setWeeklyGoal] = useState(null);
   const [showWeeklyGoal, setShowWeeklyGoal] = useState(false);
+  const [sessionInProgress, setSessionInProgress] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showSorteo, setShowSorteo] = useState(false);
@@ -332,7 +333,8 @@ export default function App() {
   };
 
   const completeSession = async () => {
-    if (!weeklyGoal) return;
+    if (!weeklyGoal || !sessionInProgress) return;
+    setSessionInProgress(false);
     const newDone = Math.min(weeklyGoal.sessions_done + 1, weeklyGoal.sessions_target);
     const completed = newDone >= weeklyGoal.sessions_target;
     await supabase.from('weekly_goals').update({ sessions_done: newDone, completed }).eq('id', weeklyGoal.id);
@@ -694,6 +696,10 @@ export default function App() {
       completeSession();
       return;
     }
+    if (displayText === '▶ Iniciar sesión' && weeklyGoal) {
+      setSessionInProgress(true);
+      return;
+    }
     const promptText = (displayText === 'Sí, vamos' && weeklyGoal)
       ? 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Antes de darme la sesion, preguntame si entreno solo o con alguien y que material tengo disponible.'
       : (displayText === 'Hoy no puedo' && weeklyGoal)
@@ -733,7 +739,7 @@ export default function App() {
             id:Date.now()+2,
             from:currentAgent,
             type:"suggestions",
-            options:['✓ Terminé mi sesión','Tengo una pregunta'],
+            options:['▶ Iniciar sesión','Tengo una pregunta'],
             time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
           });
         }
@@ -1760,9 +1766,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                           ))}
                         </div>
                       </div>
-                      <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                        ▶ Iniciar sesión {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}
-                      </button>
+                      {sessionInProgress ? (
+                        <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>✓ Terminé mi sesión</button>
+                      ) : (
+                        <button onClick={() => setSessionInProgress(true)} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>▶ Iniciar {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
+                      )}
                     </div>
                   ) : (
                     <button onClick={() => setShowWeeklyGoal(true)} style={{width:'100%',padding:'8px',background:'transparent',border:'1px dashed rgba(0,230,118,0.3)',borderRadius:'12px',color:'#00E676',fontSize:'12px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>

@@ -65,7 +65,7 @@ Sesion [N] — [Objetivo especifico] — ${duracionTotal} min
 
 Coach Tip: [consejo tecnico especifico para ${pos} trabajando ${perfil.weekly_goal}]
 
-REGLAS DE CALIDAD: drills especificos para posicion+objetivo, sin calentamiento generico largo, ${duracionTotal} min maximo, cada drill diferente.` : '';
+REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Si hay que elegir entre variedad y relevancia, priorizar relevancia. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.` : '';
 
   const coachPrompt = `Eres MiraFut Coach, entrenador personal para jovenes futbolistas. ${perfilStr} ${goalStr}
 
