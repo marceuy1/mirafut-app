@@ -350,17 +350,22 @@ export default function App() {
       setWeeklyGoal(prev => ({...prev, sessions_done: newDone, completed}));
     }
     setTab('coach');
-    setTimeout(() => {
-      setAiMessages(prev => [...prev, {
-        id: Date.now(),
-        from: 'coach',
-        text: completed
-          ? '🏆 Completaste las ' + weeklyGoal.sessions_target + ' sesiones de: ' + weeklyGoal.goal + '. ¿Sientes que mejoraste esta semana?'
-          : '✓ Sesión ' + newDone + '/' + weeklyGoal.sessions_target + ' completada. ¿Qué fue lo que más te costó?',
-        time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
-        ...(completed ? {type: 'suggestions', options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto']} : {})
-      }]);
-    }, 300);
+    if (completed) {
+      setTimeout(() => {
+        setAiMessages([{
+          id: Date.now(),
+          from: 'coach',
+          text: '🏆 Completaste las ' + weeklyGoal.sessions_target + ' sesiones de: ' + weeklyGoal.goal + '. ¿Sientes que mejoraste esta semana?',
+          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
+          type: 'suggestions',
+          options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto']
+        }]);
+      }, 300);
+    } else {
+      setTimeout(() => {
+        loadWeeklyGoal();
+      }, 300);
+    }
   };
 
   const createWeeklyGoal = async (goal, sessions_target) => {
