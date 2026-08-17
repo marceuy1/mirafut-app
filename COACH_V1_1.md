@@ -166,3 +166,60 @@ El chico con potencial: su historial alimenta el perfil para scouts.
 
 Documento creado: agosto 2026
 MiraFut - Find Your Next Level.
+
+---
+
+## Actualizacion 2 — Coach 8.5/10
+
+### Progreso
+Estado inicial: 7/10
+Despues de guardrails: 7.8/10
+Objetivo semanal: 8.2/10
+Version actual: 8.5/10
+
+### Inconsistencia a corregir
+
+Arriba dice: "Te quedan 3 sesiones"
+Abajo dice: "Sesion 1/3" (ya completada)
+
+Fuente de verdad unica:
+0/3 completadas → "Te quedan 3 sesiones"
+1/3 → "Te quedan 2 sesiones"
+2/3 → "Te queda 1 sesion"
+3/3 → "Objetivo semanal completado!"
+
+### Cambio en el boton
+
+ACTUAL: "Sesion 1/3"
+CORRECTO:
+- Antes de empezar: "Empezar sesion 1/3"
+- Despues: "Sesion 1 completada"
+- Tarjeta pasa a: ● ○ ○ con "Sesion 2/3"
+
+### Boton "Hoy no puedo"
+
+Respuesta correcta:
+"No pasa nada. Te quedan X sesiones esta semana. Cuando estes listo seguimos."
+Futuro: "Quieres que te lo recuerde manana?"
+
+### Lo que falta para cerrar el loop
+
+Cuando el jugador dice "Si, vamos" debe aparecer:
+SESION 1 — REFLEJOS
+15 min / GK / Nivel adaptado
+1. Preparacion — 3 min
+2. Reaction drill — 5 min + diagrama
+3. Low saves — 5 min + diagrama
+4. Cooldown — 2 min
+Coach Tip
+[EMPEZAR SESION]
+
+Al terminar:
+Como te fue? Facil / Bien / Dificil
+Que fue lo que mas te costo?
+→ guardado para sesion 2
+
+Si "Si, vamos" cierra ese loop correctamente:
+Coach listo para Pre-Flight 10.
+
+Documento actualizado: agosto 2026
