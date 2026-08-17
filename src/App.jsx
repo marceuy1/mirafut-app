@@ -751,13 +751,15 @@ export default function App() {
           time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) 
         }];
         if (isTrainingResponse) {
-          msgs.push({
+          const filtered = msgs.filter(m => m.type !== 'suggestions' || m.options?.includes('Sí, vamos'));
+          filtered.push({
             id:Date.now()+2,
             from:currentAgent,
             type:"suggestions",
             options:['▶ Iniciar sesión','Tengo una pregunta'],
             time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
           });
+          return filtered;
         }
         return msgs;
       });
