@@ -1752,7 +1752,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div ref={aiEnd} />
               </div>
 
-              {aiMessages.length <= 2 && !weeklyGoal && (
+              {false && (
                 <>
                   <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px 20px',textAlign:'center'}}>
                     <div style={{width:'64px',height:'64px',borderRadius:'20px',background:`${agent.color}20`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'32px',marginBottom:'12px'}}>{agent.emoji}</div>
