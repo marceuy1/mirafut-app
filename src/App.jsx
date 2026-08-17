@@ -702,6 +702,12 @@ export default function App() {
   }
 
   const sendAI = async (text) => {
+    if (text === 'Sí, vamos' && weeklyGoal) {
+      text = 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Estoy listo para entrenar.';
+    }
+    if (text === 'Hoy no puedo' && weeklyGoal) {
+      text = 'Hoy no puedo entrenar mis ' + weeklyGoal.goal + '. Lo hago otro dia.';
+    }
     if (requireAuth()) return;
     if (!text.trim()) return;
 
