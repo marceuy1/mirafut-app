@@ -248,7 +248,7 @@ export default function App() {
   const [currentAgent, setCurrentAgent] = useState("coach");
   const [aiMessages, setAiMessages] = useState([
     { id:1, from:"coach", type:"text", text:"Hola 👋 ¿Cómo estás hoy?", time:"14:20" },
-    { id:2, from:"coach", type:"suggestions", options:["Todo bien","Nervioso/a","Necesito consejo","Vengo de entrenar"], time:"14:20" },
+    { id:2, from:"coach", type:"suggestions", options:["Todo bien","Vengo de entrenar","🏟️ Vengo de jugar","Nervioso/a"], time:"14:20" },
   ]);
   const [aiInput, setAiInput] = useState("");
   const [showSpecialists, setShowSpecialists] = useState(false);
@@ -331,6 +331,8 @@ export default function App() {
     const { data } = await supabase.from('weekly_goals').insert([{ user_id: session.user.id, goal, position: userProfile?.position, sessions_target: sessions_target || 3 }]).select().single();
     if (data) setWeeklyGoal(data);
     setShowWeeklyGoal(false);
+    setTab('coach');
+    setTimeout(() => sendAI('Mi objetivo esta semana es: ' + goal + '. Entrenas solo o con alguien?'), 500);
   };
 
   const loadSorteo = async () => {
@@ -2366,20 +2368,21 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <button className="modal-close" onClick={() => setShowWeeklyGoal(false)}>✕</button>
               </div>
               <div style={{fontSize:'13px',color:'#556677',marginBottom:'16px'}}>¿Qué quieres trabajar esta semana?</div>
-              {[
-                'Mejorar mis reflejos',
-                'Trabajar el control orientado',
-                'Mejorar mis salidas',
-                'Potenciar mi pie débil',
-                'Mejorar mi posicionamiento',
-                'Aumentar mi velocidad',
-                'Trabajar la toma de decisiones',
-                'Mejorar mi definición'
-              ].map(g => (
-                <div key={g} onClick={() => createWeeklyGoal(g, 3)} style={{padding:'12px 14px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',fontSize:'14px',color:'#ECEFF4',marginBottom:'8px'}}>
-                  {g}
-                </div>
-              ))}
+              {(() => {
+                const pos = userProfile?.position || '';
+                const goals = {
+                  POR: ['Mejorar mis reflejos','Mejorar mis salidas','Mejorar mi posicionamiento','Juego aéreo','Juego con los pies','Comunicación con la defensa','1v1 bajo palos','Distribución'],
+                  DEF: ['Mejorar mi marcación','Anticipación y lectura','Salida del balón','Duelos aéreos','Potenciar mi pie débil','Posicionamiento defensivo','Juego en banda','Presión alta'],
+                  MED: ['Trabajar el control orientado','Mejorar mi visión de juego','Toma de decisiones','Potenciar mi pie débil','Rondo y posesión','Llegada al área','Pressing','Transiciones'],
+                  DEL: ['Mejorar mi definición','Desmarques','Primer toque','1v1 ofensivo','Juego de espaldas','Movimientos en el área','Potenciar mi pie débil','Presión al portero']
+                };
+                const list = goals[pos] || ['Mejorar mis reflejos','Trabajar el control orientado','Mejorar mi posicionamiento','Potenciar mi pie débil','Aumentar mi velocidad','Toma de decisiones','Mejorar mi definición','Trabajo físico'];
+                return list.map(g => (
+                  <div key={g} onClick={() => createWeeklyGoal(g, 3)} style={{padding:'12px 14px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',fontSize:'14px',color:'#ECEFF4',marginBottom:'8px'}}>
+                    {g}
+                  </div>
+                ));
+              })()}
             </div>
           </div>
         )}
