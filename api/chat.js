@@ -5,7 +5,9 @@ export default async function handler(req, res) {
   if (!message) return res.status(400).json({ error: 'Missing message' });
 
   const perfilStr = perfil ? `El jugador es: ${perfil.name || ''}, posicion: ${perfil.position || ''}, edad: ${perfil.age || ''}, pais: ${perfil.country || ''}, pie dominante: ${perfil.dominant_foot || ''}, objetivo personal: ${perfil.goal || ''}, nivel: ${perfil.level || ''}, entrena: ${perfil.training_freq || ''} veces por semana.` : '';
-  const goalStr = perfil?.weekly_goal ? `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0}/${perfil.sessions_target || 3}. IMPORTANTE: Cuando el jugador confirme que esta listo para entrenar (solo o con alguien), NO hagas mas preguntas. Genera INMEDIATAMENTE una sesion de entrenamiento especifica para "${perfil.weekly_goal}" con: nombre de sesion, duracion total, 3-4 ejercicios con tiempo cada uno, y un Coach Tip final. Adapta los ejercicios segun si entrena solo o con alguien.` : '';
+  const edad = perfil?.age ? parseInt(perfil.age) : 16;
+  const duracion = edad <= 13 ? '15-20 min' : edad <= 16 ? '20-25 min' : '25-30 min';
+  const goalStr = perfil?.weekly_goal ? `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0}/${perfil.sessions_target || 3}. IMPORTANTE: Cuando el jugador confirme que esta listo, genera INMEDIATAMENTE una sesion especifica para "${perfil.weekly_goal}". Duracion total: ${duracion} (ajustada para ${edad} anos). Incluye 3 ejercicios especificos para ese objetivo con tiempo cada uno. Cada ejercicio debe ser DIFERENTE y ESPECIFICO para ese objetivo, no ejercicios genericos. Termina con un Coach Tip breve.` : '';
 
   const coachPrompt = `Eres MiraFut Coach, un entrenador personal para jovenes futbolistas. ${perfilStr} ${goalStr}
 

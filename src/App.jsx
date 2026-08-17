@@ -702,6 +702,10 @@ export default function App() {
   }
 
   const sendAI = async (displayText) => {
+    if (displayText === '✓ Terminé mi sesión' && weeklyGoal) {
+      completeSession();
+      return;
+    }
     const promptText = (displayText === 'Sí, vamos' && weeklyGoal)
       ? 'Sesion ' + (weeklyGoal.sessions_done + 1) + ' de ' + weeklyGoal.goal + '. Entreno solo. Genera la sesion ahora sin preguntar mas.'
       : (displayText === 'Hoy no puedo' && weeklyGoal)
@@ -727,13 +731,26 @@ export default function App() {
       const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
       const response = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo);
-      setAiMessages(m => [...m, { 
-        id:Date.now()+1, 
-        from:currentAgent, 
-        type:"text", 
-        text:response, 
-        time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) 
-      }]);
+      const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && response.length > 100;
+      setAiMessages(m => {
+        const msgs = [...m, { 
+          id:Date.now()+1, 
+          from:currentAgent, 
+          type:"text", 
+          text:response, 
+          time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) 
+        }];
+        if (isTrainingResponse) {
+          msgs.push({
+            id:Date.now()+2,
+            from:currentAgent,
+            type:"suggestions",
+            options:['✓ Terminé mi sesión','😓 Estuvo difícil','Tengo una pregunta'],
+            time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+          });
+        }
+        return msgs;
+      });
     } catch (error) {
       console.error('Error with AI Coach:', error);
       setAiMessages(m => [...m, { 
@@ -1756,7 +1773,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                         </div>
                       </div>
                       <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                        ✓ Sesión {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}
+                        ✓ Completar sesión {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}
                       </button>
                     </div>
                   ) : (
