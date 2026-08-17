@@ -348,10 +348,8 @@ export default function App() {
         setAiMessages(prev => [...prev, {
           id: Date.now(),
           from: 'coach',
-          text: '✓ Sesión ' + newDone + '/' + weeklyGoal.sessions_target + ' completada. ¿Cómo estuvo el entrenamiento?',
-          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
-          type: 'suggestions',
-          options: ['Fácil', 'Bien', 'Difícil']
+          text: '✓ Sesión ' + newDone + '/' + weeklyGoal.sessions_target + ' completada. ¿Qué fue lo que más te costó?',
+          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
         }]);
       }, 300);
     }
