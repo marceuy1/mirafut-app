@@ -4,6 +4,7 @@ import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect, useMemo } from "react";
 import Logo from "./components/Logo";
+import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap } from "lucide-react";
 
 // ============ SIMULATED DATA ============
 const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasionado", followers: 45, following: 67, verified: false };
@@ -1360,9 +1361,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
 
             <div style={{display:'flex',gap:'16px',justifyContent:'center',marginTop:'20px',flexWrap:'wrap',maxWidth:'700px',marginLeft:'auto',marginRight:'auto'}}>
-              {[{icon:'🎯',title:'Visibilidad real',desc:'Tu perfil llega a scouts y agentes'},{icon:'💬',title:'Apoyo 24/7',desc:'Orientación y consejos cuando los necesites'},{icon:'🌍',title:'Comunidad global',desc:'Conecta con jugadores de todo el mundo'}].map((p,i) => (
+              {[{Icon:Target,title:'Visibilidad real',desc:'Tu perfil llega a scouts y agentes'},{Icon:MessageCircle,title:'Apoyo 24/7',desc:'Orientación y consejos cuando los necesites'},{Icon:Globe,title:'Comunidad global',desc:'Conecta con jugadores de todo el mundo'}].map((p,i) => (
                 <div key={i} style={{display:'flex',alignItems:'center',gap:'10px',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'12px 16px',flex:'1',minWidth:'180px',textAlign:'left'}}>
-                  <div style={{fontSize:'22px',flexShrink:0}}>{p.icon}</div>
+                  <div style={{flexShrink:0,color:'#00E676'}}><p.Icon size={22} /></div>
                   <div>
                     <div style={{fontSize:'13px',fontWeight:'700',color:'#ECEFF4'}}>{p.title}</div>
                     <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>{p.desc}</div>
@@ -1396,11 +1397,16 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div style={{display:'flex',gap:'6px',overflowX:'auto',scrollbarWidth:'none'}}>
                 {['','POR','DEF','MED','DEL'].map(pos => (
                   <button key={pos} onClick={() => setFilterPosition(pos)} style={{padding:'6px 14px',background:filterPosition===pos?'#00E676':'#121820',border:filterPosition===pos?'none':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterPosition===pos?'#0a0e14':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
-                    {pos === '' ? 'Todos' : pos === 'POR' ? '🧤 POR' : pos === 'DEF' ? '🛡️ DEF' : pos === 'MED' ? '⚙️ MED' : '⚡ DEL'}
+                    {pos === '' ? 'Todos' : (
+                      <span style={{display:'inline-flex',alignItems:'center',gap:'5px'}}>
+                        {pos === 'POR' ? <Hand size={13} /> : pos === 'DEF' ? <Shield size={13} /> : pos === 'MED' ? <Settings size={13} /> : <Zap size={13} />}
+                        {pos}
+                      </span>
+                    )}
                   </button>
                 ))}
                 <div style={{width:'1px',background:'rgba(255,255,255,0.08)',flexShrink:0,margin:'4px 2px'}}/>
-                <button onClick={() => setFilterCountry('')} style={{padding:'6px 14px',background:filterCountry===''?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===''?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===''?'#00E676':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>🌍</button>
+                <button onClick={() => setFilterCountry('')} style={{padding:'6px 14px',background:filterCountry===''?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===''?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===''?'#00E676':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0,display:'inline-flex',alignItems:'center'}}><Globe size={14} /></button>
                 {COUNTRIES.map(c => (
                   <button key={c} onClick={() => setFilterCountry(c)} style={{padding:'6px 14px',background:filterCountry===c?'rgba(0,230,118,0.1)':'#121820',border:filterCountry===c?'1px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterCountry===c?'#00E676':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
                     {c}
@@ -2556,9 +2562,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
         {/* BOTTOM NAV */}
         <nav className="bnav">
-          <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">🏠</span><span>{t.home}</span></button>
-          <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('coach');setChatOpen(null);}}><span className="ni-emoji">⚽</span><span>{t.coach}</span></button>
-          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);loadChatList();}}><span className="ni-emoji">💬</span><span>{t.chat}</span>{unreadMessages>0 && <span className="nbg">{unreadMessages}</span>}</button>
+          <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji"><Home size={20} /></span><span>{t.home}</span></button>
+          <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('coach');setChatOpen(null);}}><span className="ni-emoji"><Goal size={20} /></span><span>{t.coach}</span></button>
+          <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);loadChatList();}}><span className="ni-emoji"><MessageCircle size={20} /></span><span>{t.chat}</span>{unreadMessages>0 && <span className="nbg">{unreadMessages}</span>}</button>
           <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{ if(!session){requireAuth('profile');return;} setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>{t.profile}</span></button>
         </nav>
       </div>
