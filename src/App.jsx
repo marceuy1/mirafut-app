@@ -1057,10 +1057,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
   .logo-text{font-size:24px}
   
   /* Desktop Hero */
-  .desktop-hero{background:linear-gradient(135deg,rgba(0,230,118,0.03),rgba(0,200,83,0.01));padding:80px 40px 60px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .desktop-hero{background:linear-gradient(135deg,rgba(0,230,118,0.03),rgba(0,200,83,0.01));padding:56px 40px 42px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.04)}
   .hero-title{font-size:52px;font-weight:900;background:linear-gradient(135deg,#00E676,#69F0AE);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px;font-family:'Inter',sans-serif;line-height:1.1}
   .hero-subtitle{font-size:22px;color:#8899A6;margin-bottom:32px;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.4}
-  .hero-stats{display:flex;gap:40px;justify-content:center;margin-top:24px}
+  .hero-stats{display:flex;gap:40px;justify-content:center;margin-top:16px}
   .hero-stat{text-align:center}
   .hero-stat-value{font-size:36px;font-weight:900;color:#00E676;font-family:'Space Mono',monospace}
   .hero-stat-label{font-size:13px;color:#556677;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
@@ -1342,7 +1342,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {t.heroSubtitle}
             </p>
             <p style={{fontSize:'15px',color:'rgba(255,255,255,0.4)',marginTop:'-16px',marginBottom:'24px',fontStyle:'italic',maxWidth:'600px',margin:'-16px auto 24px'}}>
-              {lang === 'en' ? "We don't promise to get you discovered. We help you become the player who deserves to be discovered — and then we work to get you there." : "No te prometemos que te van a descubrir. Te ayudamos a convertirte en el jugador que merece ser descubierto — y después trabajamos para acercarte a esa oportunidad."}
+              {t.heroQuote}
             </p>
             <div className="hero-stats">
               <div className="hero-stat">
@@ -1359,7 +1359,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
             </div>
 
-            <div style={{display:'flex',gap:'16px',justifyContent:'center',marginTop:'28px',flexWrap:'wrap',maxWidth:'700px',marginLeft:'auto',marginRight:'auto'}}>
+            <div style={{display:'flex',gap:'16px',justifyContent:'center',marginTop:'20px',flexWrap:'wrap',maxWidth:'700px',marginLeft:'auto',marginRight:'auto'}}>
               {[{icon:'🎯',title:'Visibilidad real',desc:'Tu perfil llega a scouts y agentes'},{icon:'💬',title:'Apoyo 24/7',desc:'Orientación y consejos cuando los necesites'},{icon:'🌍',title:'Comunidad global',desc:'Conecta con jugadores de todo el mundo'}].map((p,i) => (
                 <div key={i} style={{display:'flex',alignItems:'center',gap:'10px',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'12px 16px',flex:'1',minWidth:'180px',textAlign:'left'}}>
                   <div style={{fontSize:'22px',flexShrink:0}}>{p.icon}</div>
@@ -1377,9 +1377,12 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </button>
               </div>
             ) : (
-              <div style={{marginTop:'28px',display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
-                <button onClick={() => setShowAuthPrompt(true)} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'inline-flex',alignItems:'center',gap:'8px'}}>
-                  🚀 Únete / Iniciar sesión
+              <div style={{marginTop:'20px',display:'flex',flexDirection:'column',alignItems:'center',gap:'10px'}}>
+                <button onClick={() => { setIsSignUp(true); setShowAuthPrompt(true); }} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
+                  Crear mi perfil
+                </button>
+                <button onClick={() => { setIsSignUp(false); setShowAuthPrompt(true); }} style={{background:'none',border:'none',color:'#8899A6',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit,sans-serif',textDecoration:'underline'}}>
+                  Ya tengo cuenta · Iniciar sesión
                 </button>
               </div>
             )}
