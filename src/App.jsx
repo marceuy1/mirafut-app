@@ -4,7 +4,7 @@ import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect, useMemo } from "react";
 import Logo from "./components/Logo";
-import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap, X, Bell, Link, ClipboardList, User, Edit3, Camera, Lock, Trash2, Mail } from "lucide-react";
+import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap, X, Bell, Link, ClipboardList, User, Edit3, Camera, Lock, Trash2, Mail, Search, CircleCheck, MapPin, AlertTriangle, Sparkles, Stethoscope, Siren, Shirt, Vote } from "lucide-react";
 
 // ============ SIMULATED DATA ============
 const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasionado", followers: 45, following: 67, verified: false };
@@ -1290,7 +1290,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",padding:"7px 12px",color:"#ECEFF4",fontSize:"13px",outline:"none",fontFamily:"Outfit, sans-serif"}}
               />
               ) : (
-              <div onClick={() => setShowSearch(s => !s)} style={{display:"flex",alignItems:"center",justifyContent:"center",width:"36px",height:"36px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",cursor:"pointer",fontSize:"16px"}}>🔍</div>
+              <div onClick={() => setShowSearch(s => !s)} style={{display:"flex",alignItems:"center",justifyContent:"center",width:"36px",height:"36px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",cursor:"pointer"}}><Search size={16} /></div>
               )}
               {!isDesktop && showSearch && (
               <div style={{position:"fixed",top:"60px",left:0,right:0,padding:"10px 16px",background:"#0a0e14",borderBottom:"1px solid rgba(255,255,255,0.08)",zIndex:200}}>
@@ -1456,7 +1456,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div key={i} onClick={() => voteDebate(i)} style={{position:'relative',borderRadius:'12px',overflow:'hidden',cursor:userVote === null ? 'pointer' : 'default'}}>
                       {userVote !== null && <div style={{position:'absolute',inset:0,background:voted?'rgba(0,230,118,0.15)':'rgba(255,255,255,0.03)',width:`${pct}%`}}/>}
                       <div style={{position:'relative',padding:'13px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',border:voted?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.12)',borderRadius:'12px',transition:'all 0.2s'}}>
-                        <span style={{fontSize:'14px',fontWeight:'700',color:voted?'#00E676':'#ECEFF4'}}>{userVote===null?'👆 ':''}{opt}</span>
+                        <span style={{fontSize:'14px',fontWeight:'700',color:voted?'#00E676':'#ECEFF4',display:'inline-flex',alignItems:'center',gap:'4px'}}>{userVote===null?<CircleCheck size={14} />:''}{opt}</span>
                         {userVote !== null && <span style={{fontSize:'14px',fontWeight:'800',color:voted?'#00E676':'#8899A6'}}>{pct}%</span>}
                       </div>
                     </div>
@@ -1601,7 +1601,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="profile">
               {viewProfile.avatar_url ? <img src={viewProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover",margin:"0 auto 12px",display:"block"}} /> : <div className="prof-av">{viewProfile.avatar}</div>}
               <div className="prof-name">{viewProfile.name} {viewProfile.verified && <V/>}</div>
-              <div className="prof-meta">📍 {viewProfile.city}, {viewProfile.country} · {viewProfile.age} años · {viewProfile.position}</div>
+              <div className="prof-meta" style={{display:'flex',alignItems:'center',gap:'5px'}}><MapPin size={13} /> {viewProfile.city}, {viewProfile.country} · {viewProfile.age} años · {viewProfile.position}</div>
               <div className="prof-bio">{viewProfile.bio}</div>
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{viewProfile.followers||0}</div><div className="prof-stat-l">Seguidores</div></div>
@@ -1739,7 +1739,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               )}
               
               {currentAgent === "nutricion" && (
-                <div className="safety-banner" style={{background:'rgba(255,183,77,0.08)',borderColor:'rgba(255,183,77,0.2)'}}><span>⚠️</span><div><strong>Consejo nutricional general.</strong> Para planes personalizados o condiciones médicas específicas, consulta un nutricionista certificado.</div></div>
+                <div className="safety-banner" style={{background:'rgba(255,183,77,0.08)',borderColor:'rgba(255,183,77,0.2)'}}><span><AlertTriangle size={16} /></span><div><strong>Consejo nutricional general.</strong> Para planes personalizados o condiciones médicas específicas, consulta un nutricionista certificado.</div></div>
               )}
 
               <div className="ai-msgs">
@@ -1843,7 +1843,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover"}} /> : <div className="prof-av">{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : "TU"}</div>}
               <div className="prof-name">{userProfile?.full_name || 'Tu nombre'}</div>
               <div className="prof-meta">{userProfile?.position ? `${userProfile.position} · ` : ''}{userProfile?.city ? `${userProfile.city}, ` : ''}{userProfile?.country}{userProfile?.age ? ` · ${userProfile.age} años` : ''}</div>
-              {!userProfile?.country && <div style={{color:'#00E676',fontSize:'12px',marginTop:'4px'}}>✨ Completa tu perfil para que los scouts te encuentren</div>}
+              {!userProfile?.country && <div style={{color:'#00E676',fontSize:'12px',marginTop:'4px',display:'flex',alignItems:'center',gap:'5px'}}><Sparkles size={13} /> Completa tu perfil para que los scouts te encuentren</div>}
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">Seguidores</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{followingList.length}</div><div className="prof-stat-l">Siguiendo</div></div>
@@ -1916,7 +1916,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         <div className={`disclaimer-modal-bg ${showHealthDisclaimer ? 'show' : ''}`} onClick={() => setShowHealthDisclaimer(false)}>
           {showHealthDisclaimer && (
             <div className="modal" onClick={e => e.stopPropagation()}>
-              <div className="disclaimer-icon">⚕️</div>
+              <div className="disclaimer-icon"><Stethoscope size={20} /></div>
               <div className="modal-title" style={{textAlign:'center',marginBottom:'12px'}}>Aviso Importante sobre AI Coach</div>
               <div className="disclaimer-text">
                 El AI Coach es una herramienta de <strong>orientación general</strong> diseñada para apoyar tu desarrollo deportivo.
@@ -1934,7 +1934,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <li>Crisis emocional o pensamientos de hacerte daño</li>
               </ul>
               <div className="disclaimer-emergency">
-                <strong>🚨 En caso de emergencia:</strong><br/>
+                <strong style={{display:"flex",alignItems:"center",gap:"6px"}}><Siren size={15} /> En caso de emergencia:</strong><br/>
                 Contacta servicios de urgencia o líneas de ayuda en tu país inmediatamente.
               </div>
               <div className="modal-actions">
@@ -2349,7 +2349,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>Premio de este mes</div>
                 {sorteo?.imagen_url && <img src={sorteo.imagen_url} style={{width:'100%',maxHeight:'160px',objectFit:'contain',borderRadius:'10px',marginBottom:'10px'}} />}
                 <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                  {!sorteo?.imagen_url && <div style={{width:'48px',height:'48px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'24px',flexShrink:0}}>👕</div>}
+                  {!sorteo?.imagen_url && <div style={{width:'48px',height:'48px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Shirt size={24} /></div>}
                   <div>
                     <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4'}}>{sorteo?.premio || 'Premio del mes'}</div>
                     <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>{sorteo?.descripcion || ''}</div>
@@ -2389,7 +2389,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               )}
               {session && userVote === null && (
                 <button onClick={() => { setShowSorteo(false); }} style={{width:'100%',padding:'12px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif',marginBottom:'10px'}}>
-                  Ir al debate para participar 🗳️
+                  Ir al debate para participar <Vote size={14} style={{display:"inline",verticalAlign:"-2px",marginLeft:"4px"}} />
                 </button>
               )}
             </div>
