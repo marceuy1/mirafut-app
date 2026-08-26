@@ -4,7 +4,7 @@ import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect, useMemo } from "react";
 import Logo from "./components/Logo";
-import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap, X, Bell, Link, ClipboardList, User, Edit3, Camera, Lock, Trash2, Mail, Search, CircleCheck, MapPin, AlertTriangle, Sparkles, Stethoscope, Siren, Shirt, Vote } from "lucide-react";
+import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap, X, Bell, Link, ClipboardList, User, Edit3, Camera, Lock, Trash2, Mail, Search, CircleCheck, MapPin, AlertTriangle, Sparkles, Stethoscope, Siren, Shirt, Vote, Rocket, Salad, Brain } from "lucide-react";
 
 // ============ SIMULATED DATA ============
 const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasionado", followers: 45, following: 67, verified: false };
@@ -57,11 +57,11 @@ const CHATS = [
 ];
 
 const SPECIALISTS = [
-  { id:"coach", name:"Coach", emoji:"⚽", color:"#00E676", desc:"Tu mentor personal", intro:"¡Hola! Soy Coach, estoy aquí 24/7 para lo que necesites." },
-  { id:"nutricion", name:"Nutrición", emoji:"🥗", color:"#FFB74D", desc:"Alimentación deportiva", intro:"Hola, puedo ayudarte a comer mejor con lo que tengas." },
-  { id:"psicologia", name:"Psicología", emoji:"🧠", color:"#BA68FF", desc:"Bienestar emocional", intro:"Este es un espacio seguro. Puedes contarme lo que sientes." },
-  { id:"tecnica", name:"Técnica", emoji:"🎯", color:"#40C4FF", desc:"Entrenamiento y táctica", intro:"Envíame videos y te ayudo a mejorar." },
-  { id:"carrera", name:"Carrera", emoji:"🚀", color:"#FF5252", desc:"Camino profesional", intro:"Te ayudo con contratos, becas y oportunidades." },
+  { id:"coach", name:"Coach", emoji:"⚽", Icon:Goal, color:"#00E676", desc:"Tu mentor personal", intro:"¡Hola! Soy Coach, estoy aquí 24/7 para lo que necesites." },
+  { id:"nutricion", name:"Nutrición", emoji:"🥗", Icon:Salad, color:"#FFB74D", desc:"Alimentación deportiva", intro:"Hola, puedo ayudarte a comer mejor con lo que tengas." },
+  { id:"psicologia", name:"Psicología", emoji:"🧠", Icon:Brain, color:"#BA68FF", desc:"Bienestar emocional", intro:"Este es un espacio seguro. Puedes contarme lo que sientes." },
+  { id:"tecnica", name:"Técnica", emoji:"🎯", Icon:Target, color:"#40C4FF", desc:"Entrenamiento y táctica", intro:"Envíame videos y te ayudo a mejorar." },
+  { id:"carrera", name:"Carrera", emoji:"🚀", Icon:Rocket, color:"#FF5252", desc:"Camino profesional", intro:"Te ayudo con contratos, becas y oportunidades." },
 ];
 
 const QUICK_PROMPTS = {
@@ -1267,7 +1267,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         ) : tab === "coach" ? (
           <div className="coach-hdr">
             <div className="ch-info" onClick={() => setShowSpecialists(true)}>
-              <div className="ch-av" style={{ background:`${agent.color}20`, color:agent.color }}>{agent.emoji}</div>
+              <div className="ch-av" style={{ background:`${agent.color}20`, color:agent.color, display:"flex", alignItems:"center", justifyContent:"center" }}>{agent.Icon && <agent.Icon size={18} />}</div>
               <div style={{flex:1}}>
                 <div className="ch-name">{agent.name} <span style={{fontSize:11,color:'#556677'}}>▾</span></div>
                 <div className="ch-role">{agent.desc} · En línea</div>
@@ -1753,11 +1753,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   }
                   if (m.type === "specialist-card") {
                     const sp = SPECIALISTS.find(s => s.id === m.specialist);
-                    return <div key={m.id} className="spec-sug"><div className="spec-sug-h"><div className="spec-sug-i" style={{background:`${sp.color}20`,color:sp.color}}>{sp.emoji}</div><div><div className="spec-sug-n">{sp.name}</div><div className="spec-sug-r">{sp.desc}</div></div></div><button className="spec-sug-b" style={{background:sp.color,color:'#0a0e14'}} onClick={()=>switchAgent(m.specialist)}>Conectar con {sp.name} →</button></div>;
+                    return <div key={m.id} className="spec-sug"><div className="spec-sug-h"><div className="spec-sug-i" style={{background:`${sp.color}20`,color:sp.color,display:"flex",alignItems:"center",justifyContent:"center"}}>{sp.Icon && <sp.Icon size={16} />}</div><div><div className="spec-sug-n">{sp.name}</div><div className="spec-sug-r">{sp.desc}</div></div></div><button className="spec-sug-b" style={{background:sp.color,color:'#0a0e14'}} onClick={()=>switchAgent(m.specialist)}>Conectar con {sp.name} →</button></div>;
                   }
                   return (
                     <div key={m.id} className={`ai-row ${m.from==='me'?'me':''}`}>
-                      {m.from !== 'me' && <div className="ai-av" style={{background:`${ma?.color||'#00E676'}20`,color:ma?.color||'#00E676'}}>{ma?.emoji}</div>}
+                      {m.from !== 'me' && <div className="ai-av" style={{background:`${ma?.color||'#00E676'}20`,color:ma?.color||'#00E676',display:'flex',alignItems:'center',justifyContent:'center'}}>{ma?.Icon && <ma.Icon size={16} />}</div>}
                       <div className="ai-group">
                         <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`}>{m.from==='me' ? renderMarkdown(m.text) : renderCoachMessage(m.text, userProfile?.position)}</div>
 
@@ -1766,14 +1766,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     </div>
                   );
                 })}
-                {thinking && <div className="ai-row"><div className="ai-av" style={{background:`${agent.color}20`,color:agent.color}}>{agent.emoji}</div><div className="think"><div className="dot"/><div className="dot"/><div className="dot"/></div></div>}
+                {thinking && <div className="ai-row"><div className="ai-av" style={{background:`${agent.color}20`,color:agent.color,display:"flex",alignItems:"center",justifyContent:"center"}}>{agent.Icon && <agent.Icon size={16} />}</div><div className="think"><div className="dot"/><div className="dot"/><div className="dot"/></div></div>}
                 <div ref={aiEnd} />
               </div>
 
               {false && (
                 <>
                   <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px 20px',textAlign:'center'}}>
-                    <div style={{width:'64px',height:'64px',borderRadius:'20px',background:`${agent.color}20`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'32px',marginBottom:'12px'}}>{agent.emoji}</div>
+                    <div style={{width:'64px',height:'64px',borderRadius:'20px',background:`${agent.color}20`,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'12px'}}>{agent.Icon && <agent.Icon size={32} />}</div>
                     <div style={{fontSize:'16px',fontWeight:'800',color:'#ECEFF4',marginBottom:'6px'}}>{agent.name}</div>
                     <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5',maxWidth:'240px'}}>{agent.desc}</div>
                     <div style={{marginTop:'16px',padding:'12px 16px',background:'rgba(255,255,255,0.03)',borderRadius:'12px',border:'1px solid rgba(255,255,255,0.06)',fontSize:'13px',color:'#8899A6',lineHeight:'1.5',maxWidth:'260px',fontStyle:'italic'}}>"{agent.intro}"</div>
@@ -1826,7 +1826,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div className="spec-grid">
                     {SPECIALISTS.map(s=>(
                       <div key={s.id} className={`spec-card ${currentAgent===s.id?'active':''}`} style={{color:s.color}} onClick={()=>switchAgent(s.id)}>
-                        <div className="spec-emoji">{s.emoji}</div>
+                        <div className="spec-emoji" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>{s.Icon && <s.Icon size={22} style={{color:s.color}} />}</div>
                         <div className="spec-name">{s.name}</div>
                         <div className="spec-desc">{s.desc}</div>
                       </div>
