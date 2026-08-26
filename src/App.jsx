@@ -4,7 +4,7 @@ import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect, useMemo } from "react";
 import Logo from "./components/Logo";
-import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap } from "lucide-react";
+import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap, X, Bell, Link, ClipboardList, User, Edit3, Camera, Lock, Trash2, Mail } from "lucide-react";
 
 // ============ SIMULATED DATA ============
 const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasionado", followers: 45, following: 67, verified: false };
@@ -1416,7 +1416,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
           )}
 
-          {tab === "home" && !viewPost && !viewProfile && session && (<div style={{padding:"8px 16px 0"}}><button onClick={() => setShowNewPost(true)} style={{width:"100%",padding:"12px 16px",background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",color:"#556677",fontSize:"14px",cursor:"pointer",fontFamily:"Outfit,sans-serif",textAlign:"left",display:"flex",alignItems:"center",gap:"10px"}}><div style={{width:"32px",height:"32px",borderRadius:"10px",background:"rgba(0,230,118,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",flexShrink:0}}>✏️</div><span>¿Qué está pasando en el campo?</span></button></div>)}
+          {tab === "home" && !viewPost && !viewProfile && session && (<div style={{padding:"8px 16px 0"}}><button onClick={() => setShowNewPost(true)} style={{width:"100%",padding:"12px 16px",background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",color:"#556677",fontSize:"14px",cursor:"pointer",fontFamily:"Outfit,sans-serif",textAlign:"left",display:"flex",alignItems:"center",gap:"10px"}}><div style={{width:"32px",height:"32px",borderRadius:"10px",background:"rgba(0,230,118,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Edit3 size={16} /></div><span>¿Qué está pasando en el campo?</span></button></div>)}
 
           {/* BANNER SCOUTING */}
           {tab === "home" && !viewPost && !viewProfile && !session && (
@@ -1529,7 +1529,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   )}
                   <div className="poa">
                     {session && p.id.toString().startsWith('real-') && p.userId === session.user.id && (
-                      <button className="poab" onClick={() => deletePost(p.id)} style={{color:'#FF5252'}}>🗑️</button>
+                      <button className="poab" onClick={() => deletePost(p.id)} style={{color:'#FF5252'}}><Trash2 size={15} /></button>
                     )}
                     <button className={`poab lk ${(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? 'on' : ''}`} onClick={() => p.id.toString().startsWith('real-') ? toggleRealLike(p.id) : null}>
                       {(p.id.toString().startsWith('real-') ? likedPosts.includes(p.id.toString().replace('real-','')) : p.liked) ? '❤️' : '🤍'} {p.likes}
@@ -1557,7 +1557,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="poc">{viewPost.text}</div>
                 {viewPost.image && (
                   <div className="pov">
-                    <div className="pov-label">📷 Imagen del post</div>
+                    <div className="pov-label"><Camera size={14} style={{marginRight:6,verticalAlign:"-3px"}} />Imagen del post</div>
                   </div>
                 )}
                 <div className="poa">
@@ -1735,7 +1735,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {tab === "coach" && (
             <div className="coach-screen">
               {currentAgent === "psicologia" && (
-                <div className="safety-banner"><span>🔒</span><div><strong>Espacio seguro.</strong> Lo que hablemos es confidencial.</div></div>
+                <div className="safety-banner"><span><Lock size={16} /></span><div><strong>Espacio seguro.</strong> Lo que hablemos es confidencial.</div></div>
               )}
               
               {currentAgent === "nutricion" && (
@@ -1871,8 +1871,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className="prof-btn sec" onClick={() => {
                 const url = window.location.origin + '?u=' + (userProfile?.username || session?.user?.id);
                 navigator.clipboard.writeText(url).then(() => alert('✅ Link copiado — compártelo con scouts y agentes'));
-              }}>🔗 Compartir mi perfil</button>
-              <button className="prof-btn sec" onClick={() => setShowContact(true)}>✉️ Cuéntanos tu historia</button>
+              }}><Link size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Compartir mi perfil</button>
+              <button className="prof-btn sec" onClick={() => setShowContact(true)}><Mail size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Cuéntanos tu historia</button>
               <button className="prof-btn sec" onClick={() => setShowSettings(true)}>{t.settings}</button>
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
               <div style={{height:'1px',background:'rgba(255,255,255,0.04)',margin:'12px 0'}}/>
@@ -1880,7 +1880,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <span>💬</span> ¿Necesitas ayuda? Contáctanos
               </button>
               <button onClick={() => setShowTerms(true)} style={{width:'100%',padding:'8px',background:'transparent',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                📋 Términos y Privacidad
+                <ClipboardList size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Términos y Privacidad
               </button>
               {realPosts.length > 0 && (
                 <div style={{width:'100%',marginTop:'20px',textAlign:'left'}}>
@@ -1963,7 +1963,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div style={{marginTop:'12px'}}>
               <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'6px'}}>Link de video (opcional)</div>
               <div style={{display:'flex',alignItems:'center',gap:'8px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',padding:'10px 14px'}}>
-                <span style={{fontSize:'16px'}}>🔗</span>
+                <span><Link size={16} /></span>
                 <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="Pega tu link de YouTube o TikTok..." style={{flex:1,background:'none',border:'none',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
               </div>
               {videoUrl && getVideoThumbnail(videoUrl) && (
@@ -1982,7 +1982,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>}
             <div className="modal-actions">
               <label className="modal-btn sec" style={{cursor:'pointer',flex:'0 0 auto'}}>
-                📷 Foto
+                <Camera size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Foto
                 <input type="file" accept="image/*" style={{display:'none'}} onChange={e => { if(e.target.files[0]) { setPostImage(e.target.files[0]); setPostImageUrl(URL.createObjectURL(e.target.files[0])); } }} />
               </label>
               <button className="modal-btn pri" onClick={createPost}>{t.publish}</button>
@@ -1997,7 +1997,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div style={{textAlign:'center',marginBottom:'20px'}}>
                 {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:'80px',height:'80px',borderRadius:'22px',objectFit:'cover',marginBottom:'8px',display:'block',margin:'0 auto 8px'}} /> : <div style={{width:'80px',height:'80px',borderRadius:'22px',background:'linear-gradient(135deg,#00E676,#00C853)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px',fontWeight:'800',color:'#0a0e14',margin:'0 auto 8px'}}>{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : 'TU'}</div>}
                 <label style={{cursor:'pointer',color:'#00E676',fontSize:'13px',fontWeight:'600'}}>
-                  📷 Cambiar foto
+                  <Camera size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Cambiar foto
                   <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files[0] && uploadAvatar(e.target.files[0])} />
                 </label>
               </div>
@@ -2074,7 +2074,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
               {notifications.length === 0 ? (
                 <div style={{textAlign:'center',padding:'30px 20px'}}>
-                  <div style={{fontSize:'36px',marginBottom:'12px'}}>🔔</div>
+                  <div style={{marginBottom:'12px',display:'flex',justifyContent:'center'}}><Bell size={36} /></div>
                   <div style={{color:'#556677',fontSize:'14px',fontWeight:'600'}}>No hay notificaciones aún</div>
                   <div style={{color:'#556677',fontSize:'12px',marginTop:'6px'}}>Cuando alguien te siga o dé like aparecerá aquí</div>
                 </div>
@@ -2118,7 +2118,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     {userProfile?.avatar_url
                       ? <img src={userProfile.avatar_url} style={{width:'80px',height:'80px',borderRadius:'24px',objectFit:'cover',margin:'0 auto 8px',display:'block'}} />
                       : <div style={{width:'80px',height:'80px',borderRadius:'24px',background:'#121820',border:'2px dashed rgba(0,230,118,0.4)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',margin:'0 auto 8px'}}>
-                          <span style={{fontSize:'24px'}}>📷</span>
+                          <span><Camera size={24} /></span>
                           <span style={{fontSize:'10px',color:'#556677',marginTop:'4px'}}>Subir foto</span>
                         </div>
                     }
@@ -2223,7 +2223,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div className="modal-hdr">
                 <div className="modal-title">⚙️ Panel Admin</div>
-                <button className="modal-close" onClick={() => setShowAdmin(false)}>✕</button>
+                <button className="modal-close" onClick={() => setShowAdmin(false)}><X size={18} /></button>
               </div>
               <div style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
                 <button onClick={() => setAdminTab('debate')} style={{flex:1,padding:'8px',background:adminTab==='debate'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:adminTab==='debate'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🔥 Debate</button>
@@ -2261,7 +2261,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <input value={adminSorteo.descripcion} onChange={e=>setAdminSorteo(p=>({...p,descripcion:e.target.value}))} placeholder="Descripción (ej: Original · Talla a elección)" style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',marginBottom:'8px'}}/>
                   <label style={{display:'block',marginBottom:'8px',cursor:'pointer'}}>
                     <div style={{padding:'10px',background:'#0a0e14',border:'1px dashed rgba(0,230,118,0.3)',borderRadius:'10px',color:'#556677',fontSize:'13px',textAlign:'center'}}>
-                      {sorteoImagePreview ? <img src={sorteoImagePreview} style={{width:'100%',maxHeight:'120px',objectFit:'contain',borderRadius:'8px'}} /> : '📷 Subir foto del premio'}
+                      {sorteoImagePreview ? <img src={sorteoImagePreview} style={{width:'100%',maxHeight:'120px',objectFit:'contain',borderRadius:'8px'}} /> : (<span><Camera size={15} style={{marginRight:6,verticalAlign:'-3px'}} />Subir foto del premio</span>)}
                     </div>
                     <input type="file" accept="image/*" style={{display:'none'}} onChange={e => { const f = e.target.files[0]; if(f){ setSorteoImageFile(f); setSorteoImagePreview(URL.createObjectURL(f)); } }} />
                   </label>
@@ -2334,7 +2334,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div className="modal-hdr">
                 <div className="modal-title">🎁 Sorteo del mes</div>
-                <button className="modal-close" onClick={() => setShowSorteo(false)}>✕</button>
+                <button className="modal-close" onClick={() => setShowSorteo(false)}><X size={18} /></button>
               </div>
               <div style={{background:'linear-gradient(135deg,#00E676,#00C853)',borderRadius:'14px',padding:'16px',marginBottom:'12px',position:'relative',overflow:'hidden'}}>
                 <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.5)',marginBottom:'4px'}}>SORTEO DEL MES</div>
@@ -2401,8 +2401,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <div className="modal-bg show" onClick={() => setShowTerms(false)}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div className="modal-hdr">
-                <div className="modal-title">📋 Términos y Privacidad</div>
-                <button className="modal-close" onClick={() => setShowTerms(false)}>✕</button>
+                <div className="modal-title"><ClipboardList size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Términos y Privacidad</div>
+                <button className="modal-close" onClick={() => setShowTerms(false)}><X size={18} /></button>
               </div>
               {[
                 {title:'1. Edad mínima',text:'Debes tener al menos 13 años para usar MiraFut. Al registrarte confirmas que tienes 13 años o más.'},
@@ -2428,7 +2428,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="modal" onClick={e => e.stopPropagation()}>
               <div className="modal-hdr">
                 <div className="modal-title">⚙️ Configuración</div>
-                <button className="modal-close" onClick={() => setShowSettings(false)}>✕</button>
+                <button className="modal-close" onClick={() => setShowSettings(false)}><X size={18} /></button>
               </div>
 
               <div style={{marginBottom:'20px'}}>
@@ -2442,14 +2442,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'20px',marginBottom:'20px'}}>
                 <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>Cuenta</div>
                 <button onClick={() => { setShowSettings(false); setShowAuthPrompt(true); }} style={{width:'100%',padding:'12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',textAlign:'left',marginBottom:'8px'}}>
-                  🔒 Cambiar contraseña
+                  <Lock size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Cambiar contraseña
                 </button>
               </div>
 
               <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'20px'}}>
                 <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>Zona de peligro</div>
                 <button onClick={() => { if(window.confirm('¿Estás seguro? Esta acción es irreversible.')) { supabase.from('profiles').delete().eq('id', session.user.id).then(() => { supabase.auth.signOut(); setSession(null); setTab('home'); setShowSettings(false); }); } }} style={{width:'100%',padding:'12px',background:'rgba(255,82,82,0.08)',border:'1px solid rgba(255,82,82,0.2)',borderRadius:'12px',color:'#FF5252',fontSize:'14px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',textAlign:'left'}}>
-                  🗑️ Eliminar mi cuenta
+                  <Trash2 size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Eliminar mi cuenta
                 </button>
               </div>
             </div>
@@ -2462,7 +2462,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="modal" onClick={e => e.stopPropagation()}>
               <div className="modal-hdr">
                 <div className="modal-title">🎯 Objetivo de la semana</div>
-                <button className="modal-close" onClick={() => setShowWeeklyGoal(false)}>✕</button>
+                <button className="modal-close" onClick={() => setShowWeeklyGoal(false)}><X size={18} /></button>
               </div>
               <div style={{fontSize:'13px',color:'#556677',marginBottom:'16px'}}>¿Qué quieres trabajar esta semana?</div>
               {(() => {
@@ -2490,7 +2490,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="modal" onClick={e => e.stopPropagation()}>
               <div className="modal-hdr">
                 <div className="modal-title">💬 ¿Necesitas ayuda?</div>
-                <button className="modal-close" onClick={() => setShowHelp(false)}>✕</button>
+                <button className="modal-close" onClick={() => setShowHelp(false)}><X size={18} /></button>
               </div>
               <div style={{textAlign:'center',marginBottom:'20px'}}>
                 <div style={{fontSize:'40px',marginBottom:'8px'}}>👋</div>
@@ -2498,7 +2498,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5'}}>Escríbenos y te respondemos en menos de 24 horas</div>
               </div>
               <a href="mailto:hola@mirafut.com" style={{display:'flex',alignItems:'center',gap:'12px',background:'#0a0e14',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'12px',padding:'16px',textDecoration:'none',marginBottom:'12px'}}>
-                <div style={{width:'40px',height:'40px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'20px',flexShrink:0}}>✉️</div>
+                <div style={{width:'40px',height:'40px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Mail size={20} /></div>
                 <div>
                   <div style={{fontSize:'13px',fontWeight:'700',color:'#ECEFF4'}}>Escríbenos por email</div>
                   <div style={{fontSize:'12px',color:'#00E676',marginTop:'2px'}}>hola@mirafut.com</div>
@@ -2514,8 +2514,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <div className="modal-bg show" onClick={() => { setShowContact(false); setContactSent(false); }}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div className="modal-hdr">
-                <div className="modal-title">✉️ Cuéntanos tu historia</div>
-                <button className="modal-close" onClick={() => { setShowContact(false); setContactSent(false); }}>✕</button>
+                <div className="modal-title"><Mail size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Cuéntanos tu historia</div>
+                <button className="modal-close" onClick={() => { setShowContact(false); setContactSent(false); }}><X size={18} /></button>
               </div>
               {contactSent ? (
                 <div style={{textAlign:'center',padding:'24px 0'}}>
@@ -2565,7 +2565,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <button className={`ni ${tab==='home'?'on':''}`} onClick={()=>{setTab('home');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji"><Home size={20} /></span><span>{t.home}</span></button>
           <button className={`ni ${tab==='coach'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('coach');setChatOpen(null);}}><span className="ni-emoji"><Goal size={20} /></span><span>{t.coach}</span></button>
           <button className={`ni ${tab==='chat'?'on':''}`} onClick={()=>{ if(!session){requireAuth();return;} setTab('chat');setChatOpen(null);loadChatList();}}><span className="ni-emoji"><MessageCircle size={20} /></span><span>{t.chat}</span>{unreadMessages>0 && <span className="nbg">{unreadMessages}</span>}</button>
-          <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{ if(!session){requireAuth('profile');return;} setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji">👤</span><span>{t.profile}</span></button>
+          <button className={`ni ${tab==='profile'?'on':''}`} onClick={()=>{ if(!session){requireAuth('profile');return;} setTab('profile');setViewPost(null);setViewProfile(null);setChatOpen(null);}}><span className="ni-emoji"><User size={20} /></span><span>{t.profile}</span></button>
         </nav>
       </div>
     </>
