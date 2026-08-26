@@ -4,7 +4,7 @@ import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect, useMemo } from "react";
 import Logo from "./components/Logo";
-import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap, X, Bell, Link, ClipboardList, User, Edit3, Camera, Lock, Trash2, Mail, Search, CircleCheck, MapPin, AlertTriangle, Sparkles, Stethoscope, Siren, Shirt, Vote, Rocket, Salad, Brain } from "lucide-react";
+import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap, X, Bell, Link, ClipboardList, User, Edit3, Camera, Lock, Trash2, Mail, Search, CircleCheck, MapPin, AlertTriangle, Sparkles, Stethoscope, Siren, Shirt, Vote, Rocket, Salad, Brain, LogOut } from "lucide-react";
 
 // ============ SIMULATED DATA ============
 const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasionado", followers: 45, following: 67, verified: false };
@@ -1873,8 +1873,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 navigator.clipboard.writeText(url).then(() => alert('✅ Link copiado — compártelo con scouts y agentes'));
               }}><Link size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Compartir mi perfil</button>
               <button className="prof-btn sec" onClick={() => setShowContact(true)}><Mail size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Cuéntanos tu historia</button>
-              <button className="prof-btn sec" onClick={() => setShowSettings(true)}>{t.settings}</button>
-              <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}>{t.logout}</button>
+              <button className="prof-btn sec" onClick={() => setShowSettings(true)}><Settings size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.settings}</button>
+              <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}><LogOut size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.logout}</button>
               <div style={{height:'1px',background:'rgba(255,255,255,0.04)',margin:'12px 0'}}/>
               <button onClick={() => setShowHelp(true)} style={{width:'100%',padding:'11px',background:'transparent',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',color:'#ECEFF4',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
                 <span>💬</span> ¿Necesitas ayuda? Contáctanos
