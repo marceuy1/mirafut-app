@@ -371,19 +371,17 @@ export default function App() {
     const newDone = Math.min(weeklyGoal.sessions_done + 1, weeklyGoal.sessions_target);
     const completed = newDone >= weeklyGoal.sessions_target;
     await supabase.from('weekly_goals').update({ sessions_done: newDone, completed }).eq('id', weeklyGoal.id);
-    if (completed) {
-      setWeeklyGoal(null);
-      setSessionInProgress(false);
-    } else {
-      setWeeklyGoal(prev => ({...prev, sessions_done: newDone, completed}));
-    }
+    // Mantenemos weeklyGoal (marcado como completed) en vez de vaciarlo,
+    // asi el Coach todavia tiene contexto del objetivo durante la reflexion de cierre.
+    setWeeklyGoal(prev => ({...prev, sessions_done: newDone, completed}));
     setTab('coach');
     if (completed) {
+      const nombre = userProfile?.full_name?.split(' ')[0] || '';
       setTimeout(() => {
         setAiMessages([{
           id: Date.now(),
           from: 'coach',
-          text: '🏆 Completaste las ' + weeklyGoal.sessions_target + ' sesiones de: ' + weeklyGoal.goal + '. ¿Sientes que mejoraste esta semana?',
+          text: '🏆 ¡Lo lograste' + (nombre ? ', ' + nombre : '') + '! Completaste las ' + weeklyGoal.sessions_target + ' sesiones de "' + weeklyGoal.goal + '" esta semana. Contame, ¿cómo sentiste tu progreso?',
           time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
           type: 'suggestions',
           options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto']

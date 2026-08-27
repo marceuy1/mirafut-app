@@ -49,15 +49,29 @@ export default async function handler(req, res) {
     ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para dar progresion real, no repetir lo mismo):\n' + sessionsLog.map((s, i) => `Sesion ${i + 1}: ${s}`).join('\n')
     : '';
 
-  const instruccionesPreguntar = trainingContext
-    ? `INFORMACION YA CONFIRMADA POR EL JUGADOR (NO VOLVER A PREGUNTAR): ${trainingContext}
+  const objetivoCompletado = perfil?.weekly_goal && perfil?.sessions_target > 0 && (perfil?.sessions_done || 0) >= perfil.sessions_target;
+
+  let goalStr = '';
+  if (perfil?.weekly_goal && objetivoCompletado) {
+    // El jugador ya termino las 3 sesiones: esto es una reflexion de cierre de semana, no una sesion nueva.
+    goalStr = `OBJETIVO SEMANAL COMPLETADO: "${perfil.weekly_goal}" — ${perfil.sessions_target} de ${perfil.sessions_target} sesiones hechas esta semana.
+
+MOMENTO ACTUAL: reflexion de cierre de semana. El jugador te acaba de contar como sintio su progreso.
+- Responde con calidez genuina a lo que te diga, como un entrenador real que conoce su esfuerzo esta semana.
+- Si dice que mejoro: celebralo con algo especifico relacionado al objetivo (${perfil.weekly_goal}), no generico.
+- Si dice que le costo o que todavia no lo nota: valida el esfuerzo, recuerda que la mejora tecnica lleva tiempo, y anima a seguir.
+- Cierra preguntando si quiere fijar un nuevo objetivo para la proxima semana.
+- NO generes una sesion de entrenamiento en esta respuesta.`;
+  } else if (perfil?.weekly_goal) {
+    const instruccionesPreguntar = trainingContext
+      ? `INFORMACION YA CONFIRMADA POR EL JUGADOR (NO VOLVER A PREGUNTAR): ${trainingContext}
 Usa esta informacion directamente para generar la sesion. NO preguntes de nuevo si entrena solo o que material tiene, ya lo sabes.`
-    : `CUANDO EL JUGADOR ESTE LISTO PARA ENTRENAR:
+      : `CUANDO EL JUGADOR ESTE LISTO PARA ENTRENAR:
 1. Si el objetivo tiene ambiguedad segun la posicion, pregunta que aspecto especifico quiere trabajar.
 2. Pregunta: Entrenas solo o con alguien? Que material tienes disponible?
 3. Con esa info genera la sesion. NO antes.`;
 
-  const goalStr = perfil?.weekly_goal ? `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones: ${perfil.sessions_done || 0}/${perfil.sessions_target || 3}.
+    goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones: ${perfil.sessions_done || 0}/${perfil.sessions_target || 3}.
 ${contextoPosicion ? 'CONTEXTO FUTBOLISTICO: ' + contextoPosicion : ''}
 
 ${instruccionesPreguntar}
@@ -88,7 +102,8 @@ Sesion [N] — [Objetivo especifico] — ${duracionTotal} min
 
 Coach Tip: [consejo tecnico especifico para ${pos} trabajando ${perfil.weekly_goal}]
 
-REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Si hay que elegir entre variedad y relevancia, priorizar relevancia. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.` : '';
+REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Si hay que elegir entre variedad y relevancia, priorizar relevancia. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.`;
+  }
 
   const coachPrompt = `Eres MiraFut Coach, entrenador personal para jovenes futbolistas. ${perfilStr} ${goalStr}
 
