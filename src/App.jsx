@@ -4,7 +4,7 @@ import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect, useMemo } from "react";
 import Logo from "./components/Logo";
-import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap, X, Bell, Link, ClipboardList, User, Edit3, Camera, Lock, Trash2, Mail, Search, CircleCheck, MapPin, AlertTriangle, Sparkles, Stethoscope, Siren, Shirt, Vote, Rocket, Salad, Brain, LogOut } from "lucide-react";
+import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap, X, Bell, Link, ClipboardList, User, Edit3, Camera, Lock, Trash2, Mail, Search, CircleCheck, MapPin, AlertTriangle, Sparkles, Stethoscope, Siren, Shirt, Vote, Rocket, Salad, Brain, LogOut, ArrowLeft } from "lucide-react";
 
 // ============ SIMULATED DATA ============
 const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasionado", followers: 45, following: 67, verified: false };
@@ -238,6 +238,31 @@ export default function App() {
     if (saved) { sessionStorage.removeItem('activeTab'); return saved; }
     return 'home';
   });
+  const didMountTabRef = useRef(false);
+  const isPoppingRef = useRef(false);
+
+  // Boton atras del celular: navega entre Inicio/Coach/Chat/Perfil en vez de salir de la app
+  useEffect(() => {
+    if (!didMountTabRef.current) {
+      didMountTabRef.current = true;
+      window.history.replaceState({ tab }, '');
+      return;
+    }
+    if (isPoppingRef.current) {
+      isPoppingRef.current = false;
+      return;
+    }
+    window.history.pushState({ tab }, '');
+  }, [tab]);
+
+  useEffect(() => {
+    const handlePopState = (e) => {
+      isPoppingRef.current = true;
+      setTab(e.state?.tab || 'home');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 769);
   const [viewPost, setViewPost] = useState(null);
   const [viewProfile, setViewProfile] = useState(null);
@@ -1139,7 +1164,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
 .chat-view{display:flex;flex-direction:column;height:100%}
 .chat-hdr{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:10px;background:#0d1319}
-.chat-back{background:none;border:none;color:#8899A6;cursor:pointer;font-size:18px;padding:4px 8px}
+.chat-back{background:none;border:none;color:#ECEFF4;cursor:pointer;padding:8px 10px;display:flex;align-items:center;justify-content:center}
 .chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:6px}
 .chat-msg{max-width:78%;padding:9px 12px;border-radius:14px;font-size:13px;line-height:1.4}
 .chat-msg.them{background:#121820;border:1px solid rgba(255,255,255,0.04);align-self:flex-start;border-bottom-left-radius:4px}
@@ -1258,7 +1283,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         {/* HEADER */}
         {chatOpen ? (
           <div className="chat-hdr">
-            <button className="chat-back" onClick={() => setChatOpen(null)}>←</button>
+            <button className="chat-back" onClick={() => setChatOpen(null)}><ArrowLeft size={22} /></button>
             <span style={{fontWeight:600,fontSize:14}}>{chatPartner?.name || 'Chat'}</span>
             <div style={{width:30}}/>
           </div>
