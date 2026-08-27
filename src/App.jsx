@@ -1496,7 +1496,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
 
             <div style={{display:'flex',gap:'16px',justifyContent:'center',marginTop:'20px',flexWrap:'wrap',maxWidth:'700px',marginLeft:'auto',marginRight:'auto'}}>
-              {[{Icon:Target,title:'Visibilidad real',desc:'Tu perfil llega a scouts y agentes'},{Icon:MessageCircle,title:'Apoyo 24/7',desc:'Orientación y consejos cuando los necesites'},{Icon:Globe,title:'Comunidad global',desc:'Conecta con jugadores de todo el mundo'}].map((p,i) => (
+              {[{Icon:Target,title:t.realVisibility,desc:t.realVisibilityDesc},{Icon:MessageCircle,title:t.support247,desc:t.support247Desc},{Icon:Globe,title:t.globalCommunity,desc:t.globalCommunityDesc}].map((p,i) => (
                 <div key={i} style={{display:'flex',alignItems:'center',gap:'10px',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'12px 16px',flex:'1',minWidth:'180px',textAlign:'left'}}>
                   <div style={{flexShrink:0,color:'#00E676'}}><p.Icon size={22} /></div>
                   <div>
@@ -1509,16 +1509,16 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             {session ? (
               <div style={{marginTop:'28px'}}>
                 <button onClick={() => setShowNewPost(true)} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'inline-flex',alignItems:'center',gap:'8px'}}>
-                  ✏️ ¿Qué está pasando en el campo?
+                  ✏️ {t.whatsHappeningField}
                 </button>
               </div>
             ) : (
               <div style={{marginTop:'20px',display:'flex',flexDirection:'column',alignItems:'center',gap:'10px'}}>
                 <button onClick={() => { setIsSignUp(true); setShowAuthPrompt(true); }} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                  Crear mi perfil
+                  {t.createProfile}
                 </button>
                 <button onClick={() => { setIsSignUp(false); setShowAuthPrompt(true); }} style={{background:'none',border:'none',color:'#8899A6',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit,sans-serif',textDecoration:'underline'}}>
-                  Ya tengo cuenta · Iniciar sesión
+                  {t.alreadyHaveAccountLink}
                 </button>
               </div>
             )}
@@ -1532,7 +1532,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div style={{display:'flex',gap:'6px',overflowX:'auto',scrollbarWidth:'none'}}>
                 {['','POR','DEF','MED','DEL'].map(pos => (
                   <button key={pos} onClick={() => setFilterPosition(pos)} style={{padding:'6px 14px',background:filterPosition===pos?'#00E676':'#121820',border:filterPosition===pos?'none':'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',color:filterPosition===pos?'#0a0e14':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Outfit,sans-serif',flexShrink:0}}>
-                    {pos === '' ? 'Todos' : (
+                    {pos === '' ? t.filterAll : (
                       <span style={{display:'inline-flex',alignItems:'center',gap:'5px'}}>
                         {pos === 'POR' ? <Hand size={13} /> : pos === 'DEF' ? <Shield size={13} /> : pos === 'MED' ? <Settings size={13} /> : <Zap size={13} />}
                         {pos}
@@ -1551,16 +1551,16 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
           )}
 
-          {tab === "home" && !viewPost && !viewProfile && session && (<div style={{padding:"8px 16px 0"}}><button onClick={() => setShowNewPost(true)} style={{width:"100%",padding:"12px 16px",background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",color:"#556677",fontSize:"14px",cursor:"pointer",fontFamily:"Outfit,sans-serif",textAlign:"left",display:"flex",alignItems:"center",gap:"10px"}}><div style={{width:"32px",height:"32px",borderRadius:"10px",background:"rgba(0,230,118,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Edit3 size={16} /></div><span>¿Qué está pasando en el campo?</span></button></div>)}
+          {tab === "home" && !viewPost && !viewProfile && session && (<div style={{padding:"8px 16px 0"}}><button onClick={() => setShowNewPost(true)} style={{width:"100%",padding:"12px 16px",background:"#121820",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",color:"#556677",fontSize:"14px",cursor:"pointer",fontFamily:"Outfit,sans-serif",textAlign:"left",display:"flex",alignItems:"center",gap:"10px"}}><div style={{width:"32px",height:"32px",borderRadius:"10px",background:"rgba(0,230,118,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Edit3 size={16} /></div><span>{t.whatsHappeningField}</span></button></div>)}
 
           {/* BANNER SCOUTING */}
           {tab === "home" && !viewPost && !viewProfile && !session && (
             <div style={{margin:'10px 16px 0',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'12px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
               <div>
-                <div style={{fontSize:'14px',fontWeight:'800',color:'#ECEFF4'}}>Tu talento merece ser visto</div>
-                <div style={{fontSize:'11px',color:'#ECEFF4',marginTop:'2px'}}>Scouts y agentes de todo el mundo</div>
+                <div style={{fontSize:'14px',fontWeight:'800',color:'#ECEFF4'}}>{t.talentDeservesSeen}</div>
+                <div style={{fontSize:'11px',color:'#ECEFF4',marginTop:'2px'}}>{t.scoutsWorldwide}</div>
               </div>
-              <button onClick={() => setShowScouting(true)} style={{background:'#00E676',border:'none',borderRadius:'20px',padding:'7px 14px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif',whiteSpace:'nowrap'}}>Ver cómo →</button>
+              <button onClick={() => setShowScouting(true)} style={{background:'#00E676',border:'none',borderRadius:'20px',padding:'7px 14px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif',whiteSpace:'nowrap'}}>{t.seeHow}</button>
             </div>
           )}
 
@@ -1571,16 +1571,16 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
                   <span style={{fontSize:'18px'}}>🔥</span>
                   <div>
-                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'#0a0e14',opacity:0.7}}>DEBATE DE LA SEMANA</div>
-                    <div style={{fontSize:'11px',color:'#0a0e14',opacity:0.6}}>{Math.max(0,Math.ceil((new Date(debate.ends_at)-new Date())/(1000*60*60*24)))} días restantes</div>
+                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'#0a0e14',opacity:0.7}}>{t.debateOfWeek}</div>
+                    <div style={{fontSize:'11px',color:'#0a0e14',opacity:0.6}}>{Math.max(0,Math.ceil((new Date(debate.ends_at)-new Date())/(1000*60*60*24)))} {t.daysLeft}</div>
                   </div>
                 </div>
-                <div style={{background:'rgba(0,0,0,0.15)',padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} {debateVotes.length === 1 ? 'voto' : 'votos'}</div>
-                <button onClick={() => setShowSorteo(true)} style={{background:'rgba(0,0,0,0.15)',border:'none',borderRadius:'20px',padding:'4px 10px',fontSize:'11px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🎁 Sorteo</button>
+                <div style={{background:'rgba(0,0,0,0.15)',padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} {debateVotes.length === 1 ? t.vote : t.votes}</div>
+                <button onClick={() => setShowSorteo(true)} style={{background:'rgba(0,0,0,0.15)',border:'none',borderRadius:'20px',padding:'4px 10px',fontSize:'11px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{t.giveaway}</button>
               </div>
               <div style={{padding:'16px 16px 12px'}}>
                 <div style={{fontSize:'17px',fontWeight:'800',color:'#ECEFF4',lineHeight:'1.3',marginBottom:'4px'}}>{debate.question}</div>
-                <div style={{fontSize:'12px',color:'#556677'}}>Vota y deja tu opinión 👇</div>
+                <div style={{fontSize:'12px',color:'#556677'}}>{t.voteAndOpine}</div>
               </div>
               <div style={{padding:'0 16px 16px',display:'flex',flexDirection:'column',gap:'10px'}}>
                 {(Array.isArray(debate.options) ? debate.options : JSON.parse(debate.options)).map((opt, i) => {
@@ -1600,12 +1600,12 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
               {debateComments.length > 0 && (
                 <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',padding:'12px 16px'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>Opiniones</div>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>{t.opinions}</div>
                   {debateComments.filter(c => c.content && c.content.trim()).slice(0,2).map((c,i) => (
                     <div key={i} style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
                       <div style={{width:'28px',height:'28px',borderRadius:'9px',background:'rgba(0,230,118,0.12)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:'800',color:'#00E676',flexShrink:0}}>{c.profiles?.full_name?c.profiles.full_name.substring(0,2).toUpperCase():'U'}</div>
                       <div style={{background:'rgba(255,255,255,0.04)',borderRadius:'10px',padding:'8px 10px',flex:1}}>
-                        <div style={{fontSize:'12px',fontWeight:'700',color:'#ECEFF4'}}>{c.profiles?.full_name||'Usuario'}</div>
+                        <div style={{fontSize:'12px',fontWeight:'700',color:'#ECEFF4'}}>{c.profiles?.full_name||t.defaultUser}</div>
                         <div style={{fontSize:'12px',color:'#8899A6',marginTop:'2px'}}>{c.content}</div>
                       </div>
                     </div>
@@ -1613,7 +1613,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
               )}
               <div style={{padding:'10px 16px 14px',display:'flex',gap:'8px'}}>
-                <input value={debateComment} onChange={e=>setDebateComment(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendDebateComment()} placeholder="Tu opinión..." style={{flex:1,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',padding:'8px 12px',fontSize:'13px',color:'#ECEFF4',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                <input value={debateComment} onChange={e=>setDebateComment(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendDebateComment()} placeholder={t.yourOpinionPlaceholder} style={{flex:1,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',padding:'8px 12px',fontSize:'13px',color:'#ECEFF4',outline:'none',fontFamily:'Outfit,sans-serif'}} />
                 <button onClick={sendDebateComment} style={{width:'36px',height:'36px',background:'#00E676',border:'none',borderRadius:'10px',color:'#0a0e14',cursor:'pointer',fontSize:'16px'}}>→</button>
               </div>
             </div>
@@ -1650,7 +1650,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div className="poc">{p.text}</div>
                   {p.video_url && getVideoThumbnail(p.video_url) && (
                     <div style={{margin:'0 14px 10px',borderRadius:'12px',overflow:'hidden',position:'relative',height:'200px',cursor:'pointer'}} onClick={() => window.open(p.video_url, '_blank')}>
-                      {getVideoThumbnail(p.video_url).thumb ? <img src={getVideoThumbnail(p.video_url).thumb} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : <div style={{width:'100%',height:'100%',background:'#0a0e14',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px'}}>Video de TikTok</div>}
+                      {getVideoThumbnail(p.video_url).thumb ? <img src={getVideoThumbnail(p.video_url).thumb} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : <div style={{width:'100%',height:'100%',background:'#0a0e14',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px'}}>{t.tiktokVideo}</div>}
                       <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.35)',display:'flex',alignItems:'center',justifyContent:'center'}}>
                         <div style={{width:'52px',height:'52px',borderRadius:'50%',background:'rgba(0,230,118,0.9)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 20px rgba(0,230,118,0.4)'}}>
                           <div style={{width:0,height:0,borderTop:'10px solid transparent',borderBottom:'10px solid transparent',borderLeft:'18px solid #0a0e14',marginLeft:'4px'}}/>
@@ -1692,7 +1692,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="poc">{viewPost.text}</div>
                 {viewPost.image && (
                   <div className="pov">
-                    <div className="pov-label"><Camera size={14} style={{marginRight:6,verticalAlign:"-3px"}} />Imagen del post</div>
+                    <div className="pov-label"><Camera size={14} style={{marginRight:6,verticalAlign:"-3px"}} />{t.postImage}</div>
                   </div>
                 )}
                 <div className="poa">
