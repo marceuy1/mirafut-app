@@ -214,17 +214,22 @@ export default async function handler(req, res) {
     sessionsLog = [];
   }
   const sessionsLogStr = sessionsLog.length > 0
-    ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para dar progresion real, no repetir lo mismo):\n' + sessionsLog.map((s, i) => `Sesion ${i + 1}: ${s}`).join('\n')
+    ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para dar progresion real, no repetir exactamente lo mismo):\n' + sessionsLog.map((s, i) => `Sesion ${i + 1}: ${s}`).join('\n')
     : '';
 
+  // ------ UNA SOLA instruccion de progresion, sin contradicciones ------
   const lastFeedback = (perfil?.last_session_feedback || '').toLowerCase();
-  let instruccionDificultad = '';
-  if (lastFeedback.includes('muy bien')) {
-    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le fue MUY BIEN. Sube la dificultad un poco mas de lo normal.';
-  } else if (lastFeedback.includes('costo') || lastFeedback.includes('costó')) {
-    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le costo un poco. Sube la dificultad de forma MODERADA, sin saltos grandes.';
-  } else if (lastFeedback.includes('dificil') || lastFeedback.includes('difícil')) {
-    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le resulto DIFICIL. Mantene el mismo nivel de dificultad o bajalo levemente. NO subas la dificultad esta vez.';
+  let instruccionProgresion = '';
+  if (sessionsLog.length > 0) {
+    if (lastFeedback.includes('muy bien')) {
+      instruccionProgresion = `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil?.sessions_done || 0) + 1}. El jugador dijo que la sesion anterior le fue MUY BIEN. Subi la dificultad MAS de lo normal (mas repeticiones, mas velocidad, mayor amplitud, o el siguiente paso tecnico claro). Elegi variantes distintas a las ya usadas.`;
+    } else if (lastFeedback.includes('costo') || lastFeedback.includes('costó')) {
+      instruccionProgresion = `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil?.sessions_done || 0) + 1}. El jugador dijo que la sesion anterior le costo un poco. Subi la dificultad de forma MODERADA (cambios pequeños respecto a la sesion anterior, sin saltos grandes). Elegi variantes distintas a las ya usadas pero de nivel similar o levemente superior.`;
+    } else if (lastFeedback.includes('dificil') || lastFeedback.includes('difícil')) {
+      instruccionProgresion = `IMPORTANTE - CONSOLIDACION (NO PROGRESION): Esta es la sesion ${(perfil?.sessions_done || 0) + 1}. El jugador dijo que la sesion anterior le resulto DIFICIL. NO subas la dificultad esta vez bajo ningun concepto: mismos angulos de giro, misma cantidad de repeticiones, misma distancia y complejidad que la sesion anterior (podes cambiar la variante del banco, pero el NIVEL debe ser igual o menor, nunca mayor). Al inicio de tu respuesta, antes de la explicacion pedagogica, reconoce explicitamente que la sesion anterior le costo y que hoy van a consolidar sin subir la exigencia (ejemplo de tono: "Entiendo. Como la sesion anterior te resulto dificil, hoy vamos a consolidar los mismos conceptos sin aumentar la dificultad.").`;
+    } else {
+      instruccionProgresion = `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil?.sessions_done || 0) + 1}. Debe avanzar tecnicamente sobre las sesiones anteriores (mas repeticiones, mas velocidad, mayor dificultad tecnica, o el siguiente paso logico). Elegi variantes distintas a las ya usadas.`;
+    }
   }
 
   const objetivoCompletado = perfil?.weekly_goal && perfil?.sessions_target > 0 && (perfil?.sessions_done || 0) >= perfil.sessions_target;
@@ -258,27 +263,26 @@ ${instruccionesPreguntar}
 
 ${sessionsLogStr}
 
-${sessionsLog.length > 0 ? `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. Debe avanzar tecnicamente sobre las sesiones anteriores. Elegi variantes distintas a las ya usadas.` : ''}
-${instruccionDificultad}
+${instruccionProgresion}
 
 REGLA CRITICA DE RECURSOS (PRIORIDAD MAXIMA — por encima del banco de variantes):
 La sesion NUNCA puede requerir personas, material, pared o instalaciones que el jugador NO confirmo tener. Esta regla tiene MAS peso que cualquier variante sugerida arriba: si una variante del banco no es ejecutable con lo confirmado, ADAPTALA o DESCARTALA, no la uses tal cual.
 - Si dijo SOLO: ningún ejercicio puede requerir compañero, portero, u oposicion real.
-- Si dijo SOLO UNA PELOTA (sin mencionar pared, conos, ni porteria): PROHIBIDO usar pared, conos, porterias, companero, objeto fijo externo, o cualquier elemento no mencionado. Reemplaza cualquier drill de "pasar y que vuelva" por AUTOPASE, ya que sin pared ni companero el balon no puede "volver" solo.
+- Si dijo SOLO UNA PELOTA (sin mencionar pared, conos, ni porteria): PROHIBIDO usar pared, conos, porterias, companero, objeto fijo externo, o cualquier elemento no mencionado. Reemplaza cualquier drill de "pasar y que vuelva" por AUTOPASE (por ejemplo: "empuja/lanza el balon X metros para iniciar la siguiente repeticion", nunca "pasa el balon" solo sin destino claro), ya que sin pared ni companero el balon no puede "volver" solo.
 - Cada instruccion debe ser fisicamente ejecutable EXACTAMENTE como esta escrita, por una sola persona, con lo confirmado.
 - Si el jugador tiene recursos limitados, usa creatividad: marcas imaginarias, referencias en el suelo, autopases, coordinacion sin material externo.
 
 SECUENCIA CORRECTA DE ESCANEO (usar esta secuencia exacta cuando el "Foco tecnico" trate de vision/escaneo/percepcion): primero escanea (mira alrededor) ANTES de que llegue el balon, despues observa el balon durante el contacto/control, y vuelve a levantar la cabeza inmediatamente despues de controlar. No uses frases vagas como "mantén la mirada en el balón y el espacio" — especifica la secuencia en 3 pasos.
 
 INSTRUCCIONES SIN AMBIGUEDAD (obligatorio):
-Cada "Como:" debe tener numeros y direcciones concretas: distancia en metros, cantidad exacta de repeticiones o toques, hacia donde se mueve el balon, y que resultado buscar.
-Ejemplo PROHIBIDO (ambiguo o no ejecutable solo): "Pasa la pelota 5 metros hacia adelante y rapidamente vuelve a pasarla" (sin pared ni companero, no puede volver).
+Cada "Como:" debe tener numeros y direcciones concretas: distancia en metros, cantidad exacta de repeticiones o toques, hacia donde se mueve el balon, y que resultado buscar. Nunca termines una instruccion con un verbo de accion vago sin destino (ej: "pasa el balon", "vuelve a pasar") si el jugador esta solo sin pared ni companero — especifica siempre hacia donde y para que.
+Ejemplo PROHIBIDO (ambiguo o no ejecutable solo): "Pasa la pelota 5 metros hacia adelante y rapidamente vuelve a pasarla."
 Ejemplo CORRECTO (concreto y ejecutable solo): "Lanza el balon 2 metros hacia arriba con las manos, controlalo con el pecho al bajar y hazlo caer a un punto marcado a 1 metro delante tuyo."
 
 ENSEÑA, NO SOLO PRESCRIBAS: despues de donde nosotros insertemos la frase de contexto (si aplica), escribi 1-2 lineas explicando que habitos o conceptos se estan entrenando hoy y por que importan. Ejemplo de tono: "Hoy vamos a trabajar tres hábitos clave para [objetivo]: [concepto 1], [concepto 2] y [concepto 3]."
 
 FORMATO DE RESPUESTA (${duracionTotal} min total para ${edad} anos):
-[1-2 lineas de explicacion pedagogica del objetivo de hoy — NO menciones aqui si entrena solo o acompañado, eso ya esta resuelto aparte]
+[1-2 lineas de explicacion pedagogica del objetivo de hoy — NO menciones aqui si entrena solo o acompañado, eso ya esta resuelto aparte. Si la instruccion de PROGRESION de arriba pide reconocer que la sesion anterior fue dificil, hacelo aca primero.]
 
 Sesion ${numeroSesionCorrecta} — [Objetivo especifico] — ${duracionTotal} min
 
@@ -294,7 +298,7 @@ Coach Tip: [consejo tecnico especifico para ${pos} trabajando ${perfil.weekly_go
 
 IMPORTANTE: termina siempre la respuesta completa, incluyendo el Coach Tip entero y la pregunta final. Nunca cortes una frase a la mitad.
 
-REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.`;
+REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior en variante, respetando la instruccion de PROGRESION de arriba (que puede pedir subir, mantener, o incluso bajar la dificultad segun el feedback).`;
   }
 
   const coachPrompt = `Eres MiraFut Coach, entrenador personal para jovenes futbolistas. ${perfilStr} ${goalStr}
@@ -341,20 +345,18 @@ No uses asteriscos ni markdown. Texto plano.`;
           { role: 'user', content: message }
         ],
         max_tokens: 650,
-        temperature: 0.8
+        temperature: 0.7
       })
     });
 
     const data = await response.json();
     let reply = data.choices[0].message.content.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1');
 
-    // CORRECCION FORZADA: el numero de sesion SIEMPRE sale de nuestros datos, no de la IA.
     if (perfil?.weekly_goal && !objetivoCompletado) {
       reply = reply.replace(/Sesion\s*\d+/gi, 'Sesion ' + numeroSesionCorrecta);
       reply = reply.replace(/Sesión\s*\d+/gi, 'Sesión ' + numeroSesionCorrecta);
     }
 
-    // FRASE DE HONESTIDAD GARANTIZADA POR CODIGO: no dependemos de que la IA la escriba.
     if (debeAvisarColectivo) {
       const fraseHonestidad = `Como hoy entrenas solo, no podemos reproducir ${tipoColectivo}, pero sí trabajar los hábitos individuales que necesitas para rendir mejor en eso.\n\n`;
       reply = fraseHonestidad + reply;
