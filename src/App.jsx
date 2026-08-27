@@ -1144,7 +1144,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .chat-msg{max-width:78%;padding:9px 12px;border-radius:14px;font-size:13px;line-height:1.4}
 .chat-msg.them{background:#121820;border:1px solid rgba(255,255,255,0.04);align-self:flex-start;border-bottom-left-radius:4px}
 .chat-msg.me{background:rgba(0,230,118,0.18);color:#ECEFF4;align-self:flex-end;border-bottom-right-radius:4px}
-.chat-input{display:flex;gap:7px;padding:8px 14px;border-top:1px solid rgba(255,255,255,0.06);background:#0f1419;position:sticky;bottom:0;z-index:10}
+.chat-input{display:flex;gap:7px;padding:8px 14px;border-top:1px solid rgba(255,255,255,0.06);background:#0f1419;position:fixed;left:0;right:0;bottom:calc(56px + env(safe-area-inset-bottom));z-index:150}
+.chat-msgs{padding-bottom:70px}
 .chat-input input{flex:1;background:#121820;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:8px 12px;color:#ECEFF4;font-family:'Outfit';font-size:13px;outline:none}
 .chat-send{width:36px;height:36px;border-radius:10px;background:#00E676;border:none;color:#0a0e14;cursor:pointer;font-size:16px}
 
