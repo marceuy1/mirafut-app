@@ -438,10 +438,16 @@ export default function App() {
     if (data) setWeeklyGoal(data);
     setShowWeeklyGoal(false);
     setSessionInProgress(false);
+    // Limpiar cualquier señal de espera que haya quedado prendida de un objetivo anterior
+    setAwaitingTrainingContext(false);
+    setAwaitingSessionFeedback(false);
+    setAwaitingFinalReflection(false);
     setTab('coach');
     setAiMessages([
       { id:1, from:'coach', type:'text', text:'Perfecto, ' + (userProfile?.full_name?.split(' ')[0] || '') + '. Esta semana vamos a trabajar: ' + goal + '. ¿Entrenas normalmente solo o con alguien?', time:new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}) }
     ]);
+    // La pregunta de arriba SI espera una respuesta de solo/material: activamos la captura.
+    setAwaitingTrainingContext(true);
   };
 
   const loadSorteo = async () => {
