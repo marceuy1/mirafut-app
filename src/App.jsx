@@ -444,7 +444,7 @@ export default function App() {
     setAwaitingFinalReflection(false);
     setTab('coach');
     setAiMessages([
-      { id:1, from:'coach', type:'text', text:'Perfecto, ' + (userProfile?.full_name?.split(' ')[0] || '') + '. Esta semana vamos a trabajar: ' + goal + '. ¿Entrenas normalmente solo o con alguien?', time:new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}) }
+      { id:1, from:'coach', type:'text', text:'Perfecto, ' + (userProfile?.full_name?.split(' ')[0] || '') + '. Esta semana vamos a trabajar: ' + goal + '. ¿Entrenas normalmente solo o con alguien, y qué material tienes disponible (pelota, conos, portería, etc.)?', time:new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}) }
     ]);
     // La pregunta de arriba SI espera una respuesta de solo/material: activamos la captura.
     setAwaitingTrainingContext(true);
