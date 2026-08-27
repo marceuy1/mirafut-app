@@ -70,6 +70,8 @@ export const translations = {
     support247Desc: 'Orientación y consejos cuando los necesites',
     globalCommunity: 'Comunidad global',
     globalCommunityDesc: 'Conecta con jugadores de todo el mundo',
+    supportLabel: 'Apoyo',
+    playersYouMightKnow: 'Jugadores que quizás conozcas',
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
@@ -142,6 +144,8 @@ export const translations = {
     support247Desc: 'Guidance and advice whenever you need it',
     globalCommunity: 'Global community',
     globalCommunityDesc: 'Connect with players from around the world',
+    supportLabel: 'Support',
+    playersYouMightKnow: 'Players you might know',
   }
 };
 

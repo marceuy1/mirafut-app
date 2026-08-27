@@ -1483,15 +1483,15 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="hero-stats">
               <div className="hero-stat">
                 <div className="hero-stat-value">20</div>
-                <div className="hero-stat-label">Jugadores</div>
+                <div className="hero-stat-label">{t.players}</div>
               </div>
               <div className="hero-stat">
                 <div className="hero-stat-value">8</div>
-                <div className="hero-stat-label">Países</div>
+                <div className="hero-stat-label">{t.countries}</div>
               </div>
               <div className="hero-stat">
                 <div className="hero-stat-value">24/7</div>
-                <div className="hero-stat-label">Apoyo</div>
+                <div className="hero-stat-label">{t.supportLabel}</div>
               </div>
             </div>
 
@@ -1821,7 +1821,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
               {/* Jugadores sugeridos */}
               <div style={{padding:'20px 16px 8px'}}>
-                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'12px'}}>Jugadores que quizás conozcas</div>
+                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'12px'}}>{t.playersYouMightKnow}</div>
                 {USERS.filter(u => !chatList.find(c => c.id === u.id)).slice(0,4).map(u => (
                   <div key={u.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
                     <div style={{width:'44px',height:'44px',borderRadius:'13px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px',fontWeight:'800',color:'#00E676',flexShrink:0}}>{u.av}</div>
