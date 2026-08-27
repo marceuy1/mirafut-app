@@ -91,9 +91,9 @@ const timeAgo = (dateStr) => {
 
 function V() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="#00C853"><path d="M12 2L3.5 6.5v5c0 4.83 3.6 9.36 8.5 10.5 4.9-1.14 8.5-5.67 8.5-10.5v-5L12 2zm-1 14.59l-3.29-3.3 1.41-1.41L11 13.76l4.88-4.88 1.41 1.41L11 16.59z"/></svg>; }
 
-function AuthInline({ onSuccess, onClose, postLoginTab }) {
+function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
   const tl = translations['es'];
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(startInSignUp !== undefined ? startInSignUp : false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -210,6 +210,7 @@ export default function App() {
   const [contactSent, setContactSent] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [wantsSignUp, setWantsSignUp] = useState(true);
   const [postAuthTab, setPostAuthTab] = useState('home');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
@@ -1514,10 +1515,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
             ) : (
               <div style={{marginTop:'20px',display:'flex',flexDirection:'column',alignItems:'center',gap:'10px'}}>
-                <button onClick={() => { setIsSignUp(true); setShowAuthPrompt(true); }} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
+                <button onClick={() => { setWantsSignUp(true); setShowAuthPrompt(true); }} style={{padding:'12px 28px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
                   {t.createProfile}
                 </button>
-                <button onClick={() => { setIsSignUp(false); setShowAuthPrompt(true); }} style={{background:'none',border:'none',color:'#8899A6',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit,sans-serif',textDecoration:'underline'}}>
+                <button onClick={() => { setWantsSignUp(false); setShowAuthPrompt(true); }} style={{background:'none',border:'none',color:'#8899A6',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit,sans-serif',textDecoration:'underline'}}>
                   {t.alreadyHaveAccountLink}
                 </button>
               </div>
@@ -2691,6 +2692,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 }}
                 onClose={() => setShowAuthPrompt(false)}
                 postLoginTab={postAuthTab}
+                startInSignUp={wantsSignUp}
               />
             </div>
           </div>
