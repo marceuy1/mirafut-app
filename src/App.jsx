@@ -1150,7 +1150,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 .chat-send{width:36px;height:36px;border-radius:10px;background:#00E676;border:none;color:#0a0e14;cursor:pointer;font-size:16px}
 
 /* AI COACH */
-.coach-screen{display:flex;flex-direction:column;height:calc(100vh - 60px - 60px);overflow:hidden}
+.coach-screen{display:flex;flex-direction:column;height:calc(100dvh - 60px - 60px);overflow:hidden}
 .coach-hdr{padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.05);background:#0f1419;min-height:60px}
 .ch-info{flex:1;display:flex;align-items:center;gap:10px;cursor:pointer}
 .ch-av{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;position:relative;flex-shrink:0}
