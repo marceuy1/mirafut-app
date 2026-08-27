@@ -2605,7 +2605,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 };
                 const list = goals[pos] || ['Mejorar mis reflejos','Trabajar el control orientado','Mejorar mi posicionamiento','Potenciar mi pie débil','Aumentar mi velocidad','Toma de decisiones','Mejorar mi definición','Trabajo físico'];
                 return list.map(g => (
-                  <button key={g} onClick={() => { console.log('clicked', g); createWeeklyGoal(g, 3); }} style={{display:'block',width:'100%',padding:'12px 14px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',fontSize:'14px',color:'#ECEFF4',marginBottom:'8px',textAlign:'left',fontFamily:'Outfit,sans-serif'}}>
+                  <button key={g} onClick={() => createWeeklyGoal(g, 3)} style={{display:'block',width:'100%',padding:'12px 14px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',fontSize:'14px',color:'#ECEFF4',marginBottom:'8px',textAlign:'left',fontFamily:'Outfit,sans-serif'}}>
                     {g}
                   </button>
                 ));
