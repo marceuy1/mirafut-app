@@ -1,10 +1,4 @@
 // ============ CEREBRO METODOLOGICO DE MIRAFUT ============
-// Una entrada por cada objetivo REAL que un jugador puede elegir (coinciden EXACTO
-// con las listas del modal "Objetivo de la semana" en App.jsx).
-// - definicion: que significa tecnicamente este objetivo
-// - variantes: banco de ejercicios para combinar (ORIENTATIVO — la regla de recursos
-//   siempre tiene prioridad; si una variante no es ejecutable con lo confirmado, se adapta o se descarta)
-// - colectivo: true si el objetivo depende fundamentalmente de companeros/oposicion real
 const METODOLOGIA = {
   // ---- PORTERO ----
   'Mejorar mis reflejos': {
@@ -226,6 +220,8 @@ export default async function handler(req, res) {
   }
 
   const objetivoCompletado = perfil?.weekly_goal && perfil?.sessions_target > 0 && (perfil?.sessions_done || 0) >= perfil.sessions_target;
+  // Numero de sesion AUTORITATIVO: nunca dejamos que la IA lo invente, lo forzamos despues por codigo.
+  const numeroSesionCorrecta = (perfil?.sessions_done || 0) + 1;
 
   let goalStr = '';
   if (perfil?.weekly_goal && objetivoCompletado) {
@@ -247,10 +243,11 @@ Usa esta informacion directamente. NO preguntes de nuevo si entrena solo o que m
 3. Con esa info genera la sesion. NO antes.`;
 
     const avisoColectivo = (esColectivo && entrenaSolo)
-      ? `\nAVISO IMPORTANTE: este objetivo depende fundamentalmente de companeros u oposicion real, y el jugador entrena SOLO. Antes de dar la sesion, escribi 2 lineas honestas explicando que hoy no se puede reproducir la situacion completa (ejemplo de tono: "Como entrenas solo, hoy no podemos hacer un [X] real. Vamos a trabajar los componentes individuales que te sirven para esto: ..."), y despues genera la sesion basada SOLO en esos componentes individuales transferibles. Nunca inventes companeros, pared, oposicion o porteria que el jugador no confirmo tener.`
+      ? `\nAVISO IMPORTANTE: este objetivo depende fundamentalmente de companeros u oposicion real, y el jugador entrena SOLO. Antes de dar la sesion, escribi UNA frase corta con esta estructura exacta (adaptando la parte del ejercicio colectivo al objetivo real): "Como hoy entrenas solo, no podemos reproducir un [tipo de ejercicio colectivo relacionado, ej: rondo real / duelo real / marcaje real] pero sí trabajar los hábitos individuales que necesitas para rendir mejor en eso." Despues de esa frase, genera la sesion basada SOLO en componentes individuales transferibles. Nunca inventes companeros, pared, oposicion o porteria que el jugador no confirmo tener.`
       : '';
 
-    goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones: ${perfil.sessions_done || 0}/${perfil.sessions_target || 3}.
+    goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0} de ${perfil.sessions_target || 3}.
+LA PROXIMA SESION A GENERAR ES EXACTAMENTE LA NUMERO ${numeroSesionCorrecta}. Usa ese numero exacto en el encabezado "Sesion ${numeroSesionCorrecta}", nunca otro numero.
 ${contextoMetodologico}
 ${avisoColectivo}
 
@@ -258,27 +255,30 @@ ${instruccionesPreguntar}
 
 ${sessionsLogStr}
 
-${sessionsLog.length > 0 ? `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil.sessions_done || 0) + 1}. Debe avanzar tecnicamente sobre las sesiones anteriores. Elegi variantes distintas a las ya usadas.` : ''}
+${sessionsLog.length > 0 ? `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. Debe avanzar tecnicamente sobre las sesiones anteriores. Elegi variantes distintas a las ya usadas.` : ''}
 ${instruccionDificultad}
 
 REGLA CRITICA DE RECURSOS (PRIORIDAD MAXIMA — por encima del banco de variantes):
 La sesion NUNCA puede requerir personas, material, pared o instalaciones que el jugador NO confirmo tener. Esta regla tiene MAS peso que cualquier variante sugerida arriba: si una variante del banco no es ejecutable con lo confirmado, ADAPTALA o DESCARTALA, no la uses tal cual.
 - Si dijo SOLO: ningún ejercicio puede requerir compañero, portero, u oposicion real.
 - Si dijo SOLO UNA PELOTA (sin mencionar pared, conos, ni porteria): PROHIBIDO usar pared, conos, porterias, companero, objeto fijo externo, o cualquier elemento no mencionado. Reemplaza cualquier drill de "pasar y que vuelva" por AUTOPASE (lanzar/tocar el balon uno mismo hacia arriba o adelante y controlarlo al volver), ya que sin pared ni companero el balon no puede "volver" solo.
-- Cada instruccion debe ser fisicamente ejecutable EXACTAMENTE como esta escrita, por una sola persona, con lo confirmado. Antes de escribir cada "Como:", preguntate: "esto lo puede hacer una sola persona con lo que tiene, sin que nadie mas intervenga?" Si la respuesta es no, reescribilo.
+- Cada instruccion debe ser fisicamente ejecutable EXACTAMENTE como esta escrita, por una sola persona, con lo confirmado.
 - Si el jugador tiene recursos limitados, usa creatividad: marcas imaginarias, referencias en el suelo, autopases, coordinacion sin material externo.
+
+SECUENCIA CORRECTA DE ESCANEO (usar esta secuencia exacta cuando el "Foco tecnico" trate de vision/escaneo/percepcion): primero escanea (mira alrededor) ANTES de que llegue el balon, despues observa el balon durante el contacto/control, y vuelve a levantar la cabeza inmediatamente despues de controlar. No uses frases vagas como "mantén la mirada en el balón y el espacio" — especifica la secuencia en 3 pasos.
 
 INSTRUCCIONES SIN AMBIGUEDAD (obligatorio):
 Cada "Como:" debe tener numeros y direcciones concretas: distancia en metros, cantidad exacta de repeticiones o toques, hacia donde se mueve el balon, y que resultado buscar.
 Ejemplo PROHIBIDO (ambiguo o no ejecutable solo): "Pasa la pelota 5 metros hacia adelante y rapidamente vuelve a pasarla" (sin pared ni companero, no puede volver).
 Ejemplo CORRECTO (concreto y ejecutable solo): "Lanza el balon 2 metros hacia arriba con las manos, controlalo con el pecho al bajar y hazlo caer a un punto marcado a 1 metro delante tuyo."
 
-ENSEÑA, NO SOLO PRESCRIBAS: antes de listar los ejercicios, escribi 1-2 lineas explicando que habitos o conceptos se estan entrenando hoy y por que importan para el objetivo (ejemplo de tono: "Hoy vamos a trabajar tres habitos clave para [objetivo]: [concepto 1], [concepto 2] y [concepto 3]."). Esto ayuda al jugador a entender el sentido del entrenamiento, no solo ejecutarlo.
+ENSEÑA, NO SOLO PRESCRIBAS: antes de listar los ejercicios, escribi 1-2 lineas explicando que habitos o conceptos se estan entrenando hoy y por que importan. Ejemplo de tono: "Hoy vamos a trabajar tres hábitos clave para [objetivo]: [concepto 1], [concepto 2] y [concepto 3]."
 
 FORMATO DE RESPUESTA (${duracionTotal} min total para ${edad} anos):
+[si aplica, la frase de honestidad del AVISO IMPORTANTE de arriba]
 [1-2 lineas de explicacion pedagogica del objetivo de hoy]
 
-Sesion [N] — [Objetivo especifico] — ${duracionTotal} min
+Sesion ${numeroSesionCorrecta} — [Objetivo especifico] — ${duracionTotal} min
 
 1. [Nombre drill especifico] — [X min]
    Series: X | Reps: X | Descanso: X seg
@@ -344,7 +344,15 @@ No uses asteriscos ni markdown. Texto plano.`;
     });
 
     const data = await response.json();
-    const reply = data.choices[0].message.content.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1');
+    let reply = data.choices[0].message.content.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1');
+
+    // CORRECCION FORZADA: el numero de sesion que muestra el jugador SIEMPRE
+    // sale de nuestros propios datos (sessions_done), nunca de lo que la IA haya escrito.
+    if (perfil?.weekly_goal && !objetivoCompletado) {
+      reply = reply.replace(/Sesion\s*\d+/gi, 'Sesion ' + numeroSesionCorrecta);
+      reply = reply.replace(/Sesión\s*\d+/gi, 'Sesión ' + numeroSesionCorrecta);
+    }
+
     return res.status(200).json({ reply });
   } catch (error) {
     return res.status(500).json({ error: 'Error al conectar con OpenAI' });
