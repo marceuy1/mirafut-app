@@ -230,6 +230,7 @@ export default async function handler(req, res) {
 
   const lastFeedback = (perfil?.last_session_feedback || '').toLowerCase();
   const esDificil = lastFeedback.includes('dificil') || lastFeedback.includes('difícil');
+  const dosDificilesSeguidos = !!perfil?.dos_dificiles_seguidos;
 
   const objetivoCompletado = perfil?.weekly_goal && perfil?.sessions_target > 0 && (perfil?.sessions_done || 0) >= perfil.sessions_target;
   const numeroSesionCorrecta = (perfil?.sessions_done || 0) + 1;
@@ -243,7 +244,7 @@ export default async function handler(req, res) {
   // (ya probamos que no lo cumple con precision). En su lugar, reutilizamos LITERALMENTE
   // los mismos ejercicios de la sesion anterior: es matematicamente imposible que suba
   // la dificultad si es el mismo texto.
-  if (!feedbackOnly && esDificil && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado) {
+  if (!feedbackOnly && esDificil && !dosDificilesSeguidos && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado) {
     const bloqueAnterior = extraerBloqueSesion(sessionsLog[sessionsLog.length - 1]);
     if (bloqueAnterior) {
       let bloqueCorregido = bloqueAnterior
@@ -272,7 +273,7 @@ Termina mencionando naturalmente que puede tocar el boton para empezar su proxim
 
 MOMENTO ACTUAL: reflexion de cierre de semana. El jugador te acaba de contar como sintio su progreso.
 - Responde con calidez genuina, como un entrenador real que conoce su esfuerzo esta semana.
-- Si dice que mejoro: celebralo con algo especifico relacionado al objetivo (${perfil.weekly_goal}), no generico.
+- Se preciso y honesto: solo sabes que completo las sesiones y que el mismo declaro como se sintio, no detalles que no presenciaste. Evita frases que inventen logros especificos que no viste (ej. NO "es impresionante como trabajaste X"). Usa frases mas medidas y creibles (ej. "Me alegra que hayas sentido una mejora en ${perfil.weekly_goal}").
 - Si dice que le costo o que todavia no lo nota: valida el esfuerzo, recuerda que la mejora tecnica lleva tiempo, y anima a seguir.
 - Cierra preguntando si quiere fijar un nuevo objetivo para la proxima semana.
 - NO generes una sesion de entrenamiento en esta respuesta.`;
@@ -288,7 +289,9 @@ Usa esta informacion directamente. NO preguntes de nuevo si entrena solo o que m
     const instruccionProgresion = sessionsLog.length > 0
       ? (lastFeedback.includes('muy bien')
           ? `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. El jugador dijo que la sesion anterior le fue MUY BIEN. Subi la dificultad MAS de lo normal (mas repeticiones, mas velocidad, mayor amplitud, o el siguiente paso tecnico claro). Elegi variantes distintas a las ya usadas.`
-          : `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. El jugador dijo que la sesion anterior le costo un poco. Subi la dificultad de forma MODERADA (cambios pequeños respecto a la sesion anterior, sin saltos grandes). Elegi variantes distintas a las ya usadas pero de nivel similar o levemente superior.`)
+          : dosDificilesSeguidos
+            ? `IMPORTANTE - SIMPLIFICAR (dos "Dificil" seguidas): El jugador dijo DIFICIL dos veces consecutivas. Esto indica que el nivel actual todavia no es el correcto, no que haya que repetir exactamente lo mismo otra vez. NO repitas la sesion anterior identica. Reduce la dificultad POR DEBAJO del nivel de la sesion anterior: menos repeticiones, menor distancia, o un ejercicio mas simple dentro del mismo objetivo. Al inicio de tu respuesta, antes de la explicacion pedagogica, reconocelo explicitamente (ejemplo de tono: "Veo que esta parte todavia te esta costando. En vez de repetirla igual, vamos a simplificar el ejercicio.").`
+            : `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. El jugador dijo que la sesion anterior le costo un poco. Subi la dificultad de forma MODERADA (cambios pequeños respecto a la sesion anterior, sin saltos grandes). Elegi variantes distintas a las ya usadas pero de nivel similar o levemente superior.`)
       : `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. Debe avanzar tecnicamente sobre las sesiones anteriores (mas repeticiones, mas velocidad, mayor dificultad tecnica, o el siguiente paso logico). Elegi variantes distintas a las ya usadas.`;
 
     goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0} de ${perfil.sessions_target || 3}.

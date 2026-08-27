@@ -386,7 +386,7 @@ export default function App() {
           id: Date.now(),
           from: 'coach',
           type: 'text',
-          text: '🏆 ¡Lo lograste' + (nombre ? ', ' + nombre : '') + '! Completaste las ' + targetCerrado + ' sesiones de ' + goalCerrado + ' esta semana. Contame, ¿cómo sentiste tu progreso?',
+          text: '🏆 ¡Lo lograste' + (nombre ? ', ' + nombre : '') + '! Completaste las ' + targetCerrado + ' sesiones de ' + goalCerrado + ' esta semana. Cuéntame, ¿cómo sentiste tu progreso?',
           time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
         }]);
         setTimeout(() => {
@@ -870,7 +870,8 @@ export default function App() {
         sessions_target: weeklyGoal.sessions_target,
         training_context: weeklyGoal.training_context || '',
         sessions_log: JSON.stringify(weeklyGoal.sessions_log || []),
-        last_session_feedback: feedbackArr.length > 0 ? feedbackArr[feedbackArr.length - 1] : ''
+        last_session_feedback: feedbackArr.length > 0 ? feedbackArr[feedbackArr.length - 1] : '',
+        dos_dificiles_seguidos: feedbackArr.slice(-2).length === 2 && feedbackArr.slice(-2).every(f => /dif[ií]cil/i.test(f))
       } : userProfile;
       const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
