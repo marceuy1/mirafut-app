@@ -35,13 +35,36 @@ export default async function handler(req, res) {
 
   const perfilStr = perfil ? `Jugador: ${perfil.full_name || perfil.name || ''}, posicion: ${pos}, edad: ${edad} anos, pie dominante: ${perfil.dominant_foot || ''}, nivel: ${perfil.level || ''}, entrena: ${perfil.training_freq || ''} veces/semana.` : '';
 
+  // Contexto de entrenamiento ya conocido (solo/acompanado + material) para NO repreguntar
+  const trainingContext = perfil?.training_context || '';
+
+  // Resumen de sesiones anteriores para pedir progresion real
+  let sessionsLog = [];
+  try {
+    sessionsLog = perfil?.sessions_log ? (typeof perfil.sessions_log === 'string' ? JSON.parse(perfil.sessions_log) : perfil.sessions_log) : [];
+  } catch (e) {
+    sessionsLog = [];
+  }
+  const sessionsLogStr = sessionsLog.length > 0
+    ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para dar progresion real, no repetir lo mismo):\n' + sessionsLog.map((s, i) => `Sesion ${i + 1}: ${s}`).join('\n')
+    : '';
+
+  const instruccionesPreguntar = trainingContext
+    ? `INFORMACION YA CONFIRMADA POR EL JUGADOR (NO VOLVER A PREGUNTAR): ${trainingContext}
+Usa esta informacion directamente para generar la sesion. NO preguntes de nuevo si entrena solo o que material tiene, ya lo sabes.`
+    : `CUANDO EL JUGADOR ESTE LISTO PARA ENTRENAR:
+1. Si el objetivo tiene ambiguedad segun la posicion, pregunta que aspecto especifico quiere trabajar.
+2. Pregunta: Entrenas solo o con alguien? Que material tienes disponible?
+3. Con esa info genera la sesion. NO antes.`;
+
   const goalStr = perfil?.weekly_goal ? `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones: ${perfil.sessions_done || 0}/${perfil.sessions_target || 3}.
 ${contextoPosicion ? 'CONTEXTO FUTBOLISTICO: ' + contextoPosicion : ''}
 
-CUANDO EL JUGADOR ESTE LISTO PARA ENTRENAR:
-1. Si el objetivo tiene ambiguedad segun la posicion, pregunta que aspecto especifico quiere trabajar.
-2. Pregunta: Entrenas solo o con alguien? Que material tienes disponible?
-3. Con esa info genera la sesion. NO antes.
+${instruccionesPreguntar}
+
+${sessionsLogStr}
+
+${sessionsLog.length > 0 ? `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil.sessions_done || 0) + 1}. Debe ser mas exigente o avanzar tecnicamente sobre las sesiones anteriores listadas arriba (mas repeticiones, mas velocidad, mayor dificultad tecnica, o el siguiente paso logico). No repitas los mismos drills exactos.` : ''}
 
 REGLA CRITICA DE RECURSOS:
 La sesion NUNCA puede requerir personas, material o instalaciones que el jugador NO confirmo tener.

@@ -189,6 +189,7 @@ export default function App() {
   const [weeklyGoal, setWeeklyGoal] = useState(null);
   const [showWeeklyGoal, setShowWeeklyGoal] = useState(false);
   const [sessionInProgress, setSessionInProgress] = useState(false);
+  const [awaitingTrainingContext, setAwaitingTrainingContext] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showSorteo, setShowSorteo] = useState(false);
@@ -744,57 +745,85 @@ export default function App() {
       completeSession();
       return;
     }
-    if (displayText === '▶ Iniciar sesión' && weeklyGoal) {
-      setSessionInProgress(true);
+
+    // El jugador esta respondiendo si entrena solo/acompañado y que material tiene.
+    // Guardamos esa respuesta UNA sola vez por objetivo semanal y no volvemos a preguntar.
+    if (awaitingTrainingContext && weeklyGoal) {
+      setAwaitingTrainingContext(false);
+      const contextText = displayText;
+      try {
+        await supabase.from('weekly_goals').update({ training_context: contextText }).eq('id', weeklyGoal.id);
+      } catch (e) {
+        console.error('Error guardando training_context:', e);
+      }
+      setWeeklyGoal(g => g ? { ...g, training_context: contextText } : g);
+      await enviarMensajeCoach(contextText, contextText);
       return;
     }
-    const promptText = (displayText === 'Sí, vamos' && weeklyGoal)
-      ? 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Antes de darme la sesion, preguntame si entreno solo o con alguien y que material tengo disponible.'
-      : (displayText === 'Hoy no puedo' && weeklyGoal)
-      ? 'Hoy no puedo entrenar ' + weeklyGoal.goal + '. Responde con comprension y recuerda cuantas sesiones quedan.'
-      : displayText;
-    const text = displayText;
+
+    let promptText;
+    if (displayText === 'Sí, vamos' && weeklyGoal) {
+      const yaConoceContexto = !!weeklyGoal.training_context;
+      promptText = yaConoceContexto
+        ? 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Genera la sesion directamente con progresion respecto a las sesiones anteriores, no preguntes por material ni si entreno solo, ya lo sabes.'
+        : 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Antes de darme la sesion, preguntame si entreno solo o con alguien y que material tengo disponible.';
+      if (!yaConoceContexto) setAwaitingTrainingContext(true);
+    } else if (displayText === 'Hoy no puedo' && weeklyGoal) {
+      promptText = 'Hoy no puedo entrenar ' + weeklyGoal.goal + '. Responde con comprension y recuerda cuantas sesiones quedan.';
+    } else {
+      promptText = displayText;
+    }
+
+    await enviarMensajeCoach(displayText, promptText);
+  };
+
+  const enviarMensajeCoach = async (textoVisible, promptText) => {
     if (requireAuth()) return;
-    if (!text.trim()) return;
+    if (!textoVisible.trim()) return;
 
     if (!disclaimerAccepted) {
       setShowHealthDisclaimer(true);
-      setAiInput(text);
+      setAiInput(textoVisible);
       return;
     }
 
     const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-    setAiMessages(m => [...m, { id:Date.now(), from:"me", type:"text", text, time:now }]);
+    setAiMessages(m => [...m, { id:Date.now(), from:"me", type:"text", text:textoVisible, time:now }]);
     setAiInput("");
     setThinking(true);
 
     try {
-      const perfilConObjetivo = weeklyGoal ? {...(userProfile||{}), weekly_goal: weeklyGoal.goal, sessions_done: weeklyGoal.sessions_done, sessions_target: weeklyGoal.sessions_target} : userProfile;
+      const perfilConObjetivo = weeklyGoal ? {
+        ...(userProfile||{}),
+        weekly_goal: weeklyGoal.goal,
+        sessions_done: weeklyGoal.sessions_done,
+        sessions_target: weeklyGoal.sessions_target,
+        training_context: weeklyGoal.training_context || '',
+        sessions_log: JSON.stringify(weeklyGoal.sessions_log || [])
+      } : userProfile;
       const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
       const response = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo);
       const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && response.length > 150 && (response.includes('Series:') || response.includes('Reps:') || response.includes('min'));
-      setAiMessages(m => {
-        const msgs = [...m, { 
-          id:Date.now()+1, 
-          from:currentAgent, 
-          type:"text", 
-          text:response, 
-          time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) 
-        }];
-        if (isTrainingResponse) {
-          const filtered = msgs.filter(m => m.type !== 'suggestions' || m.options?.includes('Sí, vamos'));
-          filtered.push({
-            id:Date.now()+2,
-            from:currentAgent,
-            type:"suggestions",
-            options:['▶ Iniciar sesión','Tengo una pregunta'],
-            time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
-          });
-          return filtered;
+
+      if (isTrainingResponse && weeklyGoal) {
+        const nuevoLog = [...(weeklyGoal.sessions_log || []), response.slice(0, 400)];
+        try {
+          await supabase.from('weekly_goals').update({ sessions_log: nuevoLog }).eq('id', weeklyGoal.id);
+        } catch (e) {
+          console.error('Error guardando sessions_log:', e);
         }
-        return msgs;
-      });
+        setWeeklyGoal(g => g ? { ...g, sessions_log: nuevoLog } : g);
+        setSessionInProgress(true);
+      }
+
+      setAiMessages(m => [...m, {
+        id:Date.now()+1,
+        from:currentAgent,
+        type:"text",
+        text:response,
+        time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+      }]);
     } catch (error) {
       console.error('Error with AI Coach:', error);
       setAiMessages(m => [...m, { 
@@ -1828,7 +1857,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {sessionInProgress ? (
                         <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>✓ Terminé mi sesión</button>
                       ) : (
-                        <button onClick={() => setSessionInProgress(true)} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>▶ Iniciar {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
+                        <button onClick={() => sendAI('Sí, vamos')} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>▶ Iniciar {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
                       )}
                     </div>
                   ) : (
