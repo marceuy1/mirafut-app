@@ -1289,7 +1289,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           </div>
         ) : viewProfile ? (
           <div className="hdr">
-            <button className="hb" onClick={() => setViewProfile(null)}>←</button>
+            <button className="hb" onClick={() => setViewProfile(null)}><ArrowLeft size={22} /></button>
             <span style={{fontWeight:600}}>Perfil</span>
             <div style={{width:30}}/>
           </div>
