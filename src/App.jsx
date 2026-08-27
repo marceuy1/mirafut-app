@@ -388,6 +388,9 @@ export default function App() {
         }]);
       }, 300);
     } else {
+      // No llamamos a loadWeeklyGoal() aca: pisaria este mensaje de seguimiento
+      // con un saludo nuevo apenas unos milisegundos despues. weeklyGoal ya se
+      // actualizo arriba con setWeeklyGoal, no hace falta recargar de nuevo.
       setTimeout(() => {
         setAiMessages(m => [...m, {
           id: Date.now(),
@@ -397,7 +400,6 @@ export default function App() {
           type: 'suggestions',
           options: ['Muy bien', 'Bien, pero me costó', 'Difícil']
         }]);
-        loadWeeklyGoal();
       }, 300);
     }
   };
