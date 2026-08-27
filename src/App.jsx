@@ -377,23 +377,25 @@ export default function App() {
     setTab('coach');
     if (completed) {
       const nombre = userProfile?.full_name?.split(' ')[0] || '';
+      const goalCerrado = weeklyGoal.goal;
+      const targetCerrado = weeklyGoal.sessions_target;
       setTimeout(() => {
-        setAiMessages([
-          {
-            id: Date.now(),
-            from: 'coach',
-            type: 'text',
-            text: '🏆 ¡Lo lograste' + (nombre ? ', ' + nombre : '') + '! Completaste las ' + weeklyGoal.sessions_target + ' sesiones de "' + weeklyGoal.goal + '" esta semana. Contame, ¿cómo sentiste tu progreso?',
-            time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
-          },
-          {
+        setAiMessages(m => [...m, {
+          id: Date.now(),
+          from: 'coach',
+          type: 'text',
+          text: '🏆 ¡Lo lograste' + (nombre ? ', ' + nombre : '') + '! Completaste las ' + targetCerrado + ' sesiones de ' + goalCerrado + ' esta semana. Contame, ¿cómo sentiste tu progreso?',
+          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
+        }]);
+        setTimeout(() => {
+          setAiMessages(m => [...m, {
             id: Date.now() + 1,
             from: 'coach',
             type: 'suggestions',
             options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto'],
             time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
-          }
-        ]);
+          }]);
+        }, 150);
       }, 300);
     } else {
       // No llamamos a loadWeeklyGoal() aca: pisaria este mensaje de seguimiento
