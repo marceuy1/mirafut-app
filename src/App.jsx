@@ -190,6 +190,8 @@ export default function App() {
   const [showWeeklyGoal, setShowWeeklyGoal] = useState(false);
   const [sessionInProgress, setSessionInProgress] = useState(false);
   const [awaitingTrainingContext, setAwaitingTrainingContext] = useState(false);
+  const [awaitingSessionFeedback, setAwaitingSessionFeedback] = useState(false);
+  const [awaitingFinalReflection, setAwaitingFinalReflection] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showSorteo, setShowSorteo] = useState(false);
@@ -395,6 +397,7 @@ export default function App() {
             options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto'],
             time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
           }]);
+          setAwaitingFinalReflection(true);
         }, 150);
       }, 300);
     } else {
@@ -418,6 +421,7 @@ export default function App() {
             time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
           }
         ]);
+        setAwaitingSessionFeedback(true);
       }, 300);
     }
   };
@@ -772,6 +776,42 @@ export default function App() {
       return;
     }
 
+    // El jugador confirma que arranca la sesion ya generada: recien aca se activa
+    // (antes de esto, la sesion existe pero NO cuenta como iniciada).
+    if (displayText === '▶ Iniciar sesión' && weeklyGoal) {
+      setSessionInProgress(true);
+      return;
+    }
+
+    // Reflexion final de cierre de semana (despues de completar las 3 sesiones)
+    if (awaitingFinalReflection && weeklyGoal) {
+      setAwaitingFinalReflection(false);
+      const reflexionText = displayText;
+      try {
+        await supabase.from('weekly_goals').update({ final_reflection: reflexionText }).eq('id', weeklyGoal.id);
+      } catch (e) {
+        console.error('Error guardando final_reflection:', e);
+      }
+      setWeeklyGoal(g => g ? { ...g, final_reflection: reflexionText } : g);
+      await enviarMensajeCoach(reflexionText, reflexionText);
+      return;
+    }
+
+    // Respuesta de "como te fue" tras completar una sesion intermedia
+    if (awaitingSessionFeedback && weeklyGoal) {
+      setAwaitingSessionFeedback(false);
+      const feedbackText = displayText;
+      const nuevoFeedback = [...(weeklyGoal.session_feedback || []), feedbackText];
+      try {
+        await supabase.from('weekly_goals').update({ session_feedback: nuevoFeedback }).eq('id', weeklyGoal.id);
+      } catch (e) {
+        console.error('Error guardando session_feedback:', e);
+      }
+      setWeeklyGoal(g => g ? { ...g, session_feedback: nuevoFeedback } : g);
+      await enviarMensajeCoach(feedbackText, feedbackText);
+      return;
+    }
+
     // El jugador esta respondiendo si entrena solo/acompañado y que material tiene.
     // Guardamos esa respuesta UNA sola vez por objetivo semanal y no volvemos a preguntar.
     if (awaitingTrainingContext && weeklyGoal) {
@@ -840,7 +880,6 @@ export default function App() {
           console.error('Error guardando sessions_log:', e);
         }
         setWeeklyGoal(g => g ? { ...g, sessions_log: nuevoLog } : g);
-        setSessionInProgress(true);
       }
 
       setAiMessages(m => [...m, {
@@ -850,6 +889,18 @@ export default function App() {
         text:response,
         time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
       }]);
+
+      if (isTrainingResponse && weeklyGoal) {
+        setTimeout(() => {
+          setAiMessages(m => [...m, {
+            id: Date.now() + 2,
+            from: currentAgent,
+            type: "suggestions",
+            options: ['▶ Iniciar sesión'],
+            time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+          }]);
+        }, 150);
+      }
     } catch (error) {
       console.error('Error with AI Coach:', error);
       setAiMessages(m => [...m, { 
@@ -1833,7 +1884,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     return <div key={m.id} className="handoff"><div className="handoff-lbl"><div className="handoff-line"/><span>{ma.name} se unió</span><div className="handoff-line"/></div><div className="handoff-intro">"{m.text}"</div></div>;
                   }
                   if (m.type === "suggestions") {
-                    return <div key={m.id} className="sugs">{m.options.map(o=><button key={o} className="sug" onClick={()=>sendAI(o)}>{o}</button>)}</div>;
+                    const esUltimoMensaje = aiMessages.length > 0 && m.id === aiMessages[aiMessages.length - 1].id;
+                    return <div key={m.id} className="sugs">{m.options.map(o=><button key={o} className="sug" style={esUltimoMensaje ? {} : {opacity:0.35, cursor:'default'}} onClick={()=>{ if (esUltimoMensaje) sendAI(o); }}>{o}</button>)}</div>;
                   }
                   if (m.type === "specialist-card") {
                     const sp = SPECIALISTS.find(s => s.id === m.specialist);

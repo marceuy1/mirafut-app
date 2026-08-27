@@ -89,12 +89,17 @@ La sesion NUNCA puede requerir personas, material o instalaciones que el jugador
 - Antes de incluir cualquier material en la sesion, verifica que el jugador lo confirmo tener.
 - Si el jugador tiene recursos limitados, usa creatividad: marcas imaginarias, referencia al cuerpo, coordinacion sin material, tecnica de pies, desplazamientos, posicion base.
 
+INSTRUCCIONES SIN AMBIGUEDAD (obligatorio, revisa esto antes de responder):
+Cada "Como:" debe tener numeros y direcciones concretas: distancia en metros, cantidad exacta de repeticiones o toques, hacia donde se mueve el balon o el jugador, y que resultado buscar. PROHIBIDO terminar una instruccion sin especificar el "hacia donde" o "cuanto".
+Ejemplo PROHIBIDO (ambiguo): "Pasa la pelota al aire, tratando de mantener la direccion."
+Ejemplo CORRECTO (concreto): "Golpea el balon con el empeine para que suba 3 metros y caiga 4 metros frente a vos; controla con el pie debil apenas toque el suelo."
+
 FORMATO SESION (${duracionTotal} min total para ${edad} anos):
 Sesion [N] — [Objetivo especifico] — ${duracionTotal} min
 
 1. [Nombre drill especifico] — [X min]
    Series: X | Reps: X | Descanso: X seg
-   Como: [instruccion concreta en 1 linea]
+   Como: [instruccion concreta con numeros y direccion exacta, en 1 linea]
    Foco tecnico: [1 punto clave]
 
 2. [Drill diferente] — [X min] [mismo formato]
