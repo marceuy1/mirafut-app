@@ -49,6 +49,17 @@ export default async function handler(req, res) {
     ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para dar progresion real, no repetir lo mismo):\n' + sessionsLog.map((s, i) => `Sesion ${i + 1}: ${s}`).join('\n')
     : '';
 
+  // Como se sintio el jugador en la sesion anterior, para ajustar la dificultad de esta
+  const lastFeedback = (perfil?.last_session_feedback || '').toLowerCase();
+  let instruccionDificultad = '';
+  if (lastFeedback.includes('muy bien')) {
+    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le fue MUY BIEN. Sube la dificultad un poco mas de lo normal (mas repeticiones, mas velocidad, o el siguiente paso tecnico).';
+  } else if (lastFeedback.includes('costo') || lastFeedback.includes('costó')) {
+    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le costo un poco. Sube la dificultad de forma MODERADA, sin saltos grandes respecto a la sesion anterior.';
+  } else if (lastFeedback.includes('dificil') || lastFeedback.includes('difícil')) {
+    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le resulto DIFICIL. Mantene el mismo nivel de dificultad que la sesion anterior, o bajalo levemente. NO subas la dificultad esta vez.';
+  }
+
   const objetivoCompletado = perfil?.weekly_goal && perfil?.sessions_target > 0 && (perfil?.sessions_done || 0) >= perfil.sessions_target;
 
   let goalStr = '';
@@ -78,7 +89,8 @@ ${instruccionesPreguntar}
 
 ${sessionsLogStr}
 
-${sessionsLog.length > 0 ? `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil.sessions_done || 0) + 1}. Debe ser mas exigente o avanzar tecnicamente sobre las sesiones anteriores listadas arriba (mas repeticiones, mas velocidad, mayor dificultad tecnica, o el siguiente paso logico). No repitas los mismos drills exactos.` : ''}
+${sessionsLog.length > 0 ? `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil.sessions_done || 0) + 1}. Debe avanzar tecnicamente sobre las sesiones anteriores listadas arriba (mas repeticiones, mas velocidad, mayor dificultad tecnica, o el siguiente paso logico). No repitas los mismos drills exactos.` : ''}
+${instruccionDificultad}
 
 REGLA CRITICA DE RECURSOS:
 La sesion NUNCA puede requerir personas, material o instalaciones que el jugador NO confirmo tener.
@@ -105,7 +117,9 @@ Sesion [N] — [Objetivo especifico] — ${duracionTotal} min
 2. [Drill diferente] — [X min] [mismo formato]
 3. [Drill diferente] — [X min] [mismo formato]
 
-Coach Tip: [consejo tecnico especifico para ${pos} trabajando ${perfil.weekly_goal}]
+Coach Tip: [consejo tecnico especifico para ${pos} trabajando ${perfil.weekly_goal}. Termina la frase completa, no la dejes a medias.]
+
+IMPORTANTE: termina siempre la respuesta completa, incluyendo el Coach Tip entero y la pregunta final. Nunca cortes una frase a la mitad.
 
 REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Si hay que elegir entre variedad y relevancia, priorizar relevancia. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.`;
   }
@@ -117,6 +131,7 @@ ESTILO:
 - Termina siempre con pregunta o accion
 - Motivacion especifica, no generica
 - Tono: entrenador real, no chatbot
+- SIEMPRE termina tus respuestas completas, nunca a mitad de frase.
 
 WORKFLOWS:
 - Vengo de entrenar: pregunta como fue y que trabajaron
@@ -133,10 +148,10 @@ No uses asteriscos ni markdown. Texto plano.`;
 
   const systemPrompts = {
     coach: coachPrompt,
-    nutricion: `Nutricionista deportivo para jovenes de ${edad} anos. Consejos practicos. Maximo 80 palabras. Termina con pregunta.`,
-    psicologia: `Psicologo deportivo empatico para atletas de ${edad} anos. Maximo 80 palabras. Termina con pregunta.`,
-    tecnica: `Analista tecnico de futbol para jugador de ${edad} anos posicion ${pos}. Maximo 80 palabras. Termina con pregunta.`,
-    carrera: `Asesor de carreras deportivas. Becas y desarrollo profesional. Maximo 80 palabras. Termina con pregunta.`
+    nutricion: `Nutricionista deportivo para jovenes de ${edad} anos. Consejos practicos. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa, nunca a mitad de frase.`,
+    psicologia: `Psicologo deportivo empatico para atletas de ${edad} anos. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa, nunca a mitad de frase.`,
+    tecnica: `Analista tecnico de futbol para jugador de ${edad} anos posicion ${pos}. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa, nunca a mitad de frase.`,
+    carrera: `Asesor de carreras deportivas. Becas y desarrollo profesional. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa, nunca a mitad de frase.`
   };
 
   try {
@@ -152,7 +167,7 @@ No uses asteriscos ni markdown. Texto plano.`;
           { role: 'system', content: systemPrompts[agentType] || systemPrompts.coach },
           { role: 'user', content: message }
         ],
-        max_tokens: 350,
+        max_tokens: 600,
         temperature: 0.7
       })
     });

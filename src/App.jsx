@@ -780,6 +780,15 @@ export default function App() {
     // (antes de esto, la sesion existe pero NO cuenta como iniciada).
     if (displayText === '▶ Iniciar sesión' && weeklyGoal) {
       setSessionInProgress(true);
+      setTimeout(() => {
+        setAiMessages(m => [...m, {
+          id: Date.now(),
+          from: currentAgent,
+          type: "suggestions",
+          options: ['✓ Terminé mi sesión'],
+          time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+        }]);
+      }, 150);
       return;
     }
 
@@ -859,13 +868,15 @@ export default function App() {
     setThinking(true);
 
     try {
+      const feedbackArr = weeklyGoal?.session_feedback || [];
       const perfilConObjetivo = weeklyGoal ? {
         ...(userProfile||{}),
         weekly_goal: weeklyGoal.goal,
         sessions_done: weeklyGoal.sessions_done,
         sessions_target: weeklyGoal.sessions_target,
         training_context: weeklyGoal.training_context || '',
-        sessions_log: JSON.stringify(weeklyGoal.sessions_log || [])
+        sessions_log: JSON.stringify(weeklyGoal.sessions_log || []),
+        last_session_feedback: feedbackArr.length > 0 ? feedbackArr[feedbackArr.length - 1] : ''
       } : userProfile;
       const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
@@ -1935,7 +1946,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {sessionInProgress ? (
                         <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>✓ Terminé mi sesión</button>
                       ) : (
-                        <button onClick={() => sendAI('Sí, vamos')} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>▶ Iniciar {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
+                        <button onClick={() => { if (!awaitingSessionFeedback) sendAI('Sí, vamos'); }} disabled={awaitingSessionFeedback} title={awaitingSessionFeedback ? 'Responde arriba como te fue para continuar' : ''} style={{background:awaitingSessionFeedback ? 'rgba(0,230,118,0.3)' : '#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:awaitingSessionFeedback ? 'not-allowed' : 'pointer',fontFamily:'Outfit,sans-serif',opacity:awaitingSessionFeedback ? 0.6 : 1}}>▶ Iniciar {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
                       )}
                     </div>
                   ) : (
