@@ -1,156 +1,191 @@
 // ============ CEREBRO METODOLOGICO DE MIRAFUT ============
 // Una entrada por cada objetivo REAL que un jugador puede elegir (coinciden EXACTO
-// con las listas del modal "Objetivo de la semana" en App.jsx). Cada entrada tiene:
-// - definicion: que significa tecnicamente este objetivo (para que la IA no invente)
-// - variantes: banco de 5-6 tipos de ejercicio para combinar, asi no se repite siempre lo mismo
+// con las listas del modal "Objetivo de la semana" en App.jsx).
+// - definicion: que significa tecnicamente este objetivo
+// - variantes: banco de ejercicios para combinar (ORIENTATIVO — la regla de recursos
+//   siempre tiene prioridad; si una variante no es ejecutable con lo confirmado, se adapta o se descarta)
+// - colectivo: true si el objetivo depende fundamentalmente de companeros/oposicion real
 const METODOLOGIA = {
   // ---- PORTERO ----
   'Mejorar mis reflejos': {
-    definicion: 'Reflejos de portero = reaccion rapida ante disparos cercanos, paradas cortas sin caida completa, reaccion lateral, manos arriba (altura cara/pecho) y abajo (altura rodillas/suelo). Para 13 anos o menos: distancias mas cortas y disparos mas suaves para construir confianza antes que reflejo puro.',
-    variantes: ['paradas reactivas con pelota lanzada contra pared/superficie firme desde corta distancia', 'cambios rapidos de posicion de manos arriba/abajo con señal propia', 'paradas cortas sin caida completa (parada en cuclillas)', 'reaccion lateral con desplazamientos cortos explosivos', 'recuperacion rapida tras la primera parada (rebote)', 'trabajo de manos con pelota chica para reaccion fina']
+    definicion: 'Reflejos de portero = reaccion rapida ante disparos cercanos, paradas cortas sin caida completa, reaccion lateral, manos arriba y abajo. Para 13 anos o menos: distancias cortas y disparos suaves.',
+    variantes: ['paradas reactivas con pelota autolanzada desde corta distancia', 'cambios rapidos de posicion de manos arriba/abajo con señal propia', 'paradas cortas sin caida completa', 'reaccion lateral con desplazamientos cortos explosivos', 'recuperacion rapida tras la primera parada'],
+    colectivo: false
   },
   'Mejorar mis salidas': {
-    definicion: 'Salidas de portero = anticipar centros aereos, 1v1 ante el delantero, balones en profundidad, y decidir el timing correcto de salida. NO es salir con el balon en los pies como jugador de campo.',
-    variantes: ['salida explosiva desde la linea hacia un punto marcado', 'lectura de balon en profundidad con sprint de salida controlado', 'trabajo de achicar espacio antes de decidir salir o no', 'salidas cortas repetidas con cambio de angulo', 'ejercicio de freno y ajuste de posicion tras la salida']
+    definicion: 'Salidas de portero = anticipar centros aereos, 1v1 ante el delantero, balones en profundidad, decidir el timing de salida. NO es salir con el balon en los pies.',
+    variantes: ['salida explosiva desde la linea hacia un punto marcado', 'sprint de salida controlado hacia un balon autolanzado en profundidad', 'achicar espacio antes de decidir salir', 'salidas cortas repetidas con cambio de angulo'],
+    colectivo: false
   },
   'Mejorar mi posicionamiento': {
-    definicion: 'Posicionamiento de portero = angulo respecto al balon (achicar el arco), posicion entre los palos segun de donde viene el ataque, y ajuste constante mientras el balon se mueve.',
-    variantes: ['desplazamiento en arco imaginario frente al arco ajustando angulo', 'ajuste de posicion segun ubicacion marcada del balon en el campo', 'trabajo de achicar arco en situaciones de 1v1', 'desplazamientos laterales manteniendo distancia optima a los palos']
+    definicion: 'Posicionamiento de portero = angulo respecto al balon, posicion entre los palos, ajuste constante mientras el balon se mueve.',
+    variantes: ['desplazamiento en arco imaginario ajustando angulo', 'ajuste de posicion segun ubicacion marcada del balon', 'achicar arco en situaciones de 1v1 imaginado', 'desplazamientos laterales manteniendo distancia a los palos'],
+    colectivo: false
   },
   'Juego aéreo': {
-    definicion: 'Juego aereo de portero = salir a cortar centros con seguridad, decidir atrapar o despejar con puno segun presion, dominar el area en pelotas altas.',
-    variantes: ['salto y captura de balones autolanzados hacia arriba', 'despeje con puno de balones altos autolanzados', 'timing de salto con pelota en movimiento vertical', 'salto con aterrizaje controlado y fuerte', 'diferenciar atrapar vs despejar segun altura del lanzamiento']
+    definicion: 'Juego aereo de portero = salir a cortar centros, decidir atrapar o despejar con puno, dominar el area en pelotas altas.',
+    variantes: ['salto y captura de balones autolanzados hacia arriba', 'despeje con puno de balones altos autolanzados', 'timing de salto con pelota en movimiento vertical', 'salto con aterrizaje controlado'],
+    colectivo: false
   },
   'Juego con los pies': {
-    definicion: 'Juego con los pies de portero = saque de meta con precision, pase corto al defensa bajo presion, participacion en la construccion desde atras.',
-    variantes: ['saque de meta a distintas distancias marcadas', 'pase corto bajo limite de tiempo simulando presion', 'control + pase en un tiempo limite', 'alternar saque corto y largo segun señal propia']
+    definicion: 'Juego con los pies de portero = saque de meta con precision, pase corto bajo presion, construccion desde atras.',
+    variantes: ['saque de meta a distintas distancias marcadas', 'control + pase con objetivo marcado en un tiempo limite', 'alternar saque corto y largo segun señal propia'],
+    colectivo: false
   },
   'Comunicación con la defensa': {
-    definicion: 'Comunicacion del portero = organizar la linea defensiva en voz alta, avisar marcas, dirigir en centros o pases filtrados.',
-    variantes: ['vocalizacion de organizacion en voz alta durante ejercicios tecnicos', 'lectura visual rapida de una jugada imaginada verbalizando la decision', 'simulacion mental de escaneo y aviso de marca']
+    definicion: 'Comunicacion del portero = organizar la linea defensiva, avisar marcas, dirigir en centros o pases filtrados. Depende fundamentalmente de tener companeros reales para comunicarse.',
+    variantes: ['vocalizacion de organizacion en voz alta durante ejercicios tecnicos', 'lectura visual de una jugada imaginada verbalizando la decision'],
+    colectivo: true
   },
   '1v1 bajo palos': {
-    definicion: 'El 1v1 de portero = achicar el angulo sin salir con las piernas abiertas, mantenerse grande, y no comprometerse (tirarse) antes de tiempo.',
-    variantes: ['reduccion de angulo caminando/trotando hacia un punto marcado', 'mantenerse grande sin comprometerse en desplazamientos cortos', 'bloqueo bajo controlado esperando el ultimo momento', 'ejercicio de paciencia con señal de "ahora" para reaccionar']
+    definicion: 'El 1v1 de portero = achicar el angulo sin salir con las piernas abiertas, mantenerse grande, no comprometerse antes de tiempo.',
+    variantes: ['reduccion de angulo hacia un punto marcado', 'mantenerse grande en desplazamientos cortos', 'bloqueo bajo controlado esperando el ultimo momento'],
+    colectivo: false
   },
   'Distribución': {
-    definicion: 'Distribucion de portero = elegir saque corto o largo segun la situacion, precision en el pase o lanzamiento, rapidez en reinicios.',
-    variantes: ['precision de saque a distintas distancias y objetivos marcados', 'alternar saque corto/largo segun señal', 'reinicios rapidos tras recuperar el balon', 'lanzamiento de brazo a distintas distancias con precision']
+    definicion: 'Distribucion de portero = elegir saque corto o largo, precision en el pase o lanzamiento, rapidez en reinicios.',
+    variantes: ['precision de saque a distintas distancias y objetivos marcados', 'alternar saque corto/largo segun señal', 'lanzamiento de brazo a distintas distancias con precision'],
+    colectivo: false
   },
 
   // ---- DEFENSA ----
   'Mejorar mi marcación': {
-    definicion: 'Marcacion individual = seguir el movimiento del rival sin perder posicion goal-side, anticipar cambios de direccion, elegir el momento de entrar al balon.',
-    variantes: ['seguimiento de sombra imitando movimientos de un rival imaginario', 'mantener distancia optima en desplazamientos', 'reaccion rapida a cambios de direccion simulados', 'timing de entrada al balon en situaciones marcadas']
+    definicion: 'Marcacion individual = seguir al rival sin perder posicion goal-side, anticipar cambios de direccion, elegir el momento de entrar al balon. Depende de tener un rival real para marcar en su forma completa.',
+    variantes: ['sombra de un movimiento imaginado manteniendo distancia y angulo', 'reaccion a cambios de direccion propios simulando seguimiento', 'trabajo de pasos laterales y frenado (base de la marcacion)'],
+    colectivo: true
   },
   'Anticipación y lectura': {
-    definicion: 'Anticipacion defensiva = leer lineas de pase antes de que ocurran, interceptar en el momento justo, orientar el cuerpo para ver balon y rival a la vez.',
-    variantes: ['reaccion a estimulo visual o sonoro simulando lectura de pase', 'prediccion de trayectoria de balones autolanzados', 'interceptacion de balones en movimiento', 'orientacion corporal para ver "balon y rival" durante el control']
+    definicion: 'Anticipacion defensiva = leer lineas de pase antes de que ocurran, interceptar en el momento justo, orientar el cuerpo para ver balon y rival.',
+    variantes: ['reaccion a estimulo propio simulando lectura de pase', 'prediccion de trayectoria de balones autolanzados', 'interceptacion de balones en movimiento propio'],
+    colectivo: false
   },
   'Salida del balón': {
     definicion: 'Salida del balon desde la defensa = primer pase bajo presion, escanear antes de recibir, jugar hacia adelante en vez de solo despejar.',
-    variantes: ['recepcion orientada bajo presion de tiempo', 'escaneo (mirar atras) antes del control', 'primer pase hacia adelante con objetivo marcado', 'control + pase en tiempo limite']
+    variantes: ['recepcion orientada bajo presion de tiempo propia', 'escaneo antes del control (mirar atras antes de recibir)', 'control + pase a objetivo marcado en tiempo limite'],
+    colectivo: false
   },
   'Duelos aéreos': {
-    definicion: 'Duelos aereos defensivos = timing del salto, posicionar el cuerpo entre rival y balon, tecnica de cabeceo para despejar con potencia y direccion.',
-    variantes: ['salto con timing sobre balones autolanzados', 'cabeceo de despeje con direccion y potencia', 'trabajo de posicion del cuerpo en el salto', 'aterrizaje controlado tras el salto']
+    definicion: 'Duelos aereos defensivos = timing del salto, posicion del cuerpo, tecnica de cabeceo. El duelo real necesita a alguien disputando; en solitario se trabaja la tecnica individual base.',
+    variantes: ['salto con timing sobre balones autolanzados', 'cabeceo de despeje con direccion y potencia', 'aterrizaje controlado tras el salto'],
+    colectivo: false
   },
   'Potenciar mi pie débil': {
-    definicion: 'Pie debil = ganar confianza y control con el pie no dominante en pases, controles y despejes segun posicion. El objetivo NO es igualar al pie fuerte en una semana, sino reducir la dependencia total de un solo pie.',
-    variantes: ['toques alternos en movimiento con enfasis en pie debil', 'control y pase corto exclusivamente con pie debil', 'conduccion corta con pie debil', 'control con giro usando pie debil', 'pases largos con pie debil a objetivo marcado']
+    definicion: 'Pie debil = ganar confianza y control con el pie no dominante. El objetivo NO es igualar al pie fuerte en una semana, sino reducir la dependencia total de un solo pie.',
+    variantes: ['toques alternos en movimiento con enfasis en pie debil', 'control y pase corto con pie debil', 'conduccion corta con pie debil', 'control con giro usando pie debil'],
+    colectivo: false
   },
   'Posicionamiento defensivo': {
-    definicion: 'Posicionamiento de la linea defensiva = mantener la forma del equipo, dar cobertura, controlar distancia entre defensas, no dejar espacios.',
-    variantes: ['desplazamientos manteniendo distancia imaginaria a companeros de linea', 'ejercicios de cobertura de espacios marcados', 'compactacion en movimientos laterales', 'ajuste de posicion segun zona imaginaria del balon']
+    definicion: 'Posicionamiento de la linea defensiva = forma del equipo, cobertura, distancia entre defensas. Se entiende mejor con companeros; en solitario se trabajan los principios individuales de esa forma.',
+    variantes: ['desplazamientos manteniendo referencia de distancia imaginaria', 'ejercicios de cobertura de espacios marcados en el suelo', 'compactacion en movimientos laterales propios'],
+    colectivo: false
   },
   'Juego en banda': {
-    definicion: 'Defensa en banda = marcar 1v1 en zonas amplias, apoyar cuando el lateral sube, recuperar posicion rapido tras las subidas del rival.',
-    variantes: ['marcaje 1v1 en desplazamientos amplios', 'sprint de recuperacion tras avance simulado del rival', 'cambios de direccion en banda', 'defensa del espacio a la espalda con carrera de recuperacion']
+    definicion: 'Defensa en banda = marcar 1v1 en zonas amplias, apoyar al lateral, recuperar posicion tras las subidas del rival. Depende de un rival real en banda para su forma completa.',
+    variantes: ['sprint de recuperacion hacia una zona marcada', 'cambios de direccion repetidos en banda', 'trabajo de carrera de vuelta tras un desplazamiento propio hacia adelante'],
+    colectivo: true
   },
   'Presión alta': {
-    definicion: 'Presion alta = activar la presion en el momento correcto, cerrar lineas de pase antes de ir al hombre. En solitario se trabaja el timing individual del primer paso de presion.',
-    variantes: ['primer paso explosivo de presion desde distintas distancias', 'angulo de aproximacion a un rival imaginario', 'timing de activacion de presion con señal propia', 'sprints cortos repetidos simulando triggers de presion']
+    definicion: 'Presion alta = activar la presion en el momento correcto, cerrar lineas de pase. La coordinacion real necesita companeros y un rival con el balon; en solitario se trabaja el timing individual del primer paso.',
+    variantes: ['primer paso explosivo de presion desde distintas distancias', 'angulo de aproximacion hacia un punto marcado', 'sprints cortos repetidos simulando el primer paso de presion'],
+    colectivo: true
   },
 
   // ---- MEDIOCAMPO ----
   'Trabajar el control orientado': {
-    definicion: 'Control orientado = el primer toque no detiene el balon, lo dirige hacia donde el jugador quiere ir despues (espacio libre, direccion de juego).',
-    variantes: ['toques alternos con avance direccional', 'control con giro 180 grados', 'control lateral con cambio de direccion', 'recepcion en movimiento con control orientado', 'control bajo presion de tiempo']
+    definicion: 'Control orientado = el primer toque no detiene el balon, lo dirige hacia donde el jugador quiere ir despues.',
+    variantes: ['toques alternos con avance direccional propio', 'control con giro de 180 grados', 'control lateral con cambio de direccion', 'recepcion en movimiento con control orientado (autopase)'],
+    colectivo: false
   },
   'Mejorar mi visión de juego': {
-    definicion: 'Vision de juego = escanear el campo antes de recibir (mirar alrededor antes de que llegue el pase), ubicar companeros/rivales, decidir la mejor opcion antes de tener el balon.',
-    variantes: ['escaneo antes de controlar (mirar a los lados antes del toque)', 'control con decision rapida de direccion segun señal externa', 'recepcion con cabeza levantada', 'trabajo de percepcion con multiples referencias marcadas']
+    definicion: 'Vision de juego = escanear el campo antes de recibir, ubicar companeros/rivales, decidir la mejor opcion antes de tener el balon.',
+    variantes: ['escaneo antes de controlar (mirar a los lados antes del toque)', 'control con decision rapida de direccion segun señal propia', 'recepcion con cabeza levantada en control autolanzado'],
+    colectivo: false
   },
   'Toma de decisiones': {
     definicion: 'Toma de decisiones = elegir rapido entre pasar, driblar o disparar segun presion y espacio disponible.',
-    variantes: ['decision forzada (pasar/driblar/disparar) bajo señal o tiempo limite', 'control + decision rapida con multiples opciones marcadas', 'presion progresiva con tiempo de reaccion decreciente']
+    variantes: ['decision forzada (driblar/disparar/cambiar direccion) bajo señal o tiempo limite propio', 'control + decision rapida entre opciones marcadas en el suelo', 'presion progresiva de tiempo (cronometro cada vez mas corto)'],
+    colectivo: false
   },
   'Rondo y posesión': {
-    definicion: 'Rondo y posesion = pase rapido a uno o dos toques, mantener el balon bajo presion en espacios reducidos, orientacion corporal constante.',
-    variantes: ['toques rapidos contra pared con control a un toque', 'secuencia pase-control-pase a maxima velocidad', 'orientacion corporal para recepcion rapida', 'control bajo presion de tiempo simulando espacio reducido']
+    definicion: 'Rondo y posesion REAL requiere varios companeros y oposicion (minimo 3-4 personas) para practicar pase rapido bajo presion en espacio reducido. Es un objetivo fundamentalmente colectivo: si el jugador entrena solo, NO se puede reproducir un rondo real. Hay que entrenar los componentes individuales transferibles: orientacion corporal antes de recibir, primer toque orientado, escaneo rapido, y velocidad de decision.',
+    variantes: ['control orientado con giro rapido tras autopase (simula recibir y salir de presion)', 'toques rapidos con avance direccional simulando salir de un espacio reducido', 'escaneo antes de cada control (mirar a un punto fijo antes de tocar)', 'secuencia de control + cambio de direccion repetida a maxima velocidad'],
+    colectivo: true
   },
   'Llegada al área': {
-    definicion: 'Llegada al area desde mediocampo = timing del desplazamiento tardio (llegar sin marca justo cuando el balon entra al area), definicion tras carrera desde atras.',
-    variantes: ['sprint de llegada tardia con timing hacia punto marcado', 'carrera + definicion tras arranque cronometrado', 'arranque en el momento justo con señal', 'combinacion de carrera larga + remate']
+    definicion: 'Llegada al area desde mediocampo = timing del desplazamiento tardio, definicion tras carrera desde atras.',
+    variantes: ['sprint de llegada tardia hacia un punto marcado', 'carrera + definicion tras arranque cronometrado', 'combinacion de carrera larga + remate a objetivo marcado'],
+    colectivo: false
   },
   'Pressing': {
-    definicion: 'Pressing = identificar el momento (trigger) para presionar, cerrar la linea de pase mas cercana, velocidad de reaccion tras perder la posesion.',
-    variantes: ['primer paso explosivo desde distintas distancias', 'angulo de aproximacion al rival imaginario', 'sprints cortos repetidos simulando reaccion tras perdida', 'timing de activacion de presion con señal']
+    definicion: 'Pressing = identificar el momento para presionar, cerrar la linea de pase, velocidad de reaccion. El pressing coordinado real necesita companeros y un rival con balon; en solitario se trabaja el timing individual del primer paso.',
+    variantes: ['primer paso explosivo desde distintas distancias', 'angulo de aproximacion hacia un punto marcado', 'sprints cortos repetidos simulando reaccion tras perdida propia de posesion'],
+    colectivo: true
   },
   'Transiciones': {
-    definicion: 'Transiciones = velocidad de cambio mental y fisico entre defender y atacar (y viceversa) apenas cambia la posesion.',
-    variantes: ['ejercicio que alterna accion defensiva/ofensiva en el mismo drill (despeje + sprint a rematar)', 'cambio brusco de rol tras señal', 'doble accion con velocidad mental (recuperar y atacar de inmediato)']
+    definicion: 'Transiciones = velocidad de cambio mental y fisico entre defender y atacar apenas cambia la posesion.',
+    variantes: ['ejercicio propio que alterna una accion "defensiva" simulada + sprint a rematar', 'cambio brusco de direccion/rol tras señal propia', 'doble accion con velocidad mental (control defensivo simulado + ataque inmediato)'],
+    colectivo: false
   },
 
   // ---- DELANTERO ----
   'Mejorar mi definición': {
     definicion: 'Definicion = tecnica de disparo dentro del area, primer toque orientado al disparo, voleas y cabezazos, definicion con pierna no dominante.',
-    variantes: ['remate de primera tras autopase', 'definicion con pierna debil a distintas distancias', 'volea tras lanzamiento propio', 'cabeceo a la red tras centro autolanzado', 'definicion tras conduccion corta']
+    variantes: ['remate de primera tras autopase', 'definicion con pierna debil a distintas distancias', 'volea tras lanzamiento propio', 'cabeceo a un objetivo marcado tras lanzamiento propio', 'definicion tras conduccion corta'],
+    colectivo: false
   },
   'Desmarques': {
-    definicion: 'Desmarques = movimiento sin balon para generar espacio, timing de ruptura de la linea defensiva rival justo antes del pase, creacion de espacio con movimientos falsos.',
-    variantes: ['movimiento de ruptura con cambio de ritmo', 'desmarques de apoyo y de ruptura alternados', 'timing con señal de "pase inminente"', 'carrera curva para desmarcarse de una marca imaginaria']
+    definicion: 'Desmarques = movimiento sin balon para generar espacio, timing de ruptura justo antes del pase. Real necesita un rival y un companero pasando; en solitario se trabaja la mecanica del movimiento y el timing.',
+    variantes: ['movimiento de ruptura con cambio de ritmo hacia un punto marcado', 'carrera curva simulando desmarcarse de una marca imaginaria', 'arranques repetidos con cambio de ritmo tras señal propia'],
+    colectivo: true
   },
   'Primer toque': {
-    definicion: 'Primer toque de delantero = amortiguar balones bajo presion para girar o disparar de inmediato, control orientado hacia el arco o el espacio libre.',
-    variantes: ['amortiguacion de balones lanzados con distintas alturas', 'control orientado hacia el remate en un solo toque', 'primer toque bajo presion de tiempo', 'control + giro rapido']
+    definicion: 'Primer toque de delantero = amortiguar balones bajo presion para girar o disparar de inmediato.',
+    variantes: ['amortiguacion de balones autolanzados con distintas alturas', 'control orientado hacia el remate en un solo toque', 'control + giro rapido tras autopase'],
+    colectivo: false
   },
   '1v1 ofensivo': {
-    definicion: '1v1 ofensivo = amagues y cambios de ritmo para superar a un defensor, proteger el balon durante el regate, decidir cuando acelerar tras superar al rival.',
-    variantes: ['amague y cambio de ritmo contra un cono/obstaculo', 'proteccion del balon en conduccion', 'aceleracion tras superar un obstaculo marcado', 'combinacion de 2 fintas distintas en la misma jugada']
+    definicion: '1v1 ofensivo = amagues y cambios de ritmo para superar a un defensor, proteger el balon, decidir cuando acelerar. El defensor real ayuda mucho; en solitario se trabaja con una referencia fija (marca en el piso, zapatilla, o articulo similar) en vez de un rival.',
+    variantes: ['amague y cambio de ritmo pasando junto a una referencia marcada en el piso', 'proteccion del balon en conduccion propia', 'aceleracion tras superar una referencia marcada', 'combinacion de 2 fintas distintas en la misma jugada'],
+    colectivo: false
   },
   'Juego de espaldas': {
-    definicion: 'Juego de espaldas al arco = proteger el balon con el cuerpo al recibir de espaldas, aguantar la posicion bajo presion, dar el pase de apoyo tras controlar.',
-    variantes: ['recepcion de espaldas con proteccion del balon', 'giro tras recepcion de espaldas', 'pared imaginaria (control + pase simulado hacia un objetivo)', 'aguante de posicion bajo presion de un cono/objeto']
+    definicion: 'Juego de espaldas al arco = proteger el balon al recibir de espaldas, aguantar la posicion, dar el pase de apoyo tras controlar.',
+    variantes: ['recepcion de espaldas tras autopase con proteccion del balon', 'giro tras recepcion de espaldas', 'aguante de posicion (equilibrio y proteccion) sosteniendo el balon bajo el propio cuerpo'],
+    colectivo: false
   },
   'Movimientos en el área': {
-    definicion: 'Movimientos en el area = carreras al primer y segundo palo segun de donde viene el centro, anticipar rebotes, timing para llegar al punto de remate justo cuando llega el balon.',
-    variantes: ['carrera a primer palo con timing', 'carrera a segundo palo con timing', 'anticipacion de rebotes con reaccion rapida', 'remate tras desplazamiento lateral corto']
+    definicion: 'Movimientos en el area = carreras al primer y segundo palo, anticipar rebotes, timing para llegar al punto de remate.',
+    variantes: ['carrera a un punto marcado tipo primer palo con timing', 'carrera a un punto marcado tipo segundo palo con timing', 'remate tras desplazamiento lateral corto y autopase'],
+    colectivo: false
   },
   'Presión al portero': {
-    definicion: 'Presion al portero = cerrar angulos de pase del portero en la salida, forzar el error o el saque largo, coordinar el momento de presionar.',
-    variantes: ['sprint de cierre de angulo hacia un punto marcado', 'coordinacion de posicion de cuerpo al presionar', 'timing de arranque de presion con señal']
+    definicion: 'Presion al portero = cerrar angulos de pase del portero en la salida, forzar el error. Depende de un portero real ejecutando una salida; en solitario se trabaja el timing y angulo de aproximacion.',
+    variantes: ['sprint de cierre de angulo hacia un punto marcado', 'timing de arranque de presion con señal propia'],
+    colectivo: true
   },
 
   // ---- GENERICOS ----
   'Aumentar mi velocidad': {
-    definicion: 'Velocidad futbolistica = mecanica de sprint, aceleracion en distancias cortas tipicas del futbol (5-15 metros), cambios de direccion rapidos.',
-    variantes: ['sprint corto de 5-10 metros desde parado', 'sprint corto de 10-15 metros con arranque en movimiento', 'cambio de direccion en angulo de 90 grados', 'aceleracion tras control de balon', 'trabajo de mecanica de carrera (brazos y apoyo de pie)']
+    definicion: 'Velocidad futbolistica = mecanica de sprint, aceleracion en distancias cortas (5-15 metros), cambios de direccion rapidos.',
+    variantes: ['sprint corto de 5-10 metros desde parado', 'sprint corto de 10-15 metros con arranque en movimiento', 'cambio de direccion en angulo de 90 grados', 'aceleracion tras control de balon propio'],
+    colectivo: false
   },
   'Trabajo físico': {
-    definicion: 'Trabajo fisico futbolistico = ejercicios de movimiento especificos del futbol (agilidad, cambios de direccion, equilibrio, resistencia con balon), NO rutinas de gimnasio con pesas. Para menores de edad, siempre priorizar tecnica de movimiento sobre carga.',
-    variantes: ['circuito de agilidad con cambios de direccion', 'ejercicio de equilibrio controlando el balon', 'resistencia especifica con balon (repeticiones de control + desplazamiento)', 'estabilidad con movimientos funcionales sin peso externo']
+    definicion: 'Trabajo fisico futbolistico = ejercicios de movimiento especificos del futbol (agilidad, cambios de direccion, equilibrio, resistencia con balon), NO rutinas de gimnasio con pesas. Para menores, siempre priorizar tecnica de movimiento sobre carga.',
+    variantes: ['circuito de agilidad con cambios de direccion propios', 'ejercicio de equilibrio controlando el balon', 'resistencia especifica con balon (repeticiones de control + desplazamiento)'],
+    colectivo: false
   },
 };
 
 function construirContextoMetodologico(weeklyGoal) {
   const entry = METODOLOGIA[weeklyGoal];
-  if (!entry) return '';
+  if (!entry) return { texto: '', esColectivo: false };
   const variantesStr = entry.variantes.map(v => '- ' + v).join('\n');
-  return `QUE SIGNIFICA REALMENTE ESTE OBJETIVO (metodologia MiraFut, segui esto estrictamente): ${entry.definicion}
+  const texto = `QUE SIGNIFICA REALMENTE ESTE OBJETIVO (metodologia MiraFut): ${entry.definicion}
 
-BANCO DE VARIANTES DE EJERCICIO PARA ESTE OBJETIVO (elegi y combina 3 distintas, no uses siempre las mismas, evita repetir exactamente lo de sesiones anteriores):
+BANCO DE VARIANTES ORIENTATIVO (elegi y combina, adapta segun recursos confirmados, no repitas exactamente lo de sesiones anteriores):
 ${variantesStr}`;
+  return { texto, esColectivo: !!entry.colectivo };
 }
 
 export default async function handler(req, res) {
@@ -163,11 +198,12 @@ export default async function handler(req, res) {
   const duracionTotal = edad <= 13 ? 15 : edad <= 15 ? 20 : 25;
   const pos = perfil?.position || '';
 
-  const contextoMetodologico = construirContextoMetodologico(perfil?.weekly_goal);
+  const { texto: contextoMetodologico, esColectivo } = construirContextoMetodologico(perfil?.weekly_goal);
 
   const perfilStr = perfil ? `Jugador: ${perfil.full_name || perfil.name || ''}, posicion: ${pos}, edad: ${edad} anos, pie dominante: ${perfil.dominant_foot || ''}, nivel: ${perfil.level || ''}, entrena: ${perfil.training_freq || ''} veces/semana.` : '';
 
   const trainingContext = perfil?.training_context || '';
+  const entrenaSolo = /\bsolo\b/i.test(trainingContext) && !/acompa|con alguien|con un/i.test(trainingContext);
 
   let sessionsLog = [];
   try {
@@ -182,11 +218,11 @@ export default async function handler(req, res) {
   const lastFeedback = (perfil?.last_session_feedback || '').toLowerCase();
   let instruccionDificultad = '';
   if (lastFeedback.includes('muy bien')) {
-    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le fue MUY BIEN. Sube la dificultad un poco mas de lo normal (mas repeticiones, mas velocidad, o el siguiente paso tecnico).';
+    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le fue MUY BIEN. Sube la dificultad un poco mas de lo normal.';
   } else if (lastFeedback.includes('costo') || lastFeedback.includes('costó')) {
-    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le costo un poco. Sube la dificultad de forma MODERADA, sin saltos grandes respecto a la sesion anterior.';
+    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le costo un poco. Sube la dificultad de forma MODERADA, sin saltos grandes.';
   } else if (lastFeedback.includes('dificil') || lastFeedback.includes('difícil')) {
-    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le resulto DIFICIL. Mantene el mismo nivel de dificultad que la sesion anterior, o bajalo levemente. NO subas la dificultad esta vez.';
+    instruccionDificultad = 'AJUSTE DE DIFICULTAD: en la sesion anterior el jugador dijo que le resulto DIFICIL. Mantene el mismo nivel de dificultad o bajalo levemente. NO subas la dificultad esta vez.';
   }
 
   const objetivoCompletado = perfil?.weekly_goal && perfil?.sessions_target > 0 && (perfil?.sessions_done || 0) >= perfil.sessions_target;
@@ -196,7 +232,7 @@ export default async function handler(req, res) {
     goalStr = `OBJETIVO SEMANAL COMPLETADO: "${perfil.weekly_goal}" — ${perfil.sessions_target} de ${perfil.sessions_target} sesiones hechas esta semana.
 
 MOMENTO ACTUAL: reflexion de cierre de semana. El jugador te acaba de contar como sintio su progreso.
-- Responde con calidez genuina a lo que te diga, como un entrenador real que conoce su esfuerzo esta semana.
+- Responde con calidez genuina, como un entrenador real que conoce su esfuerzo esta semana.
 - Si dice que mejoro: celebralo con algo especifico relacionado al objetivo (${perfil.weekly_goal}), no generico.
 - Si dice que le costo o que todavia no lo nota: valida el esfuerzo, recuerda que la mejora tecnica lleva tiempo, y anima a seguir.
 - Cierra preguntando si quiere fijar un nuevo objetivo para la proxima semana.
@@ -204,54 +240,59 @@ MOMENTO ACTUAL: reflexion de cierre de semana. El jugador te acaba de contar com
   } else if (perfil?.weekly_goal) {
     const instruccionesPreguntar = trainingContext
       ? `INFORMACION YA CONFIRMADA POR EL JUGADOR (NO VOLVER A PREGUNTAR): ${trainingContext}
-Usa esta informacion directamente para generar la sesion. NO preguntes de nuevo si entrena solo o que material tiene, ya lo sabes.`
+Usa esta informacion directamente. NO preguntes de nuevo si entrena solo o que material tiene, ya lo sabes.`
       : `CUANDO EL JUGADOR ESTE LISTO PARA ENTRENAR:
 1. Si el objetivo tiene ambiguedad segun la posicion, pregunta que aspecto especifico quiere trabajar.
 2. Pregunta: Entrenas solo o con alguien? Que material tienes disponible?
 3. Con esa info genera la sesion. NO antes.`;
 
+    const avisoColectivo = (esColectivo && entrenaSolo)
+      ? `\nAVISO IMPORTANTE: este objetivo depende fundamentalmente de companeros u oposicion real, y el jugador entrena SOLO. Antes de dar la sesion, escribi 2 lineas honestas explicando que hoy no se puede reproducir la situacion completa (ejemplo de tono: "Como entrenas solo, hoy no podemos hacer un [X] real. Vamos a trabajar los componentes individuales que te sirven para esto: ..."), y despues genera la sesion basada SOLO en esos componentes individuales transferibles. Nunca inventes companeros, pared, oposicion o porteria que el jugador no confirmo tener.`
+      : '';
+
     goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones: ${perfil.sessions_done || 0}/${perfil.sessions_target || 3}.
 ${contextoMetodologico}
+${avisoColectivo}
 
 ${instruccionesPreguntar}
 
 ${sessionsLogStr}
 
-${sessionsLog.length > 0 ? `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil.sessions_done || 0) + 1}. Debe avanzar tecnicamente sobre las sesiones anteriores listadas arriba (mas repeticiones, mas velocidad, mayor dificultad tecnica, o el siguiente paso logico). Elegi variantes del banco de arriba DISTINTAS a las ya usadas.` : ''}
+${sessionsLog.length > 0 ? `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil.sessions_done || 0) + 1}. Debe avanzar tecnicamente sobre las sesiones anteriores. Elegi variantes distintas a las ya usadas.` : ''}
 ${instruccionDificultad}
 
-REGLA CRITICA DE RECURSOS:
-La sesion NUNCA puede requerir personas, material o instalaciones que el jugador NO confirmo tener.
-- Si dijo SOLO: ningún ejercicio puede requerir compañero, portero, o ser lanzado por alguien.
-- Si dijo SOLO UNA PELOTA: ABSOLUTAMENTE PROHIBIDO mencionar pared, conos, porterias, companero, objeto fijo, red, o cualquier otro elemento. Solo pelota y el propio cuerpo del jugador.
-- Si dijo SOLO Y PELOTA: adapta TODOS los drills para hacerlos absolutamente solo con 1 pelota.
-- Si no confirmo tener porteria: no incluyas ejercicios que requieran porteria.
-- Antes de incluir cualquier material en la sesion, verifica que el jugador lo confirmo tener.
-- Si el jugador tiene recursos limitados, usa creatividad: marcas imaginarias, referencia al cuerpo, coordinacion sin material, tecnica de pies, desplazamientos, posicion base.
+REGLA CRITICA DE RECURSOS (PRIORIDAD MAXIMA — por encima del banco de variantes):
+La sesion NUNCA puede requerir personas, material, pared o instalaciones que el jugador NO confirmo tener. Esta regla tiene MAS peso que cualquier variante sugerida arriba: si una variante del banco no es ejecutable con lo confirmado, ADAPTALA o DESCARTALA, no la uses tal cual.
+- Si dijo SOLO: ningún ejercicio puede requerir compañero, portero, u oposicion real.
+- Si dijo SOLO UNA PELOTA (sin mencionar pared, conos, ni porteria): PROHIBIDO usar pared, conos, porterias, companero, objeto fijo externo, o cualquier elemento no mencionado. Reemplaza cualquier drill de "pasar y que vuelva" por AUTOPASE (lanzar/tocar el balon uno mismo hacia arriba o adelante y controlarlo al volver), ya que sin pared ni companero el balon no puede "volver" solo.
+- Cada instruccion debe ser fisicamente ejecutable EXACTAMENTE como esta escrita, por una sola persona, con lo confirmado. Antes de escribir cada "Como:", preguntate: "esto lo puede hacer una sola persona con lo que tiene, sin que nadie mas intervenga?" Si la respuesta es no, reescribilo.
+- Si el jugador tiene recursos limitados, usa creatividad: marcas imaginarias, referencias en el suelo, autopases, coordinacion sin material externo.
 
-INSTRUCCIONES SIN AMBIGUEDAD (obligatorio, revisa esto antes de responder):
-Cada "Como:" debe tener numeros y direcciones concretas: distancia en metros, cantidad exacta de repeticiones o toques, hacia donde se mueve el balon o el jugador, y que resultado buscar. PROHIBIDO terminar una instruccion sin especificar el "hacia donde" o "cuanto".
-Ejemplo PROHIBIDO (ambiguo): "Pasa la pelota al aire, tratando de mantener la direccion."
-Ejemplo CORRECTO (concreto): "Golpea el balon con el empeine para que suba 3 metros y caiga 4 metros frente a vos; controla con el pie debil apenas toque el suelo."
+INSTRUCCIONES SIN AMBIGUEDAD (obligatorio):
+Cada "Como:" debe tener numeros y direcciones concretas: distancia en metros, cantidad exacta de repeticiones o toques, hacia donde se mueve el balon, y que resultado buscar.
+Ejemplo PROHIBIDO (ambiguo o no ejecutable solo): "Pasa la pelota 5 metros hacia adelante y rapidamente vuelve a pasarla" (sin pared ni companero, no puede volver).
+Ejemplo CORRECTO (concreto y ejecutable solo): "Lanza el balon 2 metros hacia arriba con las manos, controlalo con el pecho al bajar y hazlo caer a un punto marcado a 1 metro delante tuyo."
 
-Los 3 drills DEBEN salir del banco de variantes de arriba (o combinaciones logicas de esas variantes), adaptados con numeros concretos. No inventes conceptos fuera de esa lista.
+ENSEÑA, NO SOLO PRESCRIBAS: antes de listar los ejercicios, escribi 1-2 lineas explicando que habitos o conceptos se estan entrenando hoy y por que importan para el objetivo (ejemplo de tono: "Hoy vamos a trabajar tres habitos clave para [objetivo]: [concepto 1], [concepto 2] y [concepto 3]."). Esto ayuda al jugador a entender el sentido del entrenamiento, no solo ejecutarlo.
 
-FORMATO SESION (${duracionTotal} min total para ${edad} anos):
+FORMATO DE RESPUESTA (${duracionTotal} min total para ${edad} anos):
+[1-2 lineas de explicacion pedagogica del objetivo de hoy]
+
 Sesion [N] — [Objetivo especifico] — ${duracionTotal} min
 
 1. [Nombre drill especifico] — [X min]
    Series: X | Reps: X | Descanso: X seg
-   Como: [instruccion concreta con numeros y direccion exacta, en 1 linea]
+   Como: [instruccion concreta, ejecutable en solitario si corresponde, con numeros y direccion exacta]
    Foco tecnico: [1 punto clave]
 
 2. [Drill diferente] — [X min] [mismo formato]
 3. [Drill diferente] — [X min] [mismo formato]
 
-Coach Tip: [consejo tecnico especifico para ${pos} trabajando ${perfil.weekly_goal}. Termina la frase completa, no la dejes a medias.]
+Coach Tip: [consejo tecnico especifico para ${pos} trabajando ${perfil.weekly_goal}. Termina la frase completa.]
 
 IMPORTANTE: termina siempre la respuesta completa, incluyendo el Coach Tip entero y la pregunta final. Nunca cortes una frase a la mitad.
 
-REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Si hay que elegir entre variedad y relevancia, priorizar relevancia. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.`;
+REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.`;
   }
 
   const coachPrompt = `Eres MiraFut Coach, entrenador personal para jovenes futbolistas. ${perfilStr} ${goalStr}
@@ -278,10 +319,10 @@ No uses asteriscos ni markdown. Texto plano.`;
 
   const systemPrompts = {
     coach: coachPrompt,
-    nutricion: `Nutricionista deportivo para jovenes de ${edad} anos. Consejos practicos. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa, nunca a mitad de frase.`,
-    psicologia: `Psicologo deportivo empatico para atletas de ${edad} anos. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa, nunca a mitad de frase.`,
-    tecnica: `Analista tecnico de futbol para jugador de ${edad} anos posicion ${pos}. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa, nunca a mitad de frase.`,
-    carrera: `Asesor de carreras deportivas. Becas y desarrollo profesional. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa, nunca a mitad de frase.`
+    nutricion: `Nutricionista deportivo para jovenes de ${edad} anos. Consejos practicos. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`,
+    psicologia: `Psicologo deportivo empatico para atletas de ${edad} anos. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`,
+    tecnica: `Analista tecnico de futbol para jugador de ${edad} anos posicion ${pos}. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`,
+    carrera: `Asesor de carreras deportivas. Becas y desarrollo profesional. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`
   };
 
   try {
@@ -297,7 +338,7 @@ No uses asteriscos ni markdown. Texto plano.`;
           { role: 'system', content: systemPrompts[agentType] || systemPrompts.coach },
           { role: 'user', content: message }
         ],
-        max_tokens: 600,
+        max_tokens: 650,
         temperature: 0.8
       })
     });

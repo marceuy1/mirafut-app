@@ -778,20 +778,6 @@ export default function App() {
 
     // El jugador confirma que arranca la sesion ya generada: recien aca se activa
     // (antes de esto, la sesion existe pero NO cuenta como iniciada).
-    if (displayText === '▶ Iniciar sesión' && weeklyGoal) {
-      setSessionInProgress(true);
-      setTimeout(() => {
-        setAiMessages(m => [...m, {
-          id: Date.now(),
-          from: currentAgent,
-          type: "suggestions",
-          options: ['✓ Terminé mi sesión'],
-          time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
-        }]);
-      }, 150);
-      return;
-    }
-
     // Reflexion final de cierre de semana (despues de completar las 3 sesiones)
     if (awaitingFinalReflection && weeklyGoal) {
       setAwaitingFinalReflection(false);
@@ -891,6 +877,9 @@ export default function App() {
           console.error('Error guardando sessions_log:', e);
         }
         setWeeklyGoal(g => g ? { ...g, sessions_log: nuevoLog } : g);
+        // Un unico CTA: apenas se genera la sesion, la tarjeta de abajo pasa
+        // directo a mostrar "Terminé mi sesión" (no hay boton duplicado en el chat).
+        setSessionInProgress(true);
       }
 
       setAiMessages(m => [...m, {
@@ -900,18 +889,6 @@ export default function App() {
         text:response,
         time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
       }]);
-
-      if (isTrainingResponse && weeklyGoal) {
-        setTimeout(() => {
-          setAiMessages(m => [...m, {
-            id: Date.now() + 2,
-            from: currentAgent,
-            type: "suggestions",
-            options: ['▶ Iniciar sesión'],
-            time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
-          }]);
-        }, 150);
-      }
     } catch (error) {
       console.error('Error with AI Coach:', error);
       setAiMessages(m => [...m, { 
