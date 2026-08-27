@@ -204,7 +204,7 @@ function extraerBloqueSesion(texto) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   
-  const { message, agentType, userProfile: perfil } = req.body;
+  const { message, agentType, userProfile: perfil, feedbackOnly } = req.body;
   if (!message) return res.status(400).json({ error: 'Missing message' });
 
   const edad = perfil?.age ? parseInt(perfil.age) : 16;
@@ -243,7 +243,7 @@ export default async function handler(req, res) {
   // (ya probamos que no lo cumple con precision). En su lugar, reutilizamos LITERALMENTE
   // los mismos ejercicios de la sesion anterior: es matematicamente imposible que suba
   // la dificultad si es el mismo texto.
-  if (esDificil && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado) {
+  if (!feedbackOnly && esDificil && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado) {
     const bloqueAnterior = extraerBloqueSesion(sessionsLog[sessionsLog.length - 1]);
     if (bloqueAnterior) {
       let bloqueCorregido = bloqueAnterior
@@ -258,7 +258,16 @@ export default async function handler(req, res) {
   }
 
   let goalStr = '';
-  if (perfil?.weekly_goal && objetivoCompletado) {
+  if (feedbackOnly && perfil?.weekly_goal && !objetivoCompletado) {
+    // El jugador acaba de contar como le fue en la sesion recien completada.
+    // SOLO reconocemos eso aca; la proxima sesion se genera unicamente cuando
+    // el jugador toque explicitamente el boton de Iniciar (un unico CTA).
+    goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0} de ${perfil.sessions_target || 3}.
+
+El jugador te acaba de contar como le fue en la sesion que completo. Reconoce su respuesta con calidez en 2-3 lineas maximo, como un entrenador real (no generico).
+PROHIBIDO en esta respuesta: generar una sesion de entrenamiento, usar el formato "Sesion N", "Series:", "Reps:", o listar ejercicios.
+Termina mencionando naturalmente que puede tocar el boton para empezar su proxima sesion cuando quiera (sin dar instrucciones tecnicas de como hacerlo).`;
+  } else if (perfil?.weekly_goal && objetivoCompletado) {
     goalStr = `OBJETIVO SEMANAL COMPLETADO: "${perfil.weekly_goal}" — ${perfil.sessions_target} de ${perfil.sessions_target} sesiones hechas esta semana.
 
 MOMENTO ACTUAL: reflexion de cierre de semana. El jugador te acaba de contar como sintio su progreso.

@@ -1,11 +1,11 @@
-export const sendMessageToCoach = async (message, agentType = 'coach', userProfile = null) => {
+export const sendMessageToCoach = async (message, agentType = 'coach', userProfile = null, feedbackOnly = false) => {
   try {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ message, agentType, userProfile })
+      body: JSON.stringify({ message, agentType, userProfile, feedbackOnly })
     })
 
     const data = await response.json()

@@ -809,7 +809,9 @@ export default function App() {
         console.error('Error guardando session_feedback:', e);
       }
       setWeeklyGoal(g => g ? { ...g, session_feedback: nuevoFeedback } : g);
-      await enviarMensajeCoach(feedbackText, feedbackText);
+      // feedbackOnly=true: que el Coach SOLO reconozca la respuesta, sin generar
+      // la proxima sesion todavia. El jugador tiene que tocar "Iniciar" a proposito.
+      await enviarMensajeCoach(feedbackText, feedbackText, true);
       return;
     }
 
@@ -844,7 +846,7 @@ export default function App() {
     await enviarMensajeCoach(displayText, promptText);
   };
 
-  const enviarMensajeCoach = async (textoVisible, promptText) => {
+  const enviarMensajeCoach = async (textoVisible, promptText, feedbackOnly = false) => {
     if (requireAuth()) return;
     if (!textoVisible.trim()) return;
 
@@ -872,7 +874,7 @@ export default function App() {
       } : userProfile;
       const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
-      const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo);
+      const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo, feedbackOnly);
       const response = coachData.reply;
       const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && response.length > 150 && (response.includes('Series:') || response.includes('Reps:') || response.includes('min'));
 
