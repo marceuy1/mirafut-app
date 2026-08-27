@@ -190,6 +190,17 @@ ${variantesStr}`;
   return { texto, esColectivo: !!entry.colectivo, tipoColectivo: entry.tipoColectivo || 'un ejercicio colectivo real' };
 }
 
+// Extrae el bloque "Sesion N ... Coach Tip: ..." de un texto guardado.
+// Devuelve null si no encuentra un bloque completo y confiable (evita reusar datos truncados/rotos).
+function extraerBloqueSesion(texto) {
+  if (!texto) return null;
+  const m = texto.match(/Sesio?n\s*\d+[\s\S]*/i);
+  if (!m) return null;
+  const bloque = m[0].trim();
+  if (!/Coach Tip/i.test(bloque)) return null;
+  return bloque;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   
@@ -217,24 +228,34 @@ export default async function handler(req, res) {
     ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para dar progresion real, no repetir exactamente lo mismo):\n' + sessionsLog.map((s, i) => `Sesion ${i + 1}: ${s}`).join('\n')
     : '';
 
-  // ------ UNA SOLA instruccion de progresion, sin contradicciones ------
   const lastFeedback = (perfil?.last_session_feedback || '').toLowerCase();
-  let instruccionProgresion = '';
-  if (sessionsLog.length > 0) {
-    if (lastFeedback.includes('muy bien')) {
-      instruccionProgresion = `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil?.sessions_done || 0) + 1}. El jugador dijo que la sesion anterior le fue MUY BIEN. Subi la dificultad MAS de lo normal (mas repeticiones, mas velocidad, mayor amplitud, o el siguiente paso tecnico claro). Elegi variantes distintas a las ya usadas.`;
-    } else if (lastFeedback.includes('costo') || lastFeedback.includes('costó')) {
-      instruccionProgresion = `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil?.sessions_done || 0) + 1}. El jugador dijo que la sesion anterior le costo un poco. Subi la dificultad de forma MODERADA (cambios pequeños respecto a la sesion anterior, sin saltos grandes). Elegi variantes distintas a las ya usadas pero de nivel similar o levemente superior.`;
-    } else if (lastFeedback.includes('dificil') || lastFeedback.includes('difícil')) {
-      instruccionProgresion = `IMPORTANTE - CONSOLIDACION (NO PROGRESION): Esta es la sesion ${(perfil?.sessions_done || 0) + 1}. El jugador dijo que la sesion anterior le resulto DIFICIL. NO subas la dificultad esta vez bajo ningun concepto: mismos angulos de giro, misma cantidad de repeticiones, misma distancia y complejidad que la sesion anterior (podes cambiar la variante del banco, pero el NIVEL debe ser igual o menor, nunca mayor). Al inicio de tu respuesta, antes de la explicacion pedagogica, reconoce explicitamente que la sesion anterior le costo y que hoy van a consolidar sin subir la exigencia (ejemplo de tono: "Entiendo. Como la sesion anterior te resulto dificil, hoy vamos a consolidar los mismos conceptos sin aumentar la dificultad.").`;
-    } else {
-      instruccionProgresion = `IMPORTANTE - PROGRESION: Esta es la sesion ${(perfil?.sessions_done || 0) + 1}. Debe avanzar tecnicamente sobre las sesiones anteriores (mas repeticiones, mas velocidad, mayor dificultad tecnica, o el siguiente paso logico). Elegi variantes distintas a las ya usadas.`;
-    }
-  }
+  const esDificil = lastFeedback.includes('dificil') || lastFeedback.includes('difícil');
 
   const objetivoCompletado = perfil?.weekly_goal && perfil?.sessions_target > 0 && (perfil?.sessions_done || 0) >= perfil.sessions_target;
   const numeroSesionCorrecta = (perfil?.sessions_done || 0) + 1;
   const debeAvisarColectivo = esColectivo && entrenaSolo && perfil?.weekly_goal && !objetivoCompletado;
+  const fraseHonestidad = debeAvisarColectivo
+    ? `Como hoy entrenas solo, no podemos reproducir ${tipoColectivo}, pero sí trabajar los hábitos individuales que necesitas para rendir mejor en eso.\n\n`
+    : '';
+
+  // ------ CONSOLIDACION GARANTIZADA POR CODIGO ------
+  // Si el jugador dijo "Dificil", NO le pedimos a la IA que invente numeros mas bajos
+  // (ya probamos que no lo cumple con precision). En su lugar, reutilizamos LITERALMENTE
+  // los mismos ejercicios de la sesion anterior: es matematicamente imposible que suba
+  // la dificultad si es el mismo texto.
+  if (esDificil && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado) {
+    const bloqueAnterior = extraerBloqueSesion(sessionsLog[sessionsLog.length - 1]);
+    if (bloqueAnterior) {
+      let bloqueCorregido = bloqueAnterior
+        .replace(/Sesion\s*\d+/gi, 'Sesion ' + numeroSesionCorrecta)
+        .replace(/Sesión\s*\d+/gi, 'Sesión ' + numeroSesionCorrecta);
+      const reconocimiento = 'Entiendo. Como la sesión anterior te resultó difícil, hoy vamos a repetir los mismos ejercicios para consolidar lo aprendido, sin subir la exigencia.\n\n';
+      const replyFinal = fraseHonestidad + reconocimiento + bloqueCorregido;
+      return res.status(200).json({ reply: replyFinal, sessionBlock: bloqueCorregido });
+    }
+    // Si no se pudo extraer un bloque confiable de la sesion anterior, seguimos
+    // con la generacion normal por IA como red de seguridad (mas abajo).
+  }
 
   let goalStr = '';
   if (perfil?.weekly_goal && objetivoCompletado) {
@@ -254,6 +275,12 @@ Usa esta informacion directamente. NO preguntes de nuevo si entrena solo o que m
 1. Si el objetivo tiene ambiguedad segun la posicion, pregunta que aspecto especifico quiere trabajar.
 2. Pregunta: Entrenas solo o con alguien? Que material tienes disponible?
 3. Con esa info genera la sesion. NO antes.`;
+
+    const instruccionProgresion = sessionsLog.length > 0
+      ? (lastFeedback.includes('muy bien')
+          ? `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. El jugador dijo que la sesion anterior le fue MUY BIEN. Subi la dificultad MAS de lo normal (mas repeticiones, mas velocidad, mayor amplitud, o el siguiente paso tecnico claro). Elegi variantes distintas a las ya usadas.`
+          : `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. El jugador dijo que la sesion anterior le costo un poco. Subi la dificultad de forma MODERADA (cambios pequeños respecto a la sesion anterior, sin saltos grandes). Elegi variantes distintas a las ya usadas pero de nivel similar o levemente superior.`)
+      : `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. Debe avanzar tecnicamente sobre las sesiones anteriores (mas repeticiones, mas velocidad, mayor dificultad tecnica, o el siguiente paso logico). Elegi variantes distintas a las ya usadas.`;
 
     goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0} de ${perfil.sessions_target || 3}.
 LA PROXIMA SESION A GENERAR ES EXACTAMENTE LA NUMERO ${numeroSesionCorrecta}. Usa ese numero exacto en el encabezado "Sesion ${numeroSesionCorrecta}", nunca otro numero. NO escribas ninguna frase sobre entrenar solo/companeros al inicio, eso lo agregamos nosotros por separado.
@@ -282,7 +309,7 @@ Ejemplo CORRECTO (concreto y ejecutable solo): "Lanza el balon 2 metros hacia ar
 ENSEÑA, NO SOLO PRESCRIBAS: despues de donde nosotros insertemos la frase de contexto (si aplica), escribi 1-2 lineas explicando que habitos o conceptos se estan entrenando hoy y por que importan. Ejemplo de tono: "Hoy vamos a trabajar tres hábitos clave para [objetivo]: [concepto 1], [concepto 2] y [concepto 3]."
 
 FORMATO DE RESPUESTA (${duracionTotal} min total para ${edad} anos):
-[1-2 lineas de explicacion pedagogica del objetivo de hoy — NO menciones aqui si entrena solo o acompañado, eso ya esta resuelto aparte. Si la instruccion de PROGRESION de arriba pide reconocer que la sesion anterior fue dificil, hacelo aca primero.]
+[1-2 lineas de explicacion pedagogica del objetivo de hoy — NO menciones aqui si entrena solo o acompañado, eso ya esta resuelto aparte]
 
 Sesion ${numeroSesionCorrecta} — [Objetivo especifico] — ${duracionTotal} min
 
@@ -298,7 +325,7 @@ Coach Tip: [consejo tecnico especifico para ${pos} trabajando ${perfil.weekly_go
 
 IMPORTANTE: termina siempre la respuesta completa, incluyendo el Coach Tip entero y la pregunta final. Nunca cortes una frase a la mitad.
 
-REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior en variante, respetando la instruccion de PROGRESION de arriba (que puede pedir subir, mantener, o incluso bajar la dificultad segun el feedback).`;
+REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.`;
   }
 
   const coachPrompt = `Eres MiraFut Coach, entrenador personal para jovenes futbolistas. ${perfilStr} ${goalStr}
@@ -357,12 +384,15 @@ No uses asteriscos ni markdown. Texto plano.`;
       reply = reply.replace(/Sesión\s*\d+/gi, 'Sesión ' + numeroSesionCorrecta);
     }
 
-    if (debeAvisarColectivo) {
-      const fraseHonestidad = `Como hoy entrenas solo, no podemos reproducir ${tipoColectivo}, pero sí trabajar los hábitos individuales que necesitas para rendir mejor en eso.\n\n`;
+    if (fraseHonestidad) {
       reply = fraseHonestidad + reply;
     }
 
-    return res.status(200).json({ reply });
+    // Extraemos el bloque limpio de ejercicios (sin la frase de honestidad) para
+    // que el cliente lo guarde y podamos reutilizarlo literal si el jugador dice "Dificil".
+    const sessionBlock = extraerBloqueSesion(reply);
+
+    return res.status(200).json({ reply, sessionBlock });
   } catch (error) {
     return res.status(500).json({ error: 'Error al conectar con OpenAI' });
   }

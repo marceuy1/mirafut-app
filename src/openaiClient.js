@@ -9,9 +9,9 @@ export const sendMessageToCoach = async (message, agentType = 'coach', userProfi
     })
 
     const data = await response.json()
-    return data.reply
+    return data
   } catch (error) {
     console.error('Error al comunicarse con el coach:', error)
-    return "Lo siento, hubo un error. Por favor intenta de nuevo."
+    return { reply: "Lo siento, hubo un error. Por favor intenta de nuevo." }
   }
 }
