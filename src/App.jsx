@@ -378,28 +378,44 @@ export default function App() {
     if (completed) {
       const nombre = userProfile?.full_name?.split(' ')[0] || '';
       setTimeout(() => {
-        setAiMessages([{
-          id: Date.now(),
-          from: 'coach',
-          text: '🏆 ¡Lo lograste' + (nombre ? ', ' + nombre : '') + '! Completaste las ' + weeklyGoal.sessions_target + ' sesiones de "' + weeklyGoal.goal + '" esta semana. Contame, ¿cómo sentiste tu progreso?',
-          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
-          type: 'suggestions',
-          options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto']
-        }]);
+        setAiMessages([
+          {
+            id: Date.now(),
+            from: 'coach',
+            type: 'text',
+            text: '🏆 ¡Lo lograste' + (nombre ? ', ' + nombre : '') + '! Completaste las ' + weeklyGoal.sessions_target + ' sesiones de "' + weeklyGoal.goal + '" esta semana. Contame, ¿cómo sentiste tu progreso?',
+            time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
+          },
+          {
+            id: Date.now() + 1,
+            from: 'coach',
+            type: 'suggestions',
+            options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto'],
+            time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
+          }
+        ]);
       }, 300);
     } else {
       // No llamamos a loadWeeklyGoal() aca: pisaria este mensaje de seguimiento
       // con un saludo nuevo apenas unos milisegundos despues. weeklyGoal ya se
       // actualizo arriba con setWeeklyGoal, no hace falta recargar de nuevo.
       setTimeout(() => {
-        setAiMessages(m => [...m, {
-          id: Date.now(),
-          from: 'coach',
-          text: '💪 Sesión ' + newDone + ' completada. ¿Cómo te fue? ¿Cómo te sentiste?',
-          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
-          type: 'suggestions',
-          options: ['Muy bien', 'Bien, pero me costó', 'Difícil']
-        }]);
+        setAiMessages(m => [...m,
+          {
+            id: Date.now(),
+            from: 'coach',
+            type: 'text',
+            text: '💪 Sesión ' + newDone + ' completada. ¿Cómo te fue? ¿Cómo te sentiste?',
+            time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
+          },
+          {
+            id: Date.now() + 1,
+            from: 'coach',
+            type: 'suggestions',
+            options: ['Muy bien', 'Bien, pero me costó', 'Difícil'],
+            time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
+          }
+        ]);
       }, 300);
     }
   };
