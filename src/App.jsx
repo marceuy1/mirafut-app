@@ -256,6 +256,7 @@ export default function App() {
   const [showSpecialists, setShowSpecialists] = useState(false);
   const [thinking, setThinking] = useState(false);
   const aiEnd = useRef(null);
+  const mcRef = useRef(null);
   const pendingTabRef = useRef('home');
   const agent = SPECIALISTS.find(s => s.id === currentAgent);
   const t = useMemo(() => translations[lang], [lang]);
@@ -615,7 +616,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (tab === "coach") aiEnd.current?.scrollIntoView({ behavior: "smooth" });
+    if (tab === "coach" && mcRef.current) {
+      mcRef.current.scrollTo({ top: mcRef.current.scrollHeight, behavior: "smooth" });
+    }
   }, [aiMessages, thinking, tab]);
 
   const requireAuth = (redirectTab = 'home') => {
@@ -1390,7 +1393,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           </div>
         )}
 
-        <div className="mc">
+        <div className="mc" ref={mcRef}>
           {/* ====== FILTROS ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
             <div style={{padding:'8px 16px 4px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
