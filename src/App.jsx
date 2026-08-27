@@ -391,6 +391,14 @@ export default function App() {
       }, 300);
     } else {
       setTimeout(() => {
+        setAiMessages(m => [...m, {
+          id: Date.now(),
+          from: 'coach',
+          text: '💪 Sesión ' + newDone + ' completada. ¿Cómo te fue? ¿Cómo te sentiste?',
+          time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
+          type: 'suggestions',
+          options: ['Muy bien', 'Bien, pero me costó', 'Difícil']
+        }]);
         loadWeeklyGoal();
       }, 300);
     }
