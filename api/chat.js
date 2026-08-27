@@ -29,7 +29,8 @@ const METODOLOGIA = {
   'Comunicación con la defensa': {
     definicion: 'Comunicacion del portero = organizar la linea defensiva, avisar marcas, dirigir en centros o pases filtrados. Depende fundamentalmente de tener companeros reales para comunicarse.',
     variantes: ['vocalizacion de organizacion en voz alta durante ejercicios tecnicos', 'lectura visual de una jugada imaginada verbalizando la decision'],
-    colectivo: true
+    colectivo: true,
+    tipoColectivo: 'una comunicación real con la defensa'
   },
   '1v1 bajo palos': {
     definicion: 'El 1v1 de portero = achicar el angulo sin salir con las piernas abiertas, mantenerse grande, no comprometerse antes de tiempo.',
@@ -46,7 +47,8 @@ const METODOLOGIA = {
   'Mejorar mi marcación': {
     definicion: 'Marcacion individual = seguir al rival sin perder posicion goal-side, anticipar cambios de direccion, elegir el momento de entrar al balon. Depende de tener un rival real para marcar en su forma completa.',
     variantes: ['sombra de un movimiento imaginado manteniendo distancia y angulo', 'reaccion a cambios de direccion propios simulando seguimiento', 'trabajo de pasos laterales y frenado (base de la marcacion)'],
-    colectivo: true
+    colectivo: true,
+    tipoColectivo: 'una marcación real'
   },
   'Anticipación y lectura': {
     definicion: 'Anticipacion defensiva = leer lineas de pase antes de que ocurran, interceptar en el momento justo, orientar el cuerpo para ver balon y rival.',
@@ -76,12 +78,14 @@ const METODOLOGIA = {
   'Juego en banda': {
     definicion: 'Defensa en banda = marcar 1v1 en zonas amplias, apoyar al lateral, recuperar posicion tras las subidas del rival. Depende de un rival real en banda para su forma completa.',
     variantes: ['sprint de recuperacion hacia una zona marcada', 'cambios de direccion repetidos en banda', 'trabajo de carrera de vuelta tras un desplazamiento propio hacia adelante'],
-    colectivo: true
+    colectivo: true,
+    tipoColectivo: 'una defensa en banda real'
   },
   'Presión alta': {
     definicion: 'Presion alta = activar la presion en el momento correcto, cerrar lineas de pase. La coordinacion real necesita companeros y un rival con el balon; en solitario se trabaja el timing individual del primer paso.',
     variantes: ['primer paso explosivo de presion desde distintas distancias', 'angulo de aproximacion hacia un punto marcado', 'sprints cortos repetidos simulando el primer paso de presion'],
-    colectivo: true
+    colectivo: true,
+    tipoColectivo: 'una presión alta coordinada real'
   },
 
   // ---- MEDIOCAMPO ----
@@ -103,7 +107,8 @@ const METODOLOGIA = {
   'Rondo y posesión': {
     definicion: 'Rondo y posesion REAL requiere varios companeros y oposicion (minimo 3-4 personas) para practicar pase rapido bajo presion en espacio reducido. Es un objetivo fundamentalmente colectivo: si el jugador entrena solo, NO se puede reproducir un rondo real. Hay que entrenar los componentes individuales transferibles: orientacion corporal antes de recibir, primer toque orientado, escaneo rapido, y velocidad de decision.',
     variantes: ['control orientado con giro rapido tras autopase (simula recibir y salir de presion)', 'toques rapidos con avance direccional simulando salir de un espacio reducido', 'escaneo antes de cada control (mirar a un punto fijo antes de tocar)', 'secuencia de control + cambio de direccion repetida a maxima velocidad'],
-    colectivo: true
+    colectivo: true,
+    tipoColectivo: 'un rondo real'
   },
   'Llegada al área': {
     definicion: 'Llegada al area desde mediocampo = timing del desplazamiento tardio, definicion tras carrera desde atras.',
@@ -113,7 +118,8 @@ const METODOLOGIA = {
   'Pressing': {
     definicion: 'Pressing = identificar el momento para presionar, cerrar la linea de pase, velocidad de reaccion. El pressing coordinado real necesita companeros y un rival con balon; en solitario se trabaja el timing individual del primer paso.',
     variantes: ['primer paso explosivo desde distintas distancias', 'angulo de aproximacion hacia un punto marcado', 'sprints cortos repetidos simulando reaccion tras perdida propia de posesion'],
-    colectivo: true
+    colectivo: true,
+    tipoColectivo: 'un pressing coordinado real'
   },
   'Transiciones': {
     definicion: 'Transiciones = velocidad de cambio mental y fisico entre defender y atacar apenas cambia la posesion.',
@@ -130,7 +136,8 @@ const METODOLOGIA = {
   'Desmarques': {
     definicion: 'Desmarques = movimiento sin balon para generar espacio, timing de ruptura justo antes del pase. Real necesita un rival y un companero pasando; en solitario se trabaja la mecanica del movimiento y el timing.',
     variantes: ['movimiento de ruptura con cambio de ritmo hacia un punto marcado', 'carrera curva simulando desmarcarse de una marca imaginaria', 'arranques repetidos con cambio de ritmo tras señal propia'],
-    colectivo: true
+    colectivo: true,
+    tipoColectivo: 'un desmarque con oposición real'
   },
   'Primer toque': {
     definicion: 'Primer toque de delantero = amortiguar balones bajo presion para girar o disparar de inmediato.',
@@ -155,7 +162,8 @@ const METODOLOGIA = {
   'Presión al portero': {
     definicion: 'Presion al portero = cerrar angulos de pase del portero en la salida, forzar el error. Depende de un portero real ejecutando una salida; en solitario se trabaja el timing y angulo de aproximacion.',
     variantes: ['sprint de cierre de angulo hacia un punto marcado', 'timing de arranque de presion con señal propia'],
-    colectivo: true
+    colectivo: true,
+    tipoColectivo: 'una presión al portero real'
   },
 
   // ---- GENERICOS ----
@@ -173,13 +181,13 @@ const METODOLOGIA = {
 
 function construirContextoMetodologico(weeklyGoal) {
   const entry = METODOLOGIA[weeklyGoal];
-  if (!entry) return { texto: '', esColectivo: false };
+  if (!entry) return { texto: '', esColectivo: false, tipoColectivo: '' };
   const variantesStr = entry.variantes.map(v => '- ' + v).join('\n');
   const texto = `QUE SIGNIFICA REALMENTE ESTE OBJETIVO (metodologia MiraFut): ${entry.definicion}
 
 BANCO DE VARIANTES ORIENTATIVO (elegi y combina, adapta segun recursos confirmados, no repitas exactamente lo de sesiones anteriores):
 ${variantesStr}`;
-  return { texto, esColectivo: !!entry.colectivo };
+  return { texto, esColectivo: !!entry.colectivo, tipoColectivo: entry.tipoColectivo || 'un ejercicio colectivo real' };
 }
 
 export default async function handler(req, res) {
@@ -192,7 +200,7 @@ export default async function handler(req, res) {
   const duracionTotal = edad <= 13 ? 15 : edad <= 15 ? 20 : 25;
   const pos = perfil?.position || '';
 
-  const { texto: contextoMetodologico, esColectivo } = construirContextoMetodologico(perfil?.weekly_goal);
+  const { texto: contextoMetodologico, esColectivo, tipoColectivo } = construirContextoMetodologico(perfil?.weekly_goal);
 
   const perfilStr = perfil ? `Jugador: ${perfil.full_name || perfil.name || ''}, posicion: ${pos}, edad: ${edad} anos, pie dominante: ${perfil.dominant_foot || ''}, nivel: ${perfil.level || ''}, entrena: ${perfil.training_freq || ''} veces/semana.` : '';
 
@@ -220,8 +228,8 @@ export default async function handler(req, res) {
   }
 
   const objetivoCompletado = perfil?.weekly_goal && perfil?.sessions_target > 0 && (perfil?.sessions_done || 0) >= perfil.sessions_target;
-  // Numero de sesion AUTORITATIVO: nunca dejamos que la IA lo invente, lo forzamos despues por codigo.
   const numeroSesionCorrecta = (perfil?.sessions_done || 0) + 1;
+  const debeAvisarColectivo = esColectivo && entrenaSolo && perfil?.weekly_goal && !objetivoCompletado;
 
   let goalStr = '';
   if (perfil?.weekly_goal && objetivoCompletado) {
@@ -242,14 +250,9 @@ Usa esta informacion directamente. NO preguntes de nuevo si entrena solo o que m
 2. Pregunta: Entrenas solo o con alguien? Que material tienes disponible?
 3. Con esa info genera la sesion. NO antes.`;
 
-    const avisoColectivo = (esColectivo && entrenaSolo)
-      ? `\nAVISO IMPORTANTE: este objetivo depende fundamentalmente de companeros u oposicion real, y el jugador entrena SOLO. Antes de dar la sesion, escribi UNA frase corta con esta estructura exacta (adaptando la parte del ejercicio colectivo al objetivo real): "Como hoy entrenas solo, no podemos reproducir un [tipo de ejercicio colectivo relacionado, ej: rondo real / duelo real / marcaje real] pero sí trabajar los hábitos individuales que necesitas para rendir mejor en eso." Despues de esa frase, genera la sesion basada SOLO en componentes individuales transferibles. Nunca inventes companeros, pared, oposicion o porteria que el jugador no confirmo tener.`
-      : '';
-
     goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0} de ${perfil.sessions_target || 3}.
-LA PROXIMA SESION A GENERAR ES EXACTAMENTE LA NUMERO ${numeroSesionCorrecta}. Usa ese numero exacto en el encabezado "Sesion ${numeroSesionCorrecta}", nunca otro numero.
+LA PROXIMA SESION A GENERAR ES EXACTAMENTE LA NUMERO ${numeroSesionCorrecta}. Usa ese numero exacto en el encabezado "Sesion ${numeroSesionCorrecta}", nunca otro numero. NO escribas ninguna frase sobre entrenar solo/companeros al inicio, eso lo agregamos nosotros por separado.
 ${contextoMetodologico}
-${avisoColectivo}
 
 ${instruccionesPreguntar}
 
@@ -261,7 +264,7 @@ ${instruccionDificultad}
 REGLA CRITICA DE RECURSOS (PRIORIDAD MAXIMA — por encima del banco de variantes):
 La sesion NUNCA puede requerir personas, material, pared o instalaciones que el jugador NO confirmo tener. Esta regla tiene MAS peso que cualquier variante sugerida arriba: si una variante del banco no es ejecutable con lo confirmado, ADAPTALA o DESCARTALA, no la uses tal cual.
 - Si dijo SOLO: ningún ejercicio puede requerir compañero, portero, u oposicion real.
-- Si dijo SOLO UNA PELOTA (sin mencionar pared, conos, ni porteria): PROHIBIDO usar pared, conos, porterias, companero, objeto fijo externo, o cualquier elemento no mencionado. Reemplaza cualquier drill de "pasar y que vuelva" por AUTOPASE (lanzar/tocar el balon uno mismo hacia arriba o adelante y controlarlo al volver), ya que sin pared ni companero el balon no puede "volver" solo.
+- Si dijo SOLO UNA PELOTA (sin mencionar pared, conos, ni porteria): PROHIBIDO usar pared, conos, porterias, companero, objeto fijo externo, o cualquier elemento no mencionado. Reemplaza cualquier drill de "pasar y que vuelva" por AUTOPASE, ya que sin pared ni companero el balon no puede "volver" solo.
 - Cada instruccion debe ser fisicamente ejecutable EXACTAMENTE como esta escrita, por una sola persona, con lo confirmado.
 - Si el jugador tiene recursos limitados, usa creatividad: marcas imaginarias, referencias en el suelo, autopases, coordinacion sin material externo.
 
@@ -272,11 +275,10 @@ Cada "Como:" debe tener numeros y direcciones concretas: distancia en metros, ca
 Ejemplo PROHIBIDO (ambiguo o no ejecutable solo): "Pasa la pelota 5 metros hacia adelante y rapidamente vuelve a pasarla" (sin pared ni companero, no puede volver).
 Ejemplo CORRECTO (concreto y ejecutable solo): "Lanza el balon 2 metros hacia arriba con las manos, controlalo con el pecho al bajar y hazlo caer a un punto marcado a 1 metro delante tuyo."
 
-ENSEÑA, NO SOLO PRESCRIBAS: antes de listar los ejercicios, escribi 1-2 lineas explicando que habitos o conceptos se estan entrenando hoy y por que importan. Ejemplo de tono: "Hoy vamos a trabajar tres hábitos clave para [objetivo]: [concepto 1], [concepto 2] y [concepto 3]."
+ENSEÑA, NO SOLO PRESCRIBAS: despues de donde nosotros insertemos la frase de contexto (si aplica), escribi 1-2 lineas explicando que habitos o conceptos se estan entrenando hoy y por que importan. Ejemplo de tono: "Hoy vamos a trabajar tres hábitos clave para [objetivo]: [concepto 1], [concepto 2] y [concepto 3]."
 
 FORMATO DE RESPUESTA (${duracionTotal} min total para ${edad} anos):
-[si aplica, la frase de honestidad del AVISO IMPORTANTE de arriba]
-[1-2 lineas de explicacion pedagogica del objetivo de hoy]
+[1-2 lineas de explicacion pedagogica del objetivo de hoy — NO menciones aqui si entrena solo o acompañado, eso ya esta resuelto aparte]
 
 Sesion ${numeroSesionCorrecta} — [Objetivo especifico] — ${duracionTotal} min
 
@@ -346,11 +348,16 @@ No uses asteriscos ni markdown. Texto plano.`;
     const data = await response.json();
     let reply = data.choices[0].message.content.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1');
 
-    // CORRECCION FORZADA: el numero de sesion que muestra el jugador SIEMPRE
-    // sale de nuestros propios datos (sessions_done), nunca de lo que la IA haya escrito.
+    // CORRECCION FORZADA: el numero de sesion SIEMPRE sale de nuestros datos, no de la IA.
     if (perfil?.weekly_goal && !objetivoCompletado) {
       reply = reply.replace(/Sesion\s*\d+/gi, 'Sesion ' + numeroSesionCorrecta);
       reply = reply.replace(/Sesión\s*\d+/gi, 'Sesión ' + numeroSesionCorrecta);
+    }
+
+    // FRASE DE HONESTIDAD GARANTIZADA POR CODIGO: no dependemos de que la IA la escriba.
+    if (debeAvisarColectivo) {
+      const fraseHonestidad = `Como hoy entrenas solo, no podemos reproducir ${tipoColectivo}, pero sí trabajar los hábitos individuales que necesitas para rendir mejor en eso.\n\n`;
+      reply = fraseHonestidad + reply;
     }
 
     return res.status(200).json({ reply });
