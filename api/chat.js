@@ -260,14 +260,11 @@ export default async function handler(req, res) {
 
   let goalStr = '';
   if (feedbackOnly && perfil?.weekly_goal && !objetivoCompletado) {
-    // El jugador acaba de contar como le fue en la sesion recien completada.
-    // SOLO reconocemos eso aca; la proxima sesion se genera unicamente cuando
-    // el jugador toque explicitamente el boton de Iniciar (un unico CTA).
     goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0} de ${perfil.sessions_target || 3}.
 
-El jugador te acaba de contar como le fue en la sesion que completo. Reconoce su respuesta con calidez en 2-3 lineas maximo, como un entrenador real (no generico).
+Respondele al jugador de forma breve (2-3 lineas maximo) y especifica a lo que te acaba de decir o preguntar, como un entrenador real. No inventes contexto que no tenes.
 PROHIBIDO en esta respuesta: generar una sesion de entrenamiento, usar el formato "Sesion N", "Series:", "Reps:", o listar ejercicios.
-Termina mencionando naturalmente que puede tocar el boton para empezar su proxima sesion cuando quiera (sin dar instrucciones tecnicas de como hacerlo).`;
+Si corresponde, termina con la pregunta o el siguiente paso natural segun lo que el jugador dijo (no des instrucciones tecnicas de botones salvo que ya haya terminado toda la conversacion de contexto).`;
   } else if (perfil?.weekly_goal && objetivoCompletado) {
     goalStr = `OBJETIVO SEMANAL COMPLETADO: "${perfil.weekly_goal}" — ${perfil.sessions_target} de ${perfil.sessions_target} sesiones hechas esta semana.
 
