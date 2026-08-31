@@ -97,6 +97,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -106,10 +107,24 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
     setError(null);
     try {
       if (isSignUp) {
+        if (!birthDate) {
+          setError('Ingresa tu fecha de nacimiento');
+          return;
+        }
+        const hoyCalc = new Date();
+        const nacCalc = new Date(birthDate);
+        let edadCalc = hoyCalc.getFullYear() - nacCalc.getFullYear();
+        const mDiff = hoyCalc.getMonth() - nacCalc.getMonth();
+        if (mDiff < 0 || (mDiff === 0 && hoyCalc.getDate() < nacCalc.getDate())) edadCalc--;
+        if (edadCalc < 13) {
+          setError('Debes tener al menos 13 años para crear una cuenta en MiraFut.');
+          return;
+        }
+        const accountType = edadCalc < 18 ? 'teen' : 'adult';
         const { data, error: err } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
         if (err) throw err;
         if (data.user) {
-          await supabase.from('profiles').insert([{ id: data.user.id, username: email.split('@')[0], email, full_name: fullName, avatar_url: null, bio: '', age: null, country: '', city: '', position: '', verified: false, followers_count: 0, following_count: 0 }]);
+          await supabase.from('profiles').insert([{ id: data.user.id, username: email.split('@')[0], email, full_name: fullName, avatar_url: null, bio: '', age: edadCalc, birth_date: birthDate, account_type: accountType, country: '', city: '', position: '', verified: false, followers_count: 0, following_count: 0 }]);
           fetch('/api/send-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -150,6 +165,12 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
       </div>
       <form onSubmit={handleAuth}>
         {isSignUp && <input type="text" placeholder="Nombre completo" value={fullName} onChange={e=>setFullName(e.target.value)} required style={inp} />}
+        {isSignUp && (
+          <div style={{marginBottom:'12px'}}>
+            <label style={{fontSize:'12px',color:'#8899A6',display:'block',marginBottom:'6px'}}>Fecha de nacimiento</label>
+            <input type="date" value={birthDate} onChange={e=>setBirthDate(e.target.value)} required max={new Date().toISOString().split('T')[0]} style={inp} />
+          </div>
+        )}
         <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required style={inp} />
         <input type="password" placeholder="Contraseña (mín. 6 caracteres)" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6} style={inp} />
         {error && <div style={{color:'#FF5252',fontSize:'12px',marginBottom:'10px'}}>{error}</div>}
@@ -161,7 +182,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
         <div style={{display:'flex',alignItems:'flex-start',gap:'8px',margin:'8px 0',padding:'10px',background:'rgba(255,255,255,0.03)',borderRadius:'10px'}}>
           <input type="checkbox" id="terms" required style={{marginTop:'2px',accentColor:'#00E676',flexShrink:0}} />
           <label htmlFor="terms" style={{fontSize:'12px',color:'#8899A6',lineHeight:'1.5',cursor:'pointer'}}>
-            Confirmo que tengo 13 años o más y acepto los{' '}
+            Acepto los{' '}
             <span onClick={() => setShowTerms(true)} style={{color:'#00E676',cursor:'pointer',textDecoration:'underline'}}>Términos y Privacidad</span>
             {' '}de MiraFut
           </label>
