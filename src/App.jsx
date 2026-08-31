@@ -381,7 +381,9 @@ export default function App() {
       const remaining = data.sessions_target - data.sessions_done;
       const nombre = userProfile?.full_name?.split(' ')[0] || '';
       setAiMessages([
-        { id:1, from:'coach', type:'text', text:'Hola ' + nombre + ' 👋 Te quedan ' + remaining + ' ' + (remaining !== 1 ? 'sesiones' : 'sesión') + ' de tu objetivo: ' + data.goal + '. ¿La hacemos hoy?', time:'14:20' },
+        { id:1, from:'coach', type:'text', text: lang === 'en'
+          ? 'Hi ' + nombre + ' 👋 You have ' + remaining + ' ' + (remaining !== 1 ? 'sessions' : 'session') + ' left for your goal: ' + (translations.en.goalLabels?.[data.goal] || data.goal) + '. Want to do it today?'
+          : 'Hola ' + nombre + ' 👋 Te quedan ' + remaining + ' ' + (remaining !== 1 ? 'sesiones' : 'sesión') + ' de tu objetivo: ' + data.goal + '. ¿La hacemos hoy?', time:'14:20' },
         { id:2, from:'coach', type:'suggestions', options:['Sí, vamos', 'Hoy no puedo', 'Vengo de entrenar', '🏟️ Vengo de jugar'], time:'14:20' }
       ]);
     } else {
@@ -2012,7 +2014,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   {weeklyGoal && !weeklyGoal.completed ? (
                     <div style={{background:'rgba(0,230,118,0.06)',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',padding:'10px 12px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                       <div>
-                        <div style={{fontSize:'10px',color:'#00E676',fontWeight:'700',letterSpacing:'1px',marginBottom:'2px'}}>🎯 OBJETIVO ESTA SEMANA</div>
+                        <div style={{fontSize:'10px',color:'#00E676',fontWeight:'700',letterSpacing:'1px',marginBottom:'2px'}}>{t.weeklyGoalBadge}</div>
                         <div style={{fontSize:'13px',color:'#ECEFF4',fontWeight:'600'}}>{weeklyGoal.goal}</div>
                         <div style={{display:'flex',gap:'4px',marginTop:'6px'}}>
                           {Array.from({length: weeklyGoal.sessions_target}).map((_,i) => (
@@ -2035,7 +2037,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               )}
               <div className="ai-input">
                 <div className="ai-ibox">
-                  <textarea className="ai-field" placeholder={`Escríbele a ${agent.name}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
+                  <textarea className="ai-field" placeholder={`${t.writeToPrefix} ${agent.name}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
                 </div>
                 {aiInput.trim() && (
                   <button className="ai-send" style={{background:'#00E676',color:'#0a0e14'}} onClick={()=>sendAI(aiInput)}>→</button>

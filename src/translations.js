@@ -155,6 +155,8 @@ export const translations = {
     disclaimerEmergencyTitle: 'En caso de emergencia:',
     disclaimerEmergencyText: 'Contacta servicios de urgencia o líneas de ayuda en tu país inmediatamente.',
     disclaimerAccept: 'Entiendo y acepto',
+    weeklyGoalBadge: '🎯 OBJETIVO ESTA SEMANA',
+    writeToPrefix: 'Escríbele a',
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
@@ -312,6 +314,8 @@ export const translations = {
     disclaimerEmergencyTitle: 'In case of emergency:',
     disclaimerEmergencyText: 'Contact emergency services or helplines in your country immediately.',
     disclaimerAccept: 'I understand and agree',
+    weeklyGoalBadge: "🎯 THIS WEEK'S GOAL",
+    writeToPrefix: 'Message',
   }
     suggestionLabels: {
       'Todo bien': 'All good',
