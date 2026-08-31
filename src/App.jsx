@@ -631,7 +631,7 @@ export default function App() {
       setSessionInProgress(false);
       loadWeeklyGoal();
     }
-  }, [tab]);
+  }, [tab, lang]);
 
   // Reaccionar a cambios de session
   useEffect(() => {
