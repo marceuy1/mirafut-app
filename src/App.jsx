@@ -212,6 +212,7 @@ export default function App() {
   const [showWeeklyGoal, setShowWeeklyGoal] = useState(false);
   const [sessionInProgress, setSessionInProgress] = useState(false);
   const [awaitingTrainingContext, setAwaitingTrainingContext] = useState(false);
+  const [partialTrainingContext, setPartialTrainingContext] = useState('');
   const [awaitingSessionFeedback, setAwaitingSessionFeedback] = useState(false);
   const [awaitingFinalReflection, setAwaitingFinalReflection] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -844,8 +845,15 @@ export default function App() {
     // El jugador esta respondiendo si entrena solo/acompañado y que material tiene.
     // Guardamos esa respuesta UNA sola vez por objetivo semanal y no volvemos a preguntar.
     if (awaitingTrainingContext && weeklyGoal) {
+      const mencionaMaterial = /pelota|bal[oó]n|material|cono|porter[ií]a|nada|ning[uú]n|sin equipo|sin material/i.test(displayText);
+      if (!mencionaMaterial && !partialTrainingContext) {
+        setPartialTrainingContext(displayText);
+        await enviarMensajeCoach(displayText, 'Y que material tienes disponible? (pelota, conos, porteria, etc.)', true);
+        return;
+      }
       setAwaitingTrainingContext(false);
-      const contextText = displayText;
+      const contextText = partialTrainingContext ? partialTrainingContext + ', ' + displayText : displayText;
+      setPartialTrainingContext('');
       try {
         await supabase.from('weekly_goals').update({ training_context: contextText }).eq('id', weeklyGoal.id);
       } catch (e) {
