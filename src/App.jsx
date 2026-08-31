@@ -979,7 +979,7 @@ export default function App() {
 
   const saveProfile = async () => {
     setEditLoading(true);
-    const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, age: editForm.age ? parseInt(editForm.age) : null, country: editForm.country, city: editForm.city, position: editForm.position, height: editForm.height || null, weight: editForm.weight || null, dominant_foot: editForm.dominant_foot || null, goal: editForm.goal || null, units: editForm.units || 'metric', club: editForm.club || null, level: editForm.level || null, training_freq: editForm.training_freq || null }).eq('id', session.user.id);
+    const { error } = await supabase.from('profiles').update({ full_name: editForm.full_name, username: editForm.username, bio: editForm.bio, country: editForm.country, city: editForm.city, position: editForm.position, height: editForm.height || null, weight: editForm.weight || null, dominant_foot: editForm.dominant_foot || null, goal: editForm.goal || null, units: editForm.units || 'metric', club: editForm.club || null, level: editForm.level || null, training_freq: editForm.training_freq || null }).eq('id', session.user.id);
     setEditLoading(false);
     if (error) { console.error('Error actualizando perfil:', error.message); } else { setShowEditProfile(false); loadUserProfile(session.user.id); }
   };
@@ -2230,12 +2230,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <button onClick={() => setShowEditProfile(false)} style={{background:'none',border:'none',color:'#8899A6',fontSize:'22px',cursor:'pointer'}}>×</button>
               </div>
               {[
-                { label: 'Nombre completo', key: 'full_name', placeholder: 'Tu nombre' },
-                { label: 'Usuario', key: 'username', placeholder: '@usuario' },
-                { label: 'Biografía', key: 'bio', placeholder: 'Cuéntanos sobre ti' },
-                { label: 'Edad', key: 'age', placeholder: 'Tu edad', type: 'number' },
-                { label: 'País', key: 'country', placeholder: 'Tu país' },
-                { label: 'Ciudad', key: 'city', placeholder: 'Tu ciudad' },
+                { label: t.fullNameLabel, key: 'full_name', placeholder: t.yourNamePlaceholder },
+                { label: t.usernameLabel, key: 'username', placeholder: '@usuario' },
+                { label: t.bioLabel, key: 'bio', placeholder: t.yourBioPlaceholder },
+                { label: t.countryLabel, key: 'country', placeholder: t.yourCountryPlaceholder },
+                { label: t.cityLabel, key: 'city', placeholder: t.yourCityPlaceholder },
               ].map(f => (
                 <div key={f.key} style={{marginBottom:'14px'}}>
                   <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>{f.label}</label>

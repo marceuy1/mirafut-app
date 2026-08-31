@@ -113,6 +113,15 @@ export const translations = {
     writeByEmail: 'Escríbenos por email',
     noNotificationsYet: 'No hay notificaciones aún',
     notificationsWillAppear: 'Cuando alguien te siga o dé like aparecerá aquí',
+    fullNameLabel: 'Nombre completo',
+    usernameLabel: 'Usuario',
+    bioLabel: 'Biografía',
+    countryLabel: 'País',
+    cityLabel: 'Ciudad',
+    yourNamePlaceholder: 'Tu nombre',
+    yourBioPlaceholder: 'Cuéntanos sobre ti',
+    yourCountryPlaceholder: 'Tu país',
+    yourCityPlaceholder: 'Tu ciudad',
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
@@ -228,6 +237,15 @@ export const translations = {
     writeByEmail: 'Email us',
     noNotificationsYet: 'No notifications yet',
     notificationsWillAppear: "When someone follows or likes you, it'll show up here",
+    fullNameLabel: 'Full name',
+    usernameLabel: 'Username',
+    bioLabel: 'Bio',
+    countryLabel: 'Country',
+    cityLabel: 'City',
+    yourNamePlaceholder: 'Your name',
+    yourBioPlaceholder: 'Tell us about yourself',
+    yourCountryPlaceholder: 'Your country',
+    yourCityPlaceholder: 'Your city',
   }
 };
 
