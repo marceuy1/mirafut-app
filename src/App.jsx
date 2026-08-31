@@ -634,6 +634,7 @@ export default function App() {
       loadUserProfile(session.user.id);
       loadNotifications(session.user.id);
       loadFollowing();
+      loadBlocks();
       loadLikes();
       loadChatList();
       setShowAuthPrompt(false);
@@ -1111,11 +1112,49 @@ export default function App() {
       alert('Por seguridad, los mensajes directos entre cuentas de adultos y de menores no estan disponibles todavia.');
       return;
     }
+    if (blockedList.includes(partner.id) || blockedByList.includes(partner.id)) {
+      alert('No podés enviar mensajes a este usuario.');
+      return;
+    }
     setChatPartner(partner);
     setChatOpen(partner.id);
     setViewProfile(null);
     await loadMessages(partner.id);
     setTab('chat');
+  };
+
+  const [blockedList, setBlockedList] = useState([]);
+  const [blockedByList, setBlockedByList] = useState([]);
+
+  const loadBlocks = async () => {
+    if (!session) return;
+    const [blockedByMe, blockedMe] = await Promise.all([
+      supabase.from('blocks').select('blocked_id').eq('blocker_id', session.user.id),
+      supabase.from('blocks').select('blocker_id').eq('blocked_id', session.user.id)
+    ]);
+    if (blockedByMe.data) setBlockedList(blockedByMe.data.map(b => b.blocked_id));
+    if (blockedMe.data) setBlockedByList(blockedMe.data.map(b => b.blocker_id));
+  };
+
+  const toggleBlock = async (userId) => {
+    if (requireAuth()) return;
+    const isBlocked = blockedList.includes(userId);
+    if (isBlocked) {
+      await supabase.from('blocks').delete().eq('blocker_id', session.user.id).eq('blocked_id', userId);
+      setBlockedList(prev => prev.filter(id => id !== userId));
+    } else {
+      if (!confirm('¿Bloquear a este usuario? No podrán enviarte mensajes ni vos a ellos.')) return;
+      await supabase.from('blocks').insert([{ blocker_id: session.user.id, blocked_id: userId }]);
+      setBlockedList(prev => [...prev, userId]);
+    }
+  };
+
+  const reportUser = async (userId) => {
+    if (requireAuth()) return;
+    const reason = prompt('¿Por qué querés reportar a este usuario? (opcional)');
+    if (reason === null) return;
+    await supabase.from('reports').insert([{ reporter_id: session.user.id, reported_id: userId, reason: reason || '' }]);
+    alert('Gracias, vamos a revisar tu reporte.');
   };
 
   const loadFollowing = async () => {
@@ -1771,6 +1810,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 {followingList.includes(viewProfile.id) ? 'Siguiendo ✓' : '+ Seguir'}
               </button>
               <button className="prof-btn sec" onClick={() => openChat({id: viewProfile.id, name: viewProfile.name, avatar_url: viewProfile.avatar_url, account_type: viewProfile.account_type})}>💬 Mensaje</button>
+              <div style={{display:'flex',gap:'8px',marginTop:'8px'}}>
+                <button onClick={() => toggleBlock(viewProfile.id)} style={{flex:1,padding:'8px',background:'transparent',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#8899A6',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{blockedList.includes(viewProfile.id) ? 'Desbloquear' : 'Bloquear'}</button>
+                <button onClick={() => reportUser(viewProfile.id)} style={{flex:1,padding:'8px',background:'transparent',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#8899A6',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Reportar</button>
+              </div>
               {!session && (
                 <div style={{marginTop:'12px',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'14px',textAlign:'center'}}>
                   <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>¿Eres scout o agente?</div>
