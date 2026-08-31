@@ -204,7 +204,7 @@ function extraerBloqueSesion(texto) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   
-  const { message, agentType, userProfile: perfil, feedbackOnly } = req.body;
+  const { message, agentType, userProfile: perfil, feedbackOnly, lang } = req.body;
   if (!message) return res.status(400).json({ error: 'Missing message' });
 
   const edad = perfil?.age ? parseInt(perfil.age) : 16;
@@ -367,6 +367,10 @@ No uses asteriscos ni markdown. Texto plano.`;
     carrera: `Asesor de carreras deportivas. Becas y desarrollo profesional. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`
   };
 
+  const languageInstruction = lang === 'en'
+    ? '\n\nIMPORTANTE: Responde SIEMPRE en ingles (English), sin importar el idioma de estas instrucciones.'
+    : '';
+
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -377,7 +381,7 @@ No uses asteriscos ni markdown. Texto plano.`;
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: systemPrompts[agentType] || systemPrompts.coach },
+          { role: 'system', content: (systemPrompts[agentType] || systemPrompts.coach) + languageInstruction },
           { role: 'user', content: message }
         ],
         max_tokens: 650,

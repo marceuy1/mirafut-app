@@ -913,7 +913,7 @@ export default function App() {
       } : userProfile;
       const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
-      const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo, feedbackOnly);
+      const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo, feedbackOnly, lang);
       const response = coachData.reply;
       const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && response.length > 150 && (response.includes('Series:') || response.includes('Reps:') || response.includes('min'));
 
