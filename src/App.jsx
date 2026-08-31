@@ -2017,7 +2017,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">Seguidores</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{followingList.length}</div><div className="prof-stat-l">Siguiendo</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">{realPosts.length}</div><div className="prof-stat-l">Posts</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{realPosts.filter(p => p.user_id === session?.user?.id).length}</div><div className="prof-stat-l">Posts</div></div>
               </div>
               {(userProfile?.height || userProfile?.weight || userProfile?.dominant_foot) && (
                 <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',textAlign:'left'}}>
