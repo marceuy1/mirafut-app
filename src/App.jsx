@@ -848,7 +848,11 @@ export default function App() {
       const mencionaMaterial = /pelota|bal[oó]n|material|cono|porter[ií]a|nada|ning[uú]n|sin equipo|sin material/i.test(displayText);
       if (!mencionaMaterial && !partialTrainingContext) {
         setPartialTrainingContext(displayText);
-        await enviarMensajeCoach(displayText, 'Y que material tienes disponible? (pelota, conos, porteria, etc.)', true);
+        const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+        setAiMessages(m => [...m,
+          { id:Date.now(), from:"me", type:"text", text:displayText, time:now },
+          { id:Date.now()+1, from:currentAgent, type:"text", text:'¿Qué material tienes disponible? (pelota, conos, portería, etc.)', time:now }
+        ]);
         return;
       }
       setAwaitingTrainingContext(false);
