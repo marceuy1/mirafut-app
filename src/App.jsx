@@ -1912,12 +1912,12 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'12px'}}>{t.playersYouMightKnow}</div>
                 {USERS.filter(u => !chatList.find(c => c.id === u.id)).slice(0,4).map(u => (
                   <div key={u.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
-                    <div style={{width:'44px',height:'44px',borderRadius:'13px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px',fontWeight:'800',color:'#00E676',flexShrink:0}}>{u.av}</div>
+                    <div style={{width:'44px',height:'44px',borderRadius:'13px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px',fontWeight:'800',color:'#00E676',flexShrink:0}}>{u.av || u.name?.substring(0,2).toUpperCase()}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4'}}>{u.name}</div>
                       <div style={{fontSize:'12px',color:'#556677'}}>{u.position} · {u.country}</div>
                     </div>
-                    <button onClick={() => openChat({id:u.id, name:u.name, avatar_url:u.avatar_url})} style={{padding:'7px 14px',background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.3)',borderRadius:'20px',color:'#00E676',fontSize:'12px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',whiteSpace:'nowrap'}}>Mensaje</button>
+                    <button onClick={() => openChat({id:u.id, name:u.name, avatar_url:u.avatar_url, account_type:u.account_type})} style={{padding:'7px 14px',background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.3)',borderRadius:'20px',color:'#00E676',fontSize:'12px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',whiteSpace:'nowrap'}}>{t.message}</button>
                   </div>
                 ))}
               </div>
