@@ -280,6 +280,14 @@ export const translations = {
     saveChanges: 'Save changes',
     weeklyGoalTitle: '🎯 Weekly goal',
     whatToWorkOn: 'What do you want to work on this week?',
+    suggestionLabels: {
+      'Todo bien': 'All good',
+      'Vengo de entrenar': 'Just finished training',
+      '🏟️ Vengo de jugar': '🏟️ Just finished playing',
+      'Nervioso/a': 'Nervous',
+      'Sí, vamos': "Yes, let's go",
+      'Hoy no puedo': "Can't today",
+    },
     goalLabels: {
       'Mejorar mis reflejos': 'Improve my reflexes',
       'Mejorar mis salidas': 'Improve my off-the-line play',

@@ -1973,7 +1973,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   }
                   if (m.type === "suggestions") {
                     const esUltimoMensaje = aiMessages.length > 0 && m.id === aiMessages[aiMessages.length - 1].id;
-                    return <div key={m.id} className="sugs">{m.options.map(o=><button key={o} className="sug" style={esUltimoMensaje ? {} : {opacity:0.35, cursor:'default'}} onClick={()=>{ if (esUltimoMensaje) sendAI(o); }}>{o}</button>)}</div>;
+                    return <div key={m.id} className="sugs">{m.options.map(o=><button key={o} className="sug" style={esUltimoMensaje ? {} : {opacity:0.35, cursor:'default'}} onClick={()=>{ if (esUltimoMensaje) sendAI(o); }}>{t.suggestionLabels?.[o] || o}</button>)}</div>;
                   }
                   if (m.type === "specialist-card") {
                     const sp = SPECIALISTS.find(s => s.id === m.specialist);
