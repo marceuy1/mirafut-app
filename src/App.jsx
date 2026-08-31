@@ -846,12 +846,12 @@ export default function App() {
     // Guardamos esa respuesta UNA sola vez por objetivo semanal y no volvemos a preguntar.
     if (awaitingTrainingContext && weeklyGoal) {
       const mencionaMaterial = /pelota|bal[oó]n|material|cono|porter[ií]a|nada|ning[uú]n|sin equipo|sin material/i.test(displayText);
-      if (!mencionaMaterial && !partialTrainingContext) {
-        setPartialTrainingContext(displayText);
+      if (!mencionaMaterial) {
+        if (!partialTrainingContext) setPartialTrainingContext(displayText);
         const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
         setAiMessages(m => [...m,
           { id:Date.now(), from:"me", type:"text", text:displayText, time:now },
-          { id:Date.now()+1, from:currentAgent, type:"text", text:'¿Qué material tienes disponible? (pelota, conos, portería, etc.)', time:now }
+          { id:Date.now()+1, from:currentAgent, type:"text", text:'Todavía necesito saber qué material tienes disponible (pelota, conos, portería, etc.) para armar tu sesión.', time:now }
         ]);
         return;
       }
