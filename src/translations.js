@@ -98,6 +98,15 @@ export const translations = {
     dangerZone: 'Zona de peligro',
     deleteAccount: 'Eliminar mi cuenta',
     confirmDeleteAccount: '¿Estás seguro? Esta acción es irreversible.',
+    lastUpdated: 'Última actualización: julio 2026 · hola@mirafut.com',
+    termsSections: [
+      {title:'1. Edad mínima', text:'Debes tener al menos 13 años para usar MiraFut. Verificamos tu edad con tu fecha de nacimiento al registrarte.'},
+      {title:'2. Tu cuenta', text:'Eres responsable de mantener tu contraseña segura. No compartas tu cuenta con otros.'},
+      {title:'3. Contenido', text:'Al publicar fotos o videos confirmas que tienes los derechos sobre ese contenido y que no viola derechos de terceros.'},
+      {title:'4. Privacidad', text:'Recopilamos tu email, nombre y datos de perfil para operar la plataforma. No vendemos tus datos a terceros.'},
+      {title:'5. Conducta', text:'Está prohibido publicar contenido ofensivo, spam o acosar a otros usuarios. MiraFut puede suspender cuentas que violen estas normas.'},
+      {title:'6. Tus derechos', text:'Puedes solicitar eliminar tu cuenta y todos tus datos escribiendo a hola@mirafut.com'},
+    ],
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
@@ -198,6 +207,15 @@ export const translations = {
     dangerZone: 'Danger zone',
     deleteAccount: 'Delete my account',
     confirmDeleteAccount: 'Are you sure? This action is irreversible.',
+    lastUpdated: 'Last updated: July 2026 · hola@mirafut.com',
+    termsSections: [
+      {title:'1. Minimum age', text:'You must be at least 13 years old to use MiraFut. We verify your age using your date of birth when you sign up.'},
+      {title:'2. Your account', text:'You are responsible for keeping your password secure. Do not share your account with others.'},
+      {title:'3. Content', text:'By posting photos or videos you confirm you own the rights to that content and that it does not violate third-party rights.'},
+      {title:'4. Privacy', text:'We collect your email, name and profile data to operate the platform. We do not sell your data to third parties.'},
+      {title:'5. Conduct', text:'Posting offensive content, spam, or harassing other users is prohibited. MiraFut may suspend accounts that violate these rules.'},
+      {title:'6. Your rights', text:'You can request deletion of your account and all your data by writing to hola@mirafut.com'},
+    ],
   }
 };
 

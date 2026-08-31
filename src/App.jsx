@@ -2623,23 +2623,16 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <div className="modal-bg show" onClick={() => setShowTerms(false)}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div className="modal-hdr">
-                <div className="modal-title"><ClipboardList size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Términos y Privacidad</div>
+                <div className="modal-title"><ClipboardList size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.termsPrivacyLink}</div>
                 <button className="modal-close" onClick={() => setShowTerms(false)}><X size={18} /></button>
               </div>
-              {[
-                {title:'1. Edad mínima',text:'Debes tener al menos 13 años para usar MiraFut. Al registrarte confirmas que tienes 13 años o más.'},
-                {title:'2. Tu cuenta',text:'Eres responsable de mantener tu contraseña segura. No compartas tu cuenta con otros.'},
-                {title:'3. Contenido',text:'Al publicar fotos o videos confirmas que tienes los derechos sobre ese contenido y que no viola derechos de terceros.'},
-                {title:'4. Privacidad',text:'Recopilamos tu email, nombre y datos de perfil para operar la plataforma. No vendemos tus datos a terceros.'},
-                {title:'5. Conducta',text:'Está prohibido publicar contenido ofensivo, spam o acosar a otros usuarios. MiraFut puede suspender cuentas que violen estas normas.'},
-                {title:'6. Tus derechos',text:'Puedes solicitar eliminar tu cuenta y todos tus datos escribiendo a hola@mirafut.com'},
-              ].map((s,i) => (
+              {t.termsSections.map((s,i) => (
                 <div key={i} style={{marginBottom:'16px',paddingBottom:'16px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
                   <div style={{fontSize:'13px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>{s.title}</div>
                   <div style={{fontSize:'13px',color:'#8899A6',lineHeight:'1.6'}}>{s.text}</div>
                 </div>
               ))}
-              <div style={{fontSize:'12px',color:'#556677',textAlign:'center',marginTop:'8px'}}>Última actualización: julio 2026 · hola@mirafut.com</div>
+              <div style={{fontSize:'12px',color:'#556677',textAlign:'center',marginTop:'8px'}}>{t.lastUpdated}</div>
             </div>
           </div>
         )}
