@@ -2221,7 +2221,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div style={{textAlign:'center',marginBottom:'20px'}}>
                 {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:'80px',height:'80px',borderRadius:'22px',objectFit:'cover',marginBottom:'8px',display:'block',margin:'0 auto 8px'}} /> : <div style={{width:'80px',height:'80px',borderRadius:'22px',background:'linear-gradient(135deg,#00E676,#00C853)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px',fontWeight:'800',color:'#0a0e14',margin:'0 auto 8px'}}>{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : 'TU'}</div>}
                 <label style={{cursor:'pointer',color:'#00E676',fontSize:'13px',fontWeight:'600'}}>
-                  <Camera size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Cambiar foto
+                  <Camera size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.changePhoto}
                   <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files[0] && uploadAvatar(e.target.files[0])} />
                 </label>
               </div>
@@ -2248,40 +2248,40 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
               ))}
               <div style={{marginBottom:'20px'}}>
-                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Posición</label>
+                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>{t.positionLabel}</label>
                 <select value={editForm.position} onChange={e => setEditForm(prev => ({...prev, position: e.target.value}))} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}}>
-                  <option value="">Selecciona tu posición</option>
-                  <option value="POR">Portero</option>
-                  <option value="DEF">Defensa</option>
-                  <option value="MED">Mediocampista</option>
-                  <option value="DEL">Delantero</option>
+                  <option value="">{t.selectYourPosition}</option>
+                  <option value="POR">{t.goalkeeperFull}</option>
+                  <option value="DEF">{t.defenderFull}</option>
+                  <option value="MED">{t.midfielderFull}</option>
+                  <option value="DEL">{t.forwardFull}</option>
                 </select>
               </div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'14px'}}>
                 <div>
-                  <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Altura (cm)</label>
+                  <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>{t.heightCm}</label>
                   <input type="number" value={editForm.height} onChange={e => setEditForm(prev => ({...prev, height: e.target.value}))} placeholder="175" style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
                 </div>
                 <div>
-                  <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Peso (kg)</label>
+                  <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>{t.weightKg}</label>
                   <input type="number" value={editForm.weight} onChange={e => setEditForm(prev => ({...prev, weight: e.target.value}))} placeholder="68" style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
                 </div>
               </div>
               <div style={{marginBottom:'14px'}}>
-                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Pie dominante</label>
+                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>{t.dominantFoot}</label>
                 <select value={editForm.dominant_foot} onChange={e => setEditForm(prev => ({...prev, dominant_foot: e.target.value}))} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}}>
-                  <option value="">Selecciona</option>
-                  <option value="Derecho">Derecho</option>
-                  <option value="Izquierdo">Izquierdo</option>
-                  <option value="Ambos">Ambos</option>
+                  <option value="">{t.selectGeneric}</option>
+                  <option value="Derecho">{t.rightFoot}</option>
+                  <option value="Izquierdo">{t.leftFoot}</option>
+                  <option value="Ambos">{t.bothFeet}</option>
                 </select>
               </div>
               <div style={{marginBottom:'20px'}}>
-                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Objetivo</label>
-                <input type="text" value={editForm.goal} onChange={e => setEditForm(prev => ({...prev, goal: e.target.value}))} placeholder="Ej: Busco academia profesional en Europa" style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
+                <label style={{display:'block',color:'#8899A6',fontSize:'12px',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>{t.goalLabel}</label>
+                <input type="text" value={editForm.goal} onChange={e => setEditForm(prev => ({...prev, goal: e.target.value}))} placeholder={t.goalPlaceholder} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit, sans-serif'}} />
               </div>
               <button onClick={saveProfile} disabled={editLoading} style={{width:'100%',padding:'13px',background:editLoading?'#556677':'linear-gradient(135deg,#00E676,#00C853)',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit, sans-serif'}}>
-                {editLoading ? 'Guardando...' : 'Guardar cambios'}
+                {editLoading ? t.saving : t.saveChanges}
               </button>
             </div>
           </div>
