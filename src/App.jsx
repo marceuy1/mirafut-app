@@ -1100,6 +1100,12 @@ export default function App() {
   };
 
   const openChat = async (partner) => {
+    const miTipo = userProfile?.account_type;
+    const suTipo = partner?.account_type;
+    if (miTipo && suTipo && miTipo !== suTipo && (miTipo === 'teen' || suTipo === 'teen')) {
+      alert('Por seguridad, los mensajes directos entre cuentas de adultos y de menores no estan disponibles todavia.');
+      return;
+    }
     setChatPartner(partner);
     setChatOpen(partner.id);
     setViewProfile(null);
@@ -1769,7 +1775,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className={`prof-btn ${followingList.includes(viewProfile.id) ? 'sec' : 'pri'}`} onClick={() => toggleFollowUser(viewProfile.id)}>
                 {followingList.includes(viewProfile.id) ? 'Siguiendo ✓' : '+ Seguir'}
               </button>
-              <button className="prof-btn sec" onClick={() => openChat({id: viewProfile.id, name: viewProfile.name, avatar_url: viewProfile.avatar_url})}>💬 Mensaje</button>
+              <button className="prof-btn sec" onClick={() => openChat({id: viewProfile.id, name: viewProfile.name, avatar_url: viewProfile.avatar_url, account_type: viewProfile.account_type})}>💬 Mensaje</button>
               {!session && (
                 <div style={{marginTop:'12px',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'14px',textAlign:'center'}}>
                   <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>¿Eres scout o agente?</div>
