@@ -1069,7 +1069,6 @@ export default function App() {
       full_name: onboardingForm.full_name || null,
       username: onboardingForm.username || null,
       bio: onboardingForm.bio || null,
-      age: onboardingForm.age ? parseInt(onboardingForm.age) : null,
       country: onboardingForm.country || null,
       city: onboardingForm.city || null,
       position: onboardingForm.position || null,
@@ -2330,13 +2329,13 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       ? <img src={userProfile.avatar_url} style={{width:'80px',height:'80px',borderRadius:'24px',objectFit:'cover',margin:'0 auto 8px',display:'block'}} />
                       : <div style={{width:'80px',height:'80px',borderRadius:'24px',background:'#121820',border:'2px dashed rgba(0,230,118,0.4)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',margin:'0 auto 8px'}}>
                           <span><Camera size={24} /></span>
-                          <span style={{fontSize:'10px',color:'#556677',marginTop:'4px'}}>Subir foto</span>
+                          <span style={{fontSize:'10px',color:'#556677',marginTop:'4px'}}>Subir foto (opcional)</span>
                         </div>
                     }
                     <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files[0] && uploadAvatar(e.target.files[0])} />
                   </label>
                 </div>
-                {[{label:'Nombre completo',key:'full_name',placeholder:'Tu nombre'},{label:'Usuario',key:'username',placeholder:'@usuario'},{label:'Biografía',key:'bio',placeholder:'Cuéntanos sobre ti...'}].map(f => (
+                {[{label:'Nombre completo',key:'full_name',placeholder:'Tu nombre'},{label:'Usuario',key:'username',placeholder:'@usuario'},{label:'Biografía (opcional)',key:'bio',placeholder:'Cuéntanos sobre ti...'}].map(f => (
                   <div key={f.key} style={{marginBottom:'14px'}}>
                     <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{f.label}</div>
                     <input type="text" value={onboardingForm[f.key]||''} onChange={e => setOnboardingForm(prev=>({...prev,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
@@ -2359,7 +2358,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     ))}
                   </div>
                 </div>
-                {[{label:'País',key:'country',placeholder:'Tu país'},{label:'Ciudad',key:'city',placeholder:'Tu ciudad'},{label:'Edad',key:'age',placeholder:'Tu edad',type:'number'},{label:'Club o equipo',key:'club',placeholder:'Nombre de tu club o equipo'}].map(f => (
+                {[{label:'País',key:'country',placeholder:'Tu país'},{label:'Ciudad',key:'city',placeholder:'Tu ciudad'},{label:'Club o equipo (opcional)',key:'club',placeholder:'Nombre de tu club o equipo'}].map(f => (
                   <div key={f.key} style={{marginBottom:'14px'}}>
                     <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{f.label}</div>
                     <input type={f.type||'text'} value={onboardingForm[f.key]||''} onChange={e => setOnboardingForm(prev=>({...prev,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
@@ -2386,7 +2385,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             {onboardingStep === 3 && (
               <div>
                 <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>Datos físicos 💪</div>
-                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 3 de 3 — Para los scouts</div>
+                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 3 de 3 — Tu ficha de jugador</div>
                 <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
                   <button onClick={()=>setOnboardingForm(prev=>({...prev,units:'metric'}))} style={{flex:1,padding:'8px',background:onboardingForm.units!=='imperial'?'#00E676':'#121820',border:'none',borderRadius:'10px',color:onboardingForm.units!=='imperial'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',fontSize:'12px'}}>cm / kg</button>
                   <button onClick={()=>setOnboardingForm(prev=>({...prev,units:'imperial'}))} style={{flex:1,padding:'8px',background:onboardingForm.units==='imperial'?'#00E676':'#121820',border:'none',borderRadius:'10px',color:onboardingForm.units==='imperial'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',fontSize:'12px'}}>ft / lbs</button>
