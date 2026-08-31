@@ -1100,9 +1100,14 @@ export default function App() {
   };
 
   const openChat = async (partner) => {
+    // Si cualquiera de los dos es un menor CONFIRMADO, bloqueamos salvo que el otro
+    // TAMBIEN este confirmado como menor. Esto protege al menor incluso contra cuentas
+    // viejas sin account_type asignado (NULL), no solo contra adultos confirmados.
     const miTipo = userProfile?.account_type;
     const suTipo = partner?.account_type;
-    if (miTipo && suTipo && miTipo !== suTipo && (miTipo === 'teen' || suTipo === 'teen')) {
+    const yoSoyMenorConfirmado = miTipo === 'teen';
+    const elEsMenorConfirmado = suTipo === 'teen';
+    if ((yoSoyMenorConfirmado && suTipo !== 'teen') || (elEsMenorConfirmado && miTipo !== 'teen')) {
       alert('Por seguridad, los mensajes directos entre cuentas de adultos y de menores no estan disponibles todavia.');
       return;
     }
