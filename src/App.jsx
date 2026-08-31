@@ -1514,19 +1514,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <p style={{fontSize:'15px',color:'rgba(255,255,255,0.4)',marginTop:'-16px',marginBottom:'24px',fontStyle:'italic',maxWidth:'600px',margin:'-16px auto 24px'}}>
               {t.heroQuote}
             </p>
-            <div className="hero-stats">
-              <div className="hero-stat">
-                <div className="hero-stat-value">20</div>
-                <div className="hero-stat-label">{t.players}</div>
-              </div>
-              <div className="hero-stat">
-                <div className="hero-stat-value">8</div>
-                <div className="hero-stat-label">{t.countries}</div>
-              </div>
-              <div className="hero-stat">
-                <div className="hero-stat-value">24/7</div>
-                <div className="hero-stat-label">{t.supportLabel}</div>
-              </div>
+            <div style={{textAlign:'center',marginBottom:'8px'}}>
+              <div style={{fontSize:'18px',fontWeight:'800',color:'#00E676',marginBottom:'4px'}}>{t.earlyStageTitle}</div>
+              <div style={{fontSize:'14px',color:'#8899A6'}}>{t.earlyStageSubtitle}</div>
             </div>
 
             <div style={{display:'flex',gap:'16px',justifyContent:'center',marginTop:'20px',flexWrap:'wrap',maxWidth:'700px',marginLeft:'auto',marginRight:'auto'}}>
