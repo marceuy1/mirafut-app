@@ -631,7 +631,26 @@ export default function App() {
       setSessionInProgress(false);
       loadWeeklyGoal();
     }
-  }, [tab, lang]);
+  }, [tab]);
+
+  // Cambio de idioma estando ya en Coach: actualizamos el saludo ya cargado
+  // SIN volver a consultar Supabase. Antes, cambiar de idioma disparaba una
+  // nueva consulta async cada vez, y si la respuesta vieja (en el idioma
+  // anterior) llegaba despues de la nueva, pisaba el saludo correcto.
+  // Como el objetivo semanal ya esta en memoria (weeklyGoal), no hace falta
+  // red para esto: solo recalculamos el texto en el idioma actual.
+  useEffect(() => {
+    if (tab !== 'coach' || !session || !weeklyGoal) return;
+    const remaining = weeklyGoal.sessions_target - weeklyGoal.sessions_done;
+    const nombre = userProfile?.full_name?.split(' ')[0] || '';
+    setAiMessages(prev => {
+      if (!prev.length || prev[0].id !== 1) return prev;
+      const nuevoTexto = lang === 'en'
+        ? 'Hi ' + nombre + ' 👋 You have ' + remaining + ' ' + (remaining !== 1 ? 'sessions' : 'session') + ' left for your goal: ' + (translations.en.goalLabels?.[weeklyGoal.goal] || weeklyGoal.goal) + '. Want to do it today?'
+        : 'Hola ' + nombre + ' 👋 Te quedan ' + remaining + ' ' + (remaining !== 1 ? 'sesiones' : 'sesión') + ' de tu objetivo: ' + weeklyGoal.goal + '. ¿La hacemos hoy?';
+      return prev.map(m => m.id === 1 ? {...m, text: nuevoTexto} : m);
+    });
+  }, [lang]);
 
   // Reaccionar a cambios de session
   useEffect(() => {
