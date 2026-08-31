@@ -124,7 +124,8 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
         const { data, error: err } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
         if (err) throw err;
         if (data.user) {
-          await supabase.from('profiles').insert([{ id: data.user.id, username: email.split('@')[0], email, full_name: fullName, avatar_url: null, bio: '', age: edadCalc, birth_date: birthDate, account_type: accountType, country: '', city: '', position: '', verified: false, followers_count: 0, following_count: 0 }]);
+          const { error: profileErr } = await supabase.from('profiles').upsert([{ id: data.user.id, username: email.split('@')[0], email, full_name: fullName, avatar_url: null, bio: '', age: edadCalc, birth_date: birthDate, account_type: accountType, country: '', city: '', position: '', verified: false, followers_count: 0, following_count: 0 }]);
+          if (profileErr) console.error('Error guardando perfil:', profileErr);
           fetch('/api/send-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
