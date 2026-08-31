@@ -2034,7 +2034,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div style={{background:'rgba(0,230,118,0.06)',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',padding:'10px 12px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                       <div>
                         <div style={{fontSize:'10px',color:'#00E676',fontWeight:'700',letterSpacing:'1px',marginBottom:'2px'}}>{t.weeklyGoalBadge}</div>
-                        <div style={{fontSize:'13px',color:'#ECEFF4',fontWeight:'600'}}>{weeklyGoal.goal}</div>
+                        <div style={{fontSize:'13px',color:'#ECEFF4',fontWeight:'600'}}>{lang === 'en' ? (translations.en.goalLabels?.[weeklyGoal.goal] || weeklyGoal.goal) : weeklyGoal.goal}</div>
                         <div style={{display:'flex',gap:'4px',marginTop:'6px'}}>
                           {Array.from({length: weeklyGoal.sessions_target}).map((_,i) => (
                             <div key={i} style={{width:'20px',height:'6px',borderRadius:'3px',background:i < weeklyGoal.sessions_done?'#00E676':'rgba(255,255,255,0.1)'}}/>
@@ -2042,9 +2042,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                         </div>
                       </div>
                       {sessionInProgress ? (
-                        <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>✓ Terminé mi sesión</button>
+                        <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>✓ {lang === 'en' ? 'Finished my session' : 'Terminé mi sesión'}</button>
                       ) : (
-                        <button onClick={() => { if (!awaitingSessionFeedback) sendAI('Sí, vamos'); }} disabled={awaitingSessionFeedback} title={awaitingSessionFeedback ? 'Responde arriba como te fue para continuar' : ''} style={{background:awaitingSessionFeedback ? 'rgba(0,230,118,0.3)' : '#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:awaitingSessionFeedback ? 'not-allowed' : 'pointer',fontFamily:'Outfit,sans-serif',opacity:awaitingSessionFeedback ? 0.6 : 1}}>▶ Iniciar {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
+                        <button onClick={() => { if (!awaitingSessionFeedback) sendAI('Sí, vamos'); }} disabled={awaitingSessionFeedback} title={awaitingSessionFeedback ? 'Responde arriba como te fue para continuar' : ''} style={{background:awaitingSessionFeedback ? 'rgba(0,230,118,0.3)' : '#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:awaitingSessionFeedback ? 'not-allowed' : 'pointer',fontFamily:'Outfit,sans-serif',opacity:awaitingSessionFeedback ? 0.6 : 1}}>▶ {lang === 'en' ? 'Start' : 'Iniciar'} {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
                       )}
                     </div>
                   ) : (
