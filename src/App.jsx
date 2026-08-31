@@ -2704,18 +2704,18 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <div className="modal-bg show" onClick={() => setShowHelp(false)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
               <div className="modal-hdr">
-                <div className="modal-title">💬 ¿Necesitas ayuda?</div>
+                <div className="modal-title">{t.needHelpTitle}</div>
                 <button className="modal-close" onClick={() => setShowHelp(false)}><X size={18} /></button>
               </div>
               <div style={{textAlign:'center',marginBottom:'20px'}}>
                 <div style={{fontSize:'40px',marginBottom:'8px'}}>👋</div>
-                <div style={{fontSize:'15px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>Estamos aquí para ayudarte</div>
-                <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5'}}>Escríbenos y te respondemos en menos de 24 horas</div>
+                <div style={{fontSize:'15px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>{t.hereToHelp}</div>
+                <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5'}}>{t.replyWithin24h}</div>
               </div>
               <a href="mailto:hola@mirafut.com" style={{display:'flex',alignItems:'center',gap:'12px',background:'#0a0e14',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'12px',padding:'16px',textDecoration:'none',marginBottom:'12px'}}>
                 <div style={{width:'40px',height:'40px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Mail size={20} /></div>
                 <div>
-                  <div style={{fontSize:'13px',fontWeight:'700',color:'#ECEFF4'}}>Escríbenos por email</div>
+                  <div style={{fontSize:'13px',fontWeight:'700',color:'#ECEFF4'}}>{t.writeByEmail}</div>
                   <div style={{fontSize:'12px',color:'#00E676',marginTop:'2px'}}>hola@mirafut.com</div>
                 </div>
               </a>

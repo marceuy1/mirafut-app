@@ -107,6 +107,10 @@ export const translations = {
       {title:'5. Conducta', text:'Está prohibido publicar contenido ofensivo, spam o acosar a otros usuarios. MiraFut puede suspender cuentas que violen estas normas.'},
       {title:'6. Tus derechos', text:'Puedes solicitar eliminar tu cuenta y todos tus datos escribiendo a hola@mirafut.com'},
     ],
+    needHelpTitle: '💬 ¿Necesitas ayuda?',
+    hereToHelp: 'Estamos aquí para ayudarte',
+    replyWithin24h: 'Escríbenos y te respondemos en menos de 24 horas',
+    writeByEmail: 'Escríbenos por email',
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
@@ -216,6 +220,10 @@ export const translations = {
       {title:'5. Conduct', text:'Posting offensive content, spam, or harassing other users is prohibited. MiraFut may suspend accounts that violate these rules.'},
       {title:'6. Your rights', text:'You can request deletion of your account and all your data by writing to hola@mirafut.com'},
     ],
+    needHelpTitle: '💬 Need help?',
+    hereToHelp: "We're here to help you",
+    replyWithin24h: "Write to us and we'll reply within 24 hours",
+    writeByEmail: 'Email us',
   }
 };
 
