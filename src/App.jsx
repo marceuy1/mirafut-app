@@ -1808,7 +1808,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="profile">
               {viewProfile.avatar_url ? <img src={viewProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover",margin:"0 auto 12px",display:"block"}} /> : <div className="prof-av">{viewProfile.avatar}</div>}
               <div className="prof-name">{viewProfile.name} {viewProfile.verified && <V/>}</div>
-              <div className="prof-meta" style={{display:'flex',alignItems:'center',gap:'5px'}}><MapPin size={13} /> {viewProfile.account_type === 'teen' ? viewProfile.country : (viewProfile.city ? viewProfile.city + ', ' : '') + viewProfile.country} · {viewProfile.account_type === 'teen' ? '13-17 años' : (viewProfile.age ? viewProfile.age + ' años' : '')} · {viewProfile.position}</div>
+              <div className="prof-meta" style={{display:'flex',alignItems:'center',gap:'5px'}}><MapPin size={13} /> {viewProfile.account_type === 'teen' ? viewProfile.country : (viewProfile.city ? viewProfile.city + ', ' : '') + viewProfile.country} · {viewProfile.account_type === 'teen' ? t.yearsOldRange : (viewProfile.age ? viewProfile.age + ' ' + t.yearsOldSuffix : '')} · {viewProfile.position}</div>
               <div className="prof-bio">{viewProfile.bio}</div>
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{viewProfile.followers||0}</div><div className="prof-stat-l">Seguidores</div></div>
@@ -2054,7 +2054,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="profile">
               {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover"}} /> : <div className="prof-av">{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : "TU"}</div>}
               <div className="prof-name">{userProfile?.full_name || 'Tu nombre'}</div>
-              <div className="prof-meta">{userProfile?.position ? `${userProfile.position} · ` : ''}{userProfile?.city ? `${userProfile.city}, ` : ''}{userProfile?.country}{userProfile?.age ? ` · ${userProfile.age} años` : ''}</div>
+              <div className="prof-meta">{userProfile?.position ? `${userProfile.position} · ` : ''}{userProfile?.city ? `${userProfile.city}, ` : ''}{userProfile?.country}{userProfile?.age ? ` · ${userProfile.age} ${t.yearsOldSuffix}` : ''}</div>
               {!userProfile?.country && <div style={{color:'#00E676',fontSize:'12px',marginTop:'4px',display:'flex',alignItems:'center',gap:'5px'}}><Sparkles size={13} /> {t.completeProfile}</div>}
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">{t.followers}</div></div>

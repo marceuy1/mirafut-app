@@ -86,6 +86,8 @@ export const translations = {
     tellYourStory: 'Cuéntanos tu historia',
     needHelp: '¿Necesitas ayuda? Contáctanos',
     termsPrivacyLink: 'Términos y Privacidad',
+    yearsOldSuffix: 'años',
+    yearsOldRange: '13-17 años',
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
@@ -174,6 +176,8 @@ export const translations = {
     tellYourStory: 'Tell us your story',
     needHelp: 'Need help? Contact us',
     termsPrivacyLink: 'Terms and Privacy',
+    yearsOldSuffix: 'years old',
+    yearsOldRange: '13-17 years old',
   }
 };
 
