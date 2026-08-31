@@ -614,7 +614,7 @@ export default function App() {
     const u = params.get('u');
     if (u) {
       supabase.from('profiles').select('*').eq('username', u).single().then(({data}) => {
-        if (data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||'',country:data.country||'',city:data.city||'',age:data.age||'',bio:data.bio||'',verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal});
+        if (data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||'',country:data.country||'',city:data.city||'',age:data.age||'',bio:data.bio||'',verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal,account_type:data.account_type});
       });
     }
 
@@ -1648,7 +1648,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {filteredPosts.map(p => (
                 <div key={p.id} className="post">
                   {p.image ? (
-                    <div className="pov" onClick={() => { if(p.id.toString().startsWith("real-")) { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal}); }); } else setViewProfile(USERS.find(u=>u.id===p.userId)); }}>
+                    <div className="pov" onClick={() => { if(p.id.toString().startsWith("real-")) { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal,account_type:data.account_type}); }); } else setViewProfile(USERS.find(u=>u.id===p.userId)); }}>
                       <img src={IMG[p.image] || p.image} alt="" />
                       <div className="pov-overlay"/>
                       {p.position && <div className="pov-badge">{p.position}</div>}
@@ -1661,7 +1661,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       </div>
                     </div>
                   ) : (
-                    <div className="poh" onClick={() => { if(p.id.toString().startsWith("real-")) { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal}); }); } else setViewProfile(USERS.find(u=>u.id===p.userId)); }}>
+                    <div className="poh" onClick={() => { if(p.id.toString().startsWith("real-")) { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal,account_type:data.account_type}); }); } else setViewProfile(USERS.find(u=>u.id===p.userId)); }}>
                       {p.avatar_url ? <img src={p.avatar_url} style={{width:'40px',height:'40px',borderRadius:'12px',objectFit:'cover',flexShrink:0}} /> : <div className="poav">{p.av}</div>}
                       <div className="poi">
                         <div className="pon">{p.name} {p.verified && <V/>}</div>
@@ -1759,7 +1759,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="profile">
               {viewProfile.avatar_url ? <img src={viewProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover",margin:"0 auto 12px",display:"block"}} /> : <div className="prof-av">{viewProfile.avatar}</div>}
               <div className="prof-name">{viewProfile.name} {viewProfile.verified && <V/>}</div>
-              <div className="prof-meta" style={{display:'flex',alignItems:'center',gap:'5px'}}><MapPin size={13} /> {viewProfile.city}, {viewProfile.country} · {viewProfile.age} años · {viewProfile.position}</div>
+              <div className="prof-meta" style={{display:'flex',alignItems:'center',gap:'5px'}}><MapPin size={13} /> {viewProfile.account_type === 'teen' ? viewProfile.country : (viewProfile.city ? viewProfile.city + ', ' : '') + viewProfile.country} · {viewProfile.account_type === 'teen' ? '13-17 años' : (viewProfile.age ? viewProfile.age + ' años' : '')} · {viewProfile.position}</div>
               <div className="prof-bio">{viewProfile.bio}</div>
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{viewProfile.followers||0}</div><div className="prof-stat-l">Seguidores</div></div>
@@ -1782,7 +1782,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',textAlign:'left'}}>
                   <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>Datos del jugador</div>
                   {viewProfile.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Altura</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.height} cm</div></div>}
-                  {viewProfile.weight && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Peso</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.weight} kg</div></div>}
+                  {viewProfile.weight && viewProfile.account_type !== 'teen' && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Peso</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.weight} kg</div></div>}
                   {viewProfile.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Pie dominante</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.dominant_foot}</div></div>}
                   {viewProfile.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Posición</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{viewProfile.position}</div></div>}
                 </div>
