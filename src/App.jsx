@@ -2299,8 +2299,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {notifications.length === 0 ? (
                 <div style={{textAlign:'center',padding:'30px 20px'}}>
                   <div style={{marginBottom:'12px',display:'flex',justifyContent:'center'}}><Bell size={36} /></div>
-                  <div style={{color:'#556677',fontSize:'14px',fontWeight:'600'}}>No hay notificaciones aún</div>
-                  <div style={{color:'#556677',fontSize:'12px',marginTop:'6px'}}>Cuando alguien te siga o dé like aparecerá aquí</div>
+                  <div style={{color:'#556677',fontSize:'14px',fontWeight:'600'}}>{t.noNotificationsYet}</div>
+                  <div style={{color:'#556677',fontSize:'12px',marginTop:'6px'}}>{t.notificationsWillAppear}</div>
                 </div>
               ) : (
                 notifications.map(n => {

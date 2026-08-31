@@ -111,6 +111,8 @@ export const translations = {
     hereToHelp: 'Estamos aquí para ayudarte',
     replyWithin24h: 'Escríbenos y te respondemos en menos de 24 horas',
     writeByEmail: 'Escríbenos por email',
+    noNotificationsYet: 'No hay notificaciones aún',
+    notificationsWillAppear: 'Cuando alguien te siga o dé like aparecerá aquí',
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
@@ -224,6 +226,8 @@ export const translations = {
     hereToHelp: "We're here to help you",
     replyWithin24h: "Write to us and we'll reply within 24 hours",
     writeByEmail: 'Email us',
+    noNotificationsYet: 'No notifications yet',
+    notificationsWillAppear: "When someone follows or likes you, it'll show up here",
   }
 };
 
