@@ -2675,10 +2675,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <div className="modal-bg show" onClick={() => setShowWeeklyGoal(false)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
               <div className="modal-hdr">
-                <div className="modal-title">🎯 Objetivo de la semana</div>
+                <div className="modal-title">{t.weeklyGoalTitle}</div>
                 <button className="modal-close" onClick={() => setShowWeeklyGoal(false)}><X size={18} /></button>
               </div>
-              <div style={{fontSize:'13px',color:'#556677',marginBottom:'16px'}}>¿Qué quieres trabajar esta semana?</div>
+              <div style={{fontSize:'13px',color:'#556677',marginBottom:'16px'}}>{t.whatToWorkOn}</div>
               {(() => {
                 const pos = userProfile?.position || '';
                 const goals = {
@@ -2690,7 +2690,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 const list = goals[pos] || ['Mejorar mis reflejos','Trabajar el control orientado','Mejorar mi posicionamiento','Potenciar mi pie débil','Aumentar mi velocidad','Toma de decisiones','Mejorar mi definición','Trabajo físico'];
                 return list.map(g => (
                   <button key={g} onClick={() => createWeeklyGoal(g, 3)} style={{display:'block',width:'100%',padding:'12px 14px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',fontSize:'14px',color:'#ECEFF4',marginBottom:'8px',textAlign:'left',fontFamily:'Outfit,sans-serif'}}>
-                    {g}
+                    {t.goalLabels?.[g] || g}
                   </button>
                 ));
               })()}
