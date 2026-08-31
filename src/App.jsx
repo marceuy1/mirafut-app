@@ -2303,9 +2303,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         {showOnboarding && (
           <div style={{position:'fixed',inset:0,background:'#0a0e14',zIndex:99999,display:'flex',flexDirection:'column',padding:'24px',overflowY:'auto'}}>
             <div style={{textAlign:'center',marginBottom:'24px'}}>
-              <div style={{margin:"0 auto 12px",display:"flex",justifyContent:"center"}}><Logo size={56} iconOnly /></div>
-              <div style={{fontSize:'22px',fontWeight:'900',color:'#ECEFF4'}}>MiraFut</div>
-              <div style={{fontSize:'12px',color:'#556677',letterSpacing:'2px',marginTop:'2px'}}>ENFOCAMOS TU FUTURO</div>
+              <div style={{margin:"0 auto 12px",display:"flex",justifyContent:"center"}}><Logo size={70} /></div>
             </div>
             <div style={{display:'flex',gap:'6px',marginBottom:'28px'}}>
               {[1,2,3].map(i => <div key={i} style={{flex:1,height:'4px',background:i<=onboardingStep?'#00E676':'rgba(255,255,255,0.1)',borderRadius:'2px'}}/>)}
