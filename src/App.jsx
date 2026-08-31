@@ -2649,12 +2649,12 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <div className="modal-bg show" onClick={() => setShowSettings(false)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
               <div className="modal-hdr">
-                <div className="modal-title">⚙️ Configuración</div>
+                <div className="modal-title">{t.settingsTitle}</div>
                 <button className="modal-close" onClick={() => setShowSettings(false)}><X size={18} /></button>
               </div>
 
               <div style={{marginBottom:'20px'}}>
-                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>Idioma</div>
+                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>{t.language}</div>
                 <div style={{display:'flex',gap:'8px'}}>
                   <button onClick={() => { setLang('es'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='es'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='es'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇪🇸 Español</button>
                   <button onClick={() => { setLang('en'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='en'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='en'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇺🇸 English</button>
@@ -2662,16 +2662,16 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
 
               <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'20px',marginBottom:'20px'}}>
-                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>Cuenta</div>
+                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>{t.account}</div>
                 <button onClick={() => { setShowSettings(false); setShowAuthPrompt(true); }} style={{width:'100%',padding:'12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',textAlign:'left',marginBottom:'8px'}}>
-                  <Lock size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Cambiar contraseña
+                  <Lock size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.changePassword}
                 </button>
               </div>
 
               <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:'20px'}}>
-                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>Zona de peligro</div>
-                <button onClick={() => { if(window.confirm('¿Estás seguro? Esta acción es irreversible.')) { supabase.from('profiles').delete().eq('id', session.user.id).then(() => { supabase.auth.signOut(); setSession(null); setTab('home'); setShowSettings(false); }); } }} style={{width:'100%',padding:'12px',background:'rgba(255,82,82,0.08)',border:'1px solid rgba(255,82,82,0.2)',borderRadius:'12px',color:'#FF5252',fontSize:'14px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',textAlign:'left'}}>
-                  <Trash2 size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Eliminar mi cuenta
+                <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>{t.dangerZone}</div>
+                <button onClick={() => { if(window.confirm(t.confirmDeleteAccount)) { supabase.from('profiles').delete().eq('id', session.user.id).then(() => { supabase.auth.signOut(); setSession(null); setTab('home'); setShowSettings(false); }); } }} style={{width:'100%',padding:'12px',background:'rgba(255,82,82,0.08)',border:'1px solid rgba(255,82,82,0.2)',borderRadius:'12px',color:'#FF5252',fontSize:'14px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',textAlign:'left'}}>
+                  <Trash2 size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.deleteAccount}
                 </button>
               </div>
             </div>

@@ -91,6 +91,13 @@ export const translations = {
     videoLinkOptional: 'Link de video (opcional)',
     pasteVideoLink: 'Pega tu link de YouTube o TikTok...',
     tiktokPreview: 'Preview de TikTok',
+    settingsTitle: '⚙️ Configuración',
+    language: 'Idioma',
+    account: 'Cuenta',
+    changePassword: 'Cambiar contraseña',
+    dangerZone: 'Zona de peligro',
+    deleteAccount: 'Eliminar mi cuenta',
+    confirmDeleteAccount: '¿Estás seguro? Esta acción es irreversible.',
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
@@ -184,6 +191,13 @@ export const translations = {
     videoLinkOptional: 'Video link (optional)',
     pasteVideoLink: 'Paste your YouTube or TikTok link...',
     tiktokPreview: 'TikTok preview',
+    settingsTitle: '⚙️ Settings',
+    language: 'Language',
+    account: 'Account',
+    changePassword: 'Change password',
+    dangerZone: 'Danger zone',
+    deleteAccount: 'Delete my account',
+    confirmDeleteAccount: 'Are you sure? This action is irreversible.',
   }
 };
 
