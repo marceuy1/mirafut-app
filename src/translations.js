@@ -316,7 +316,6 @@ export const translations = {
     disclaimerAccept: 'I understand and agree',
     weeklyGoalBadge: "🎯 THIS WEEK'S GOAL",
     writeToPrefix: 'Message',
-  }
     suggestionLabels: {
       'Todo bien': 'All good',
       'Vengo de entrenar': 'Just finished training',
