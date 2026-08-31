@@ -2141,25 +2141,22 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {showHealthDisclaimer && (
             <div className="modal" onClick={e => e.stopPropagation()}>
               <div className="disclaimer-icon"><Stethoscope size={20} /></div>
-              <div className="modal-title" style={{textAlign:'center',marginBottom:'12px'}}>Aviso Importante sobre AI Coach</div>
+              <div className="modal-title" style={{textAlign:'center',marginBottom:'12px'}}>{t.disclaimerTitle}</div>
               <div className="disclaimer-text">
-                El AI Coach es una herramienta de <strong>orientación general</strong> diseñada para apoyar tu desarrollo deportivo.
+                {t.disclaimerIntroPre} <strong>{t.disclaimerIntroStrong}</strong> {t.disclaimerIntroPost}
               </div>
               <div className="disclaimer-text" style={{fontSize:'13px',color:'#FF9800'}}>
-                <strong>NO reemplaza atención médica, psicológica o nutricional profesional.</strong>
+                <strong>{t.disclaimerWarning}</strong>
               </div>
               <div className="disclaimer-text">
-                Por favor consulta con un profesional de la salud si experimentas:
+                {t.disclaimerConsult}
               </div>
               <ul className="disclaimer-list">
-                <li>Problemas de salud física o mental</li>
-                <li>Lesiones deportivas</li>
-                <li>Síntomas que persisten</li>
-                <li>Crisis emocional o pensamientos de hacerte daño</li>
+                {t.disclaimerList.map((item,i) => <li key={i}>{item}</li>)}
               </ul>
               <div className="disclaimer-emergency">
-                <strong style={{display:"flex",alignItems:"center",gap:"6px"}}><Siren size={15} /> En caso de emergencia:</strong><br/>
-                Contacta servicios de urgencia o líneas de ayuda en tu país inmediatamente.
+                <strong style={{display:"flex",alignItems:"center",gap:"6px"}}><Siren size={15} /> {t.disclaimerEmergencyTitle}</strong><br/>
+                {t.disclaimerEmergencyText}
               </div>
               <div className="modal-actions">
                 <button className="modal-btn pri" onClick={() => {
@@ -2169,7 +2166,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     sendAI(aiInput);
                   }
                 }}>
-                  Entiendo y acepto
+                  {t.disclaimerAccept}
                 </button>
               </div>
             </div>
