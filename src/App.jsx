@@ -851,7 +851,7 @@ export default function App() {
         const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
         setAiMessages(m => [...m,
           { id:Date.now(), from:"me", type:"text", text:displayText, time:now },
-          { id:Date.now()+1, from:currentAgent, type:"text", text:'Todavía necesito saber qué material tienes disponible (pelota, conos, portería, etc.) para armar tu sesión.', time:now }
+          { id:Date.now()+1, from:currentAgent, type:"text", text:t.stillNeedMaterial, time:now }
         ]);
         return;
       }

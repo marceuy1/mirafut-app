@@ -139,6 +139,7 @@ export const translations = {
     saveChanges: 'Guardar cambios',
     weeklyGoalTitle: '🎯 Objetivo de la semana',
     whatToWorkOn: '¿Qué quieres trabajar esta semana?',
+    stillNeedMaterial: 'Todavía necesito saber qué material tienes disponible (pelota, conos, portería, etc.) para armar tu sesión.',
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
@@ -280,6 +281,7 @@ export const translations = {
     saveChanges: 'Save changes',
     weeklyGoalTitle: '🎯 Weekly goal',
     whatToWorkOn: 'What do you want to work on this week?',
+    stillNeedMaterial: "I still need to know what equipment you have available (ball, cones, goal, etc.) to build your session.",
     suggestionLabels: {
       'Todo bien': 'All good',
       'Vengo de entrenar': 'Just finished training',
