@@ -2185,14 +2185,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
             <textarea className="modal-textarea" placeholder={t.whatsHappening} value={newPost} onChange={e => setNewPost(e.target.value)}/>
             <div style={{marginTop:'12px'}}>
-              <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'6px'}}>Link de video (opcional)</div>
+              <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'6px'}}>{t.videoLinkOptional}</div>
               <div style={{display:'flex',alignItems:'center',gap:'8px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',padding:'10px 14px'}}>
                 <span><Link size={16} /></span>
-                <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="Pega tu link de YouTube o TikTok..." style={{flex:1,background:'none',border:'none',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder={t.pasteVideoLink} style={{flex:1,background:'none',border:'none',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
               </div>
               {videoUrl && getVideoThumbnail(videoUrl) && (
                 <div style={{marginTop:'8px',borderRadius:'12px',overflow:'hidden',position:'relative',height:'120px'}}>
-                  {getVideoThumbnail(videoUrl).thumb ? <img src={getVideoThumbnail(videoUrl).thumb} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : <div style={{width:'100%',height:'100%',background:'#0a0e14',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px'}}>Preview de TikTok</div>}
+                  {getVideoThumbnail(videoUrl).thumb ? <img src={getVideoThumbnail(videoUrl).thumb} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : <div style={{width:'100%',height:'100%',background:'#0a0e14',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px'}}>{t.tiktokPreview}</div>}
                   <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}>
                     <div style={{width:'40px',height:'40px',borderRadius:'50%',background:'rgba(0,230,118,0.9)',display:'flex',alignItems:'center',justifyContent:'center'}}>▶</div>
                   </div>
@@ -2206,7 +2206,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>}
             <div className="modal-actions">
               <label className="modal-btn sec" style={{cursor:'pointer',flex:'0 0 auto'}}>
-                <Camera size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Foto
+                <Camera size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.photo}
                 <input type="file" accept="image/*" style={{display:'none'}} onChange={e => { if(e.target.files[0]) { setPostImage(e.target.files[0]); setPostImageUrl(URL.createObjectURL(e.target.files[0])); } }} />
               </label>
               <button className="modal-btn pri" onClick={createPost}>{t.publish}</button>

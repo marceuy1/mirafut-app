@@ -88,6 +88,9 @@ export const translations = {
     termsPrivacyLink: 'Términos y Privacidad',
     yearsOldSuffix: 'años',
     yearsOldRange: '13-17 años',
+    videoLinkOptional: 'Link de video (opcional)',
+    pasteVideoLink: 'Pega tu link de YouTube o TikTok...',
+    tiktokPreview: 'Preview de TikTok',
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
@@ -178,6 +181,9 @@ export const translations = {
     termsPrivacyLink: 'Terms and Privacy',
     yearsOldSuffix: 'years old',
     yearsOldRange: '13-17 years old',
+    videoLinkOptional: 'Video link (optional)',
+    pasteVideoLink: 'Paste your YouTube or TikTok link...',
+    tiktokPreview: 'TikTok preview',
   }
 };
 
