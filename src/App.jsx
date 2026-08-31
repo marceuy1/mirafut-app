@@ -1833,7 +1833,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
               {(viewProfile.height || viewProfile.weight || viewProfile.dominant_foot) && (
                 <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',textAlign:'left'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>Datos del jugador</div>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>{t.playerData}</div>
                   {viewProfile.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Altura</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.height} cm</div></div>}
                   {viewProfile.weight && viewProfile.account_type !== 'teen' && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Peso</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.weight} kg</div></div>}
                   {viewProfile.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Pie dominante</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.dominant_foot}</div></div>}
@@ -1842,7 +1842,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               )}
               {viewProfile.goal && (
                 <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',textAlign:'left'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>Objetivo</div>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>{t.goalLabel}</div>
                   <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
                     <span style={{fontSize:'20px'}}>🎯</span>
                     <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.4'}}>{viewProfile.goal}</div>
@@ -2055,24 +2055,24 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover"}} /> : <div className="prof-av">{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : "TU"}</div>}
               <div className="prof-name">{userProfile?.full_name || 'Tu nombre'}</div>
               <div className="prof-meta">{userProfile?.position ? `${userProfile.position} · ` : ''}{userProfile?.city ? `${userProfile.city}, ` : ''}{userProfile?.country}{userProfile?.age ? ` · ${userProfile.age} años` : ''}</div>
-              {!userProfile?.country && <div style={{color:'#00E676',fontSize:'12px',marginTop:'4px',display:'flex',alignItems:'center',gap:'5px'}}><Sparkles size={13} /> Completa tu perfil para que los scouts te encuentren</div>}
+              {!userProfile?.country && <div style={{color:'#00E676',fontSize:'12px',marginTop:'4px',display:'flex',alignItems:'center',gap:'5px'}}><Sparkles size={13} /> {t.completeProfile}</div>}
               <div className="prof-stats">
-                <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">Seguidores</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">{followingList.length}</div><div className="prof-stat-l">Siguiendo</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">{realPosts.filter(p => p.user_id === session?.user?.id).length}</div><div className="prof-stat-l">Posts</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">{t.followers}</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{followingList.length}</div><div className="prof-stat-l">{t.following}</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{realPosts.filter(p => p.user_id === session?.user?.id).length}</div><div className="prof-stat-l">{t.posts}</div></div>
               </div>
               {(userProfile?.height || userProfile?.weight || userProfile?.dominant_foot) && (
                 <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',textAlign:'left'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>Datos del jugador</div>
-                  {userProfile?.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Altura</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.height} {userProfile.units==='imperial'?'ft':'cm'}</div></div>}
-                  {userProfile?.weight && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Peso</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.weight} {userProfile.units==='imperial'?'lbs':'kg'}</div></div>}
-                  {userProfile?.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Pie dominante</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.dominant_foot}</div></div>}
-                  {userProfile?.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Posición</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{userProfile.position}</div></div>}
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>{t.playerData}</div>
+                  {userProfile?.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.height}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.height} {userProfile.units==='imperial'?'ft':'cm'}</div></div>}
+                  {userProfile?.weight && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.weight}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.weight} {userProfile.units==='imperial'?'lbs':'kg'}</div></div>}
+                  {userProfile?.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.dominantFoot}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.dominant_foot}</div></div>}
+                  {userProfile?.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.positionLabel}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{userProfile.position}</div></div>}
                 </div>
               )}
               {userProfile?.goal && (
                 <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',textAlign:'left'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>Objetivo</div>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>{t.goalLabel}</div>
                   <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
                     <span style={{fontSize:'20px'}}>🎯</span>
                     <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.4'}}>{userProfile.goal}</div>
@@ -2082,17 +2082,17 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className="prof-btn pri" onClick={openEditProfile}>{t.editProfile}</button>
               <button className="prof-btn sec" onClick={() => {
                 const url = window.location.origin + '?u=' + (userProfile?.username || session?.user?.id);
-                navigator.clipboard.writeText(url).then(() => alert('✅ Link copiado — compártelo con scouts y agentes'));
-              }}><Link size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Compartir mi perfil</button>
-              <button className="prof-btn sec" onClick={() => setShowContact(true)}><Mail size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Cuéntanos tu historia</button>
+                navigator.clipboard.writeText(url).then(() => alert(t.linkCopiedScouts));
+              }}><Link size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.shareProfile}</button>
+              <button className="prof-btn sec" onClick={() => setShowContact(true)}><Mail size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.tellYourStory}</button>
               <button className="prof-btn sec" onClick={() => setShowSettings(true)}><Settings size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.settings}</button>
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}><LogOut size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.logout}</button>
               <div style={{height:'1px',background:'rgba(255,255,255,0.04)',margin:'12px 0'}}/>
               <button onClick={() => setShowHelp(true)} style={{width:'100%',padding:'11px',background:'transparent',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',color:'#ECEFF4',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
-                <span>💬</span> ¿Necesitas ayuda? Contáctanos
+                <span>💬</span> {t.needHelp}
               </button>
               <button onClick={() => setShowTerms(true)} style={{width:'100%',padding:'8px',background:'transparent',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                <ClipboardList size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Términos y Privacidad
+                <ClipboardList size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.termsPrivacyLink}
               </button>
               {realPosts.filter(p => p.user_id === session?.user?.id).length > 0 && (
                 <div style={{width:'100%',marginTop:'20px',textAlign:'left'}}>
