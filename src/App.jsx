@@ -611,12 +611,15 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      // TOKEN_REFRESHED se dispara en segundo plano (ej. al volver de otra pestaña)
-      // sin que cambie el usuario real. Actualizar el estado ahi reiniciaba el
-      // onboarding y cualquier otro efecto atado a [session] a mitad de camino.
-      if (_event === 'TOKEN_REFRESHED') return;
-      setSession(session);
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      // Supabase dispara este listener en varios eventos de fondo (refresco de
+      // token, recuperacion de sesion al volver de otra pestaña, etc.) sin que
+      // el usuario real haya cambiado. Actualizar el estado ahi reiniciaba el
+      // onboarding y todo el bloque de carga de datos atado a [session] a
+      // mitad de camino. Solo actualizamos si el usuario realmente cambio
+      // (login, logout, o switch de cuenta) — no por nombre de evento, que
+      // puede variar.
+      setSession(prev => (prev?.user?.id === newSession?.user?.id ? prev : newSession));
     });
 
     loadRealPosts();
