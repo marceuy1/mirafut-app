@@ -23,12 +23,6 @@ const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasio
 
 
 
-const CHATS = [
-  { id:1, name:"Lucía Fernández", av:"LF", last:"¡Gracias por el consejo!", time:"10m", unread:2 },
-  { id:2, name:"Comunidad Rosario", av:"🌎", last:"Diego: ¿Alguien para entrenar?", time:"1h", unread:15, group:true },
-  { id:3, name:"Santiago Medina", av:"SM", last:"Tu último video está increíble", time:"3h", unread:0 },
-];
-
 const SPECIALISTS = [
   { id:"coach", name:"Coach", emoji:"⚽", Icon:Goal, color:"#00E676", desc:"Tu mentor personal", intro:"¡Hola! Soy Coach, estoy aquí 24/7 para lo que necesites." },
   { id:"nutricion", name:"Nutrición", emoji:"🥗", Icon:Salad, color:"#FFB74D", desc:"Alimentación deportiva", intro:"Hola, puedo ayudarte a comer mejor con lo que tengas." },
