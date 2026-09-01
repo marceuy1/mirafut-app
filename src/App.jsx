@@ -1844,7 +1844,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div className="poc">{viewPost.text}</div>
                 {viewPost.image && (
                   <div className="pov">
-                    <div className="pov-label"><Camera size={14} style={{marginRight:6,verticalAlign:"-3px"}} />{t.postImage}</div>
+                    <img src={viewPost.image} alt={t.postImage} style={{width:'100%',borderRadius:'12px',objectFit:'cover',maxHeight:'420px',display:'block'}} />
                   </div>
                 )}
                 <div className="poa">
