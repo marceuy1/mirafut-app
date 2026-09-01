@@ -661,7 +661,6 @@ export default function App() {
     });
 
     loadRealPosts();
-    loadMyPosts();
     loadDebate();
     loadSorteo();
     loadWeeklyGoal();
@@ -707,6 +706,7 @@ export default function App() {
     if (session) {
       loadUserProfile(session.user.id);
       loadNotifications(session.user.id);
+      loadMyPosts();
       loadFollowing();
       loadBlocks();
       loadLikes();
