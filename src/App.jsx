@@ -2178,7 +2178,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{width:'100%',marginTop:'20px',textAlign:'left'}}>
                   <div style={{fontSize:'11px',color:'#556677',letterSpacing:'1px',textTransform:'uppercase',fontWeight:'700',marginBottom:'12px'}}>{t.myPosts}</div>
                   {myPosts.map(p => (
-                    <div key={p.id} style={{background:'#0a0e14',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'14px',marginBottom:'10px',cursor:'pointer'}} onClick={() => setViewPost({...p, av: userProfile?.full_name?.substring(0,2).toUpperCase(), name: userProfile?.full_name, time: new Date(p.created_at).toLocaleDateString(), text: p.content, likes: 0, comments: 0})}>
+                    <div key={p.id} style={{background:'#0a0e14',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'14px',marginBottom:'10px',cursor:'pointer',maxWidth:'600px'}} onClick={() => setViewPost({...p, av: userProfile?.full_name?.substring(0,2).toUpperCase(), name: userProfile?.full_name, time: new Date(p.created_at).toLocaleDateString(), text: p.content, likes: 0, comments: 0})}>
                       <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.5',marginBottom:'8px'}}>{p.content}</div>
                       {p.image_url && <img src={p.image_url} style={{width:'100%',borderRadius:'10px',marginBottom:'8px',objectFit:'cover',maxHeight:'160px'}} />}
                       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
