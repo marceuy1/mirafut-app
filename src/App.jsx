@@ -890,19 +890,12 @@ export default function App() {
     // El jugador esta respondiendo si entrena solo/acompañado y que material tiene.
     // Guardamos esa respuesta UNA sola vez por objetivo semanal y no volvemos a preguntar.
     if (awaitingTrainingContext && weeklyGoal) {
-      const mencionaMaterial = /pelota|bal[oó]n|material|cono|porter[ií]a|nada|ning[uú]n|sin equipo|sin material/i.test(displayText);
-      if (!mencionaMaterial) {
-        if (!partialTrainingContext) setPartialTrainingContext(displayText);
-        const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-        setAiMessages(m => [...m,
-          { id:Date.now(), from:"me", type:"text", text:displayText, time:now },
-          { id:Date.now()+1, from:currentAgent, type:"text", text:t.stillNeedMaterial, time:now }
-        ]);
-        return;
-      }
+      // Sin filtro por palabras clave: cualquier respuesta del jugador se toma
+      // como contexto valido y se manda directo al Coach real, que ya conoce
+      // la metodologia y puede preguntar de forma natural si le falta algo
+      // (en vez de repetir una linea fija por codigo, que se sentia artificial).
       setAwaitingTrainingContext(false);
-      const contextText = partialTrainingContext ? partialTrainingContext + ', ' + displayText : displayText;
-      setPartialTrainingContext('');
+      const contextText = displayText;
       try {
         await supabase.from('weekly_goals').update({ training_context: contextText }).eq('id', weeklyGoal.id);
       } catch (e) {
