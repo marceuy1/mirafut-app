@@ -667,9 +667,9 @@ export default function App() {
       loadLikes();
       loadChatList();
       setShowAuthPrompt(false);
-      supabase.from('profiles').select('position').eq('id', session.user.id).single().then(({ data }) => {
+      supabase.from('profiles').select('position, onboarding_seen').eq('id', session.user.id).single().then(({ data }) => {
         const skipped = localStorage.getItem('onboarding_skipped_' + session.user.id);
-        if (!data?.position && !skipped && !data?.onboarding_seen) { setShowOnboarding(true); setOnboardingStep(1); }
+        if (!data?.onboarding_seen && !skipped) { setShowOnboarding(true); setOnboardingStep(1); }
       });
     }
   }, [session]);
