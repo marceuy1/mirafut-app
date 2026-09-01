@@ -335,6 +335,7 @@ export default function App() {
   const [showNewPost, setShowNewPost] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
   const [realPosts, setRealPosts] = useState([]);
+  const [myPosts, setMyPosts] = useState([]);
   const [postsPage, setPostsPage] = useState(0);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const loaderRef = useRef(null);
@@ -624,6 +625,21 @@ export default function App() {
     }
   };
 
+  // Consulta dedicada por user_id, independiente de que tan lejos este
+  // paginado el feed global. Antes 'My Posts' filtraba sobre realPosts
+  // (que solo trae 10 posts de TODOS los usuarios por pagina), asi que
+  // un post propio mas viejo desaparecia apenas se acumulaban 10+ posts
+  // ajenos mas recientes, aunque siguiera perfecto en la base.
+  const loadMyPosts = async () => {
+    if (!session) return;
+    const { data } = await supabase
+      .from('posts')
+      .select('*, likes(count), comments(count)')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
+    if (data) setMyPosts(data);
+  };
+
   // Auth effect
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -645,6 +661,7 @@ export default function App() {
     });
 
     loadRealPosts();
+    loadMyPosts();
     loadDebate();
     loadSorteo();
     loadWeeklyGoal();
@@ -1075,7 +1092,7 @@ export default function App() {
     const realId = postId.toString().replace('real-', '');
     if (!window.confirm('¿Eliminar este post?')) return;
     const { error } = await supabase.from('posts').delete().eq('id', realId).eq('user_id', session.user.id);
-    if (!error) loadRealPosts();
+    if (!error) { loadRealPosts(); loadMyPosts(); }
   };
 
   const toggleRealLike = async (postId) => {
@@ -1281,6 +1298,7 @@ export default function App() {
       setNewPost(""); setPostImage(null); setPostImageUrl(null); setVideoUrl('');
       setShowNewPost(false);
       loadRealPosts();
+      loadMyPosts();
     }
   };
 
@@ -2159,7 +2177,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {realPosts.filter(p => p.user_id === session?.user?.id).length > 0 && (
                 <div style={{width:'100%',marginTop:'20px',textAlign:'left'}}>
                   <div style={{fontSize:'11px',color:'#556677',letterSpacing:'1px',textTransform:'uppercase',fontWeight:'700',marginBottom:'12px'}}>{t.myPosts}</div>
-                  {realPosts.filter(p => p.user_id === session?.user?.id).map(p => (
+                  {myPosts.map(p => (
                     <div key={p.id} style={{background:'#0a0e14',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'14px',padding:'14px',marginBottom:'10px',cursor:'pointer'}} onClick={() => setViewPost({...p, av: userProfile?.full_name?.substring(0,2).toUpperCase(), name: userProfile?.full_name, time: new Date(p.created_at).toLocaleDateString(), text: p.content, likes: 0, comments: 0})}>
                       <div style={{fontSize:'14px',color:'#ECEFF4',lineHeight:'1.5',marginBottom:'8px'}}>{p.content}</div>
                       {p.image_url && <img src={p.image_url} style={{width:'100%',borderRadius:'10px',marginBottom:'8px',objectFit:'cover',maxHeight:'160px'}} />}
