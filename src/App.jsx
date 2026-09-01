@@ -2551,15 +2551,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div style={{background:'#00E676',borderRadius:'14px',padding:'20px 16px 16px',marginBottom:'16px'}}>
                 <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'10px'}}>
-                  <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
-                    <rect width="100" height="100" rx="22" fill="#080808"/>
-                    <circle cx="50" cy="50" r="30" stroke="#00E676" strokeWidth="6" fill="none"/>
-                    <line x1="50" y1="8" x2="50" y2="18" stroke="#00E676" strokeWidth="6" strokeLinecap="round"/>
-                    <line x1="50" y1="82" x2="50" y2="92" stroke="#00E676" strokeWidth="6" strokeLinecap="round"/>
-                    <line x1="8" y1="50" x2="18" y2="50" stroke="#00E676" strokeWidth="6" strokeLinecap="round"/>
-                    <line x1="82" y1="50" x2="92" y2="50" stroke="#00E676" strokeWidth="6" strokeLinecap="round"/>
-                    <circle cx="50" cy="50" r="15" fill="#00E676"/>
-                  </svg>
+                  <Logo iconOnly size={36} />
                   <div>
                     <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.6)'}}>CÓMO FUNCIONA</div>
                     <div style={{fontSize:'20px',fontWeight:'900',color:'#0a0e14'}}>MiraFut Scouting</div>
