@@ -316,7 +316,9 @@ export default function App() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [currentAgent, setCurrentAgent] = useState("coach");
   const [aiMessages, setAiMessages] = useState([
-    { id:1, from:"coach", type:"text", text:"¡Hola! Soy tu Coach ⚽ Te acompaño en tu entrenamiento semanal según tu posición y objetivo. ¿Cómo te sientes hoy para entrenar?", time:"14:20" },
+    { id:1, from:"coach", type:"text", text: lang === 'en'
+        ? "Hi! I'm your Coach ⚽ I'll support you through your weekly training based on your position and goal. How are you feeling today to train?"
+        : "¡Hola! Soy tu Coach ⚽ Te acompaño en tu entrenamiento semanal según tu posición y objetivo. ¿Cómo te sientes hoy para entrenar?", time:"14:20" },
     { id:2, from:"coach", type:"suggestions", options:["Todo bien","Vengo de entrenar","🏟️ Vengo de jugar","Nervioso/a"], time:"14:20" },
   ]);
   const [aiInput, setAiInput] = useState("");
@@ -402,7 +404,9 @@ export default function App() {
     } else {
       setWeeklyGoal(null);
       setAiMessages([
-        { id:1, from:'coach', type:'text', text:'¡Hola! Soy tu Coach ⚽ Te acompaño en tu entrenamiento semanal según tu posición y objetivo. ¿Cómo te sientes hoy para entrenar?', time:'14:20' },
+        { id:1, from:'coach', type:'text', text: lang === 'en'
+          ? "Hi! I'm your Coach ⚽ I'll support you through your weekly training based on your position and goal. How are you feeling today to train?"
+          : '¡Hola! Soy tu Coach ⚽ Te acompaño en tu entrenamiento semanal según tu posición y objetivo. ¿Cómo te sientes hoy para entrenar?', time:'14:20' },
         { id:2, from:'coach', type:'suggestions', options:['Todo bien','Vengo de entrenar','🏟️ Vengo de jugar','Nervioso/a'], time:'14:20' }
       ]);
     }
@@ -490,7 +494,9 @@ export default function App() {
     setAwaitingFinalReflection(false);
     setTab('coach');
     setAiMessages([
-      { id:1, from:'coach', type:'text', text:'Perfecto, ' + (userProfile?.full_name?.split(' ')[0] || '') + '. Esta semana vamos a trabajar: ' + goal + '. ¿Entrenas normalmente solo o con alguien, y qué material tienes disponible (pelota, conos, portería, etc.)?', time:new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}) }
+      { id:1, from:'coach', type:'text', text: lang === 'en'
+        ? 'Perfect, ' + (userProfile?.full_name?.split(' ')[0] || '') + "! This week we'll work on: " + (translations.en.goalLabels?.[goal] || goal) + '. Do you usually train alone or with someone, and what equipment do you have available (ball, cones, goal, etc.)?'
+        : 'Perfecto, ' + (userProfile?.full_name?.split(' ')[0] || '') + '. Esta semana vamos a trabajar: ' + goal + '. ¿Entrenas normalmente solo o con alguien, y qué material tienes disponible (pelota, conos, portería, etc.)?', time:new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}) }
     ]);
     // La pregunta de arriba SI espera una respuesta de solo/material: activamos la captura.
     setAwaitingTrainingContext(true);
