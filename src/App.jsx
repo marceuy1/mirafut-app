@@ -21,46 +21,7 @@ import { Home, Goal, MessageCircle, Target, Globe, Hand, Shield, Settings, Zap, 
 // ============ SIMULATED DATA ============
 const CURRENT_USER = { id: 0, name: "Tú", avatar: "TU", bio: "Futbolista apasionado", followers: 45, following: 67, verified: false };
 
-const USERS = [
-  { id:1, name:"Santiago Medina", age:16, country:"Colombia", city:"Tumaco", position:"DEL", avatar:"SM", verified:true, followers:342, following:89, bio:"Delantero rápido. Sueño con Europa." },
-  { id:2, name:"Lucía Fernández", age:17, country:"Argentina", city:"Rosario", position:"DEL", avatar:"LF", verified:true, followers:891, following:120, bio:"Goleadora de Rosario. Rumbo al profesionalismo." },
-  { id:3, name:"Amara Diallo", age:15, country:"Senegal", city:"Thiès", position:"MED", avatar:"AD", verified:false, followers:156, following:45, bio:"Mediocampista creativo." },
-  { id:4, name:"Diego Paredes", age:17, country:"Ecuador", city:"Esmeraldas", position:"MED", avatar:"DP", verified:true, followers:534, following:102, bio:"El fútbol me salvó." },
-  { id:5, name:"Fatou Mbaye", age:15, country:"Senegal", city:"Dakar", position:"DEL", avatar:"FM", verified:false, followers:177, following:56, bio:"Empecé descalza en la playa." },
-  { id:6, name:"Carlos Ruiz", age:16, country:"México", city:"Oaxaca", position:"POR", avatar:"CR", verified:true, followers:423, following:112, bio:"Portero con reflejos de gato." },
-  { id:7, name:"Aisha Kamara", age:17, country:"Ghana", city:"Accra", position:"DEF", avatar:"AK", verified:false, followers:289, following:67, bio:"Defensa central fuerte." },
-  { id:8, name:"Mateo Silva", age:15, country:"Uruguay", city:"Montevideo", position:"MED", avatar:"MS", verified:true, followers:567, following:134, bio:"Juego simple, efectivo." },
-  { id:9, name:"Kwame Asante", age:16, country:"Ghana", city:"Kumasi", position:"DEF", avatar:"KA", verified:false, followers:210, following:67, bio:"Defensa rápido con salida limpia." },
-  { id:10, name:"Isabella Torres", age:16, country:"Colombia", city:"Medellín", position:"DEL", avatar:"IT", verified:true, followers:701, following:98, bio:"Velocidad y definición. Antioquia!" },
-  { id:11, name:"Thierno Ba", age:17, country:"Senegal", city:"Saint-Louis", position:"MED", avatar:"TB", verified:false, followers:198, following:54, bio:"Mediocampista elegante." },
-  { id:12, name:"Valentina López", age:15, country:"Chile", city:"Valparaíso", position:"DEF", avatar:"VL", verified:false, followers:312, following:78, bio:"Defensa aguerrida. No paso ni una." },
-  { id:13, name:"André Costa", age:17, country:"Brasil", city:"Salvador", position:"DEL", avatar:"AC", verified:true, followers:834, following:156, bio:"Ginga brasileña. El fútbol es arte." },
-  { id:14, name:"Zara Ndiaye", age:16, country:"Senegal", city:"Ziguinchor", position:"MED", avatar:"ZN", verified:false, followers:267, following:61, bio:"Juego con corazón y técnica." },
-  { id:15, name:"Emiliano Vargas", age:16, country:"Perú", city:"Callao", position:"DEL", avatar:"EV", verified:true, followers:445, following:89, bio:"Delantero del puerto chalaco." },
-  { id:16, name:"Kofi Mensah", age:15, country:"Ghana", city:"Tema", position:"MED", avatar:"KM", verified:false, followers:178, following:43, bio:"Mediocampista box-to-box." },
-  { id:17, name:"Camila Reyes", age:17, country:"México", city:"Guadalajara", position:"POR", avatar:"CRe", verified:true, followers:389, following:92, bio:"Primera portera de mi barrio." },
-  { id:18, name:"Moussa Keita", age:16, country:"Mali", city:"Bamako", position:"DEF", avatar:"MK", verified:false, followers:234, following:58, bio:"Defensa central. Torre de Bamako." },
-  { id:19, name:"Sofía Morales", age:15, country:"Paraguay", city:"Asunción", position:"MED", avatar:"SMo", verified:false, followers:298, following:71, bio:"Mediocampista creativa." },
-  { id:20, name:"Emmanuel Osei", age:17, country:"Ghana", city:"Cape Coast", position:"DEL", avatar:"EO", verified:true, followers:512, following:103, bio:"Delantero letal. Heredé el gol." },
-];
 
-const POSTS = [
-  { id:1, userId:1, name:"Santiago Medina", av:"SM", verified:true, time:"2h", text:"Hat-trick hoy en el campeonato municipal ⚽⚽⚽ Gracias a Dios y a mi equipo 🙏", image:"game", likes:87, comments:12, liked:false, commentList:[{u:"Lucía Fernández",t:"Crack! 🔥"},{u:"Diego Paredes",t:"Vamos hermano!"}] },
-  { id:2, userId:2, name:"Lucía Fernández", av:"LF", verified:true, time:"5h", text:"Entrenar bajo la lluvia ☔ no es excusa, es mentalidad 💪", image:"training", likes:234, comments:31, liked:true, commentList:[{u:"Santiago Medina",t:"Así se hace!"},{u:"Amara Diallo",t:"Inspiradora 👏"}] },
-  { id:3, userId:5, name:"Fatou Mbaye", av:"FM", verified:false, time:"1d", text:"Primer gol con la selección sub-16 de Senegal 🇸🇳⚽ Un sueño hecho realidad", image:"goal", likes:445, comments:67, liked:false, commentList:[{u:"Diego Paredes",t:"Felicidades! 🎉"},{u:"Lucía Fernández",t:"Qué orgullo 💚"}] },
-  { id:4, userId:4, name:"Diego Paredes", av:"DP", verified:true, time:"2d", text:"Alguien más entrenando solo en casa? Compartan sus rutinas 👇", image:null, likes:123, comments:45, liked:false, commentList:[{u:"Santiago Medina",t:"Yo hago 100 toques diarios"},{u:"Amara Diallo",t:"Yo trabajo pase con la pared"}] },
-  { id:5, userId:3, name:"Amara Diallo", av:"AD", verified:false, time:"3d", text:"Mi coach me dijo: 'El talento te abre puertas, el trabajo duro te mantiene dentro' 💯", image:null, likes:298, comments:22, liked:true, commentList:[{u:"Fatou Mbaye",t:"Verdad absoluta"},{u:"Santiago Medina",t:"Para tatuar"}] },
-  { id:6, userId:13, name:"André Costa", av:"AC", verified:true, time:"4h", text:"Trabajando el regate brasileño con mi hermano menor 🇧🇷⚽ Nunca es tarde para empezar!", image:"training", likes:412, comments:38, liked:false, commentList:[{u:"Mateo Silva",t:"Eso es hermandad"},{ u:"Isabella Torres",t:"Qué lindo 💛"}] },
-  { id:7, userId:10, name:"Isabella Torres", av:"IT", verified:true, time:"8h", text:"Gol en el último minuto para clasificar a semifinales! 🔥 Medellín lo hicimos!", image:"goal", likes:567, comments:89, liked:true, commentList:[{u:"Carlos Ruiz",t:"Golazo!"},{u:"André Costa",t:"Clutch 🎯"}] },
-  { id:8, userId:7, name:"Aisha Kamara", av:"AK", verified:false, time:"12h", text:"Defensa no es solo quitar balones, es empezar el juego. Salida limpia > despeje largo", image:null, likes:189, comments:24, liked:false, commentList:[{u:"Valentina López",t:"Exacto!"},{u:"Moussa Keita",t:"Así se habla"}] },
-  { id:9, userId:15, name:"Emiliano Vargas", av:"EV", verified:true, time:"1d", text:"Mi barrio, mi cancha, mi sueño ⚽ Callao presente! 🇵🇪", image:"game", likes:334, comments:41, liked:false, commentList:[{u:"Diego Paredes",t:"Vamos Perú!"},{u:"Sofía Morales",t:"Orgullo sudamericano"}] },
-  { id:10, userId:8, name:"Mateo Silva", av:"MS", verified:true, time:"1d", text:"Hoy entrené con jugadores 3 años mayores. Me costó pero aprendí mucho 💪", image:null, likes:276, comments:33, liked:true, commentList:[{u:"Thierno Ba",t:"Esa es la actitud"},{u:"Kofi Mensah",t:"Seguí así!"}] },
-  { id:11, userId:20, name:"Emmanuel Osei", av:"EO", verified:true, time:"2d", text:"Mi abuelo jugó en los 80s, mi padre en los 2000s, yo voy por el 2030 🙌🏿 Legado familiar", image:null, likes:445, comments:52, liked:false, commentList:[{u:"Aisha Kamara",t:"Qué historia!"},{u:"Zara Ndiaye",t:"Ghana power 💪🏿"}] },
-  { id:12, userId:6, name:"Carlos Ruiz", av:"CR", verified:true, time:"2d", text:"Atajada del partido! A veces un portero también gana juegos ✋⚽", image:"game", likes:389, comments:47, liked:true, commentList:[{u:"Camila Reyes",t:"Porteros unidos!"},{u:"Santiago Medina",t:"Salvaste el partido"}] },
-  { id:13, userId:17, name:"Camila Reyes", av:"CRe", verified:true, time:"3d", text:"Ser la única chica en un equipo de hombres no me asusta, me motiva 💪 #RompiendoEsquemas", image:null, likes:678, comments:92, liked:true, commentList:[{u:"Isabella Torres",t:"Inspiradora!"},{u:"Lucía Fernández",t:"Así se hace! 🔥"}] },
-  { id:14, userId:11, name:"Thierno Ba", av:"TB", verified:false, time:"3d", text:"El fútbol me enseñó a ser paciente. A veces el pase correcto es esperar un segundo más", image:null, likes:234, comments:28, liked:false, commentList:[{u:"Amara Diallo",t:"Filosofía pura"},{u:"Mateo Silva",t:"Verdad"}] },
-  { id:15, userId:19, name:"Sofía Morales", av:"SMo", verified:false, time:"4d", text:"Paraguay 🇵🇾 Pequeño pero con mucho corazón! Entrenando para el sudamericano sub-16", image:"training", likes:312, comments:35, liked:false, commentList:[{u:"Emiliano Vargas",t:"Vamos Paraguay!"},{u:"Valentina López",t:"Sudamérica unida"}] },
-];
 
 const CHATS = [
   { id:1, name:"Lucía Fernández", av:"LF", last:"¡Gracias por el consejo!", time:"10m", unread:2 },
@@ -1777,7 +1738,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {filteredPosts.map(p => (
                 <div key={p.id} className="post">
                   {p.image ? (
-                    <div className="pov" onClick={() => { if(p.id.toString().startsWith("real-")) { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal,account_type:data.account_type}); }); } else setViewProfile(USERS.find(u=>u.id===p.userId)); }}>
+                    <div className="pov" onClick={() => { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal,account_type:data.account_type}); }); }}>
                       <img src={IMG[p.image] || p.image} alt="" />
                       <div className="pov-overlay"/>
                       {p.position && <div className="pov-badge">{p.position}</div>}
@@ -1790,7 +1751,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       </div>
                     </div>
                   ) : (
-                    <div className="poh" onClick={() => { if(p.id.toString().startsWith("real-")) { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal,account_type:data.account_type}); }); } else setViewProfile(USERS.find(u=>u.id===p.userId)); }}>
+                    <div className="poh" onClick={() => { supabase.from("profiles").select("*").eq("id", p.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal,account_type:data.account_type}); }); }}>
                       {p.avatar_url ? <img src={p.avatar_url} style={{width:'40px',height:'40px',borderRadius:'12px',objectFit:'cover',flexShrink:0}} /> : <div className="poav">{p.av}</div>}
                       <div className="poi">
                         <div className="pon">{p.name} {p.verified && <V/>}</div>
@@ -1834,7 +1795,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div style={{padding:'0 0 20px'}}>
               <button className="hb" style={{margin:'10px 16px'}} onClick={() => setViewPost(null)}>{t.backToFeed}</button>
               <div className="post" style={{margin:'0 16px 14px'}}>
-                <div className="poh" onClick={() => setViewProfile(USERS.find(u=>u.id===viewPost.userId))}>
+                <div className="poh" onClick={() => { supabase.from("profiles").select("*").eq("id", viewPost.userId).single().then(({data}) => { if(data) setViewProfile({id:data.id,name:data.full_name,avatar:data.full_name?.substring(0,2).toUpperCase(),avatar_url:data.avatar_url,position:data.position||"",country:data.country||"",city:data.city||"",age:data.age||"",bio:data.bio||"",verified:data.verified||false,followers:0,following:0,height:data.height,weight:data.weight,dominant_foot:data.dominant_foot,goal:data.goal,account_type:data.account_type}); }); }}>
                   <div className="poav">{viewPost.av}</div>
                   <div className="poi">
                     <div className="pon">{viewPost.name} {viewPost.verified && <V/>}</div>
