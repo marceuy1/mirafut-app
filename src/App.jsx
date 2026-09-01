@@ -2139,7 +2139,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">{t.followers}</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{followingList.length}</div><div className="prof-stat-l">{t.following}</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">{realPosts.filter(p => p.user_id === session?.user?.id).length}</div><div className="prof-stat-l">{t.posts}</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{myPosts.length}</div><div className="prof-stat-l">{t.posts}</div></div>
               </div>
               {(userProfile?.height || userProfile?.weight || userProfile?.dominant_foot) && (
                 <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',textAlign:'left'}}>
@@ -2174,7 +2174,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button onClick={() => setShowTerms(true)} style={{width:'100%',padding:'8px',background:'transparent',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
                 <ClipboardList size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.termsPrivacyLink}
               </button>
-              {realPosts.filter(p => p.user_id === session?.user?.id).length > 0 && (
+              {myPosts.length > 0 && (
                 <div style={{width:'100%',marginTop:'20px',textAlign:'left'}}>
                   <div style={{fontSize:'11px',color:'#556677',letterSpacing:'1px',textTransform:'uppercase',fontWeight:'700',marginBottom:'12px'}}>{t.myPosts}</div>
                   {myPosts.map(p => (
