@@ -432,7 +432,9 @@ export default function App() {
           id: Date.now(),
           from: 'coach',
           type: 'text',
-          text: '🏆 ¡Lo lograste' + (nombre ? ', ' + nombre : '') + '! Completaste las ' + targetCerrado + ' sesiones de ' + goalCerrado + ' esta semana. Cuéntame, ¿cómo sentiste tu progreso?',
+          text: lang === 'en'
+            ? '🏆 You did it' + (nombre ? ', ' + nombre : '') + "! You completed all " + targetCerrado + ' sessions of ' + (translations.en.goalLabels?.[goalCerrado] || goalCerrado) + ' this week. Tell me, how do you feel about your progress?'
+            : '🏆 ¡Lo lograste' + (nombre ? ', ' + nombre : '') + '! Completaste las ' + targetCerrado + ' sesiones de ' + goalCerrado + ' esta semana. Cuéntame, ¿cómo sentiste tu progreso?',
           time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
         }]);
         setTimeout(() => {
@@ -456,7 +458,9 @@ export default function App() {
             id: Date.now(),
             from: 'coach',
             type: 'text',
-            text: '💪 Sesión ' + newDone + ' completada. ¿Cómo te fue? ¿Cómo te sentiste?',
+            text: lang === 'en'
+              ? '💪 Session ' + newDone + ' completed. How did it go? How did you feel?'
+              : '💪 Sesión ' + newDone + ' completada. ¿Cómo te fue? ¿Cómo te sentiste?',
             time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
           },
           {

@@ -323,6 +323,12 @@ export const translations = {
       'Nervioso/a': 'Nervous',
       'Sí, vamos': "Yes, let's go",
       'Hoy no puedo': "Can't today",
+      'Muy bien': 'Very good',
+      'Bien, pero me costó': 'Good, but it was tough',
+      'Difícil': 'Difficult',
+      'Sí, mejoré mucho': 'Yes, I improved a lot',
+      'Algo, sigo trabajando': "Somewhat, I'm still working on it",
+      'Todavía no lo noto': "I don't notice it yet",
     },
     goalLabels: {
       'Mejorar mis reflejos': 'Improve my reflexes',

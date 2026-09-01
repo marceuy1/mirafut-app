@@ -292,7 +292,7 @@ Usa esta informacion directamente. NO preguntes de nuevo si entrena solo o que m
       : `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. Debe avanzar tecnicamente sobre las sesiones anteriores (mas repeticiones, mas velocidad, mayor dificultad tecnica, o el siguiente paso logico). Elegi variantes distintas a las ya usadas.`;
 
     goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0} de ${perfil.sessions_target || 3}.
-LA PROXIMA SESION A GENERAR ES EXACTAMENTE LA NUMERO ${numeroSesionCorrecta}. Usa ese numero exacto en el encabezado "Sesion ${numeroSesionCorrecta}", nunca otro numero. NO escribas ninguna frase sobre entrenar solo/companeros al inicio, eso lo agregamos nosotros por separado.
+LA PROXIMA SESION A GENERAR ES EXACTAMENTE LA NUMERO ${numeroSesionCorrecta}. Usa ese numero exacto en el encabezado "${lang === 'en' ? 'Session' : 'Sesion'} ${numeroSesionCorrecta}", nunca otro numero. NO escribas ninguna frase sobre entrenar solo/companeros al inicio, eso lo agregamos nosotros por separado.
 ${contextoMetodologico}
 
 ${instruccionesPreguntar}
@@ -320,7 +320,7 @@ ENSEÑA, NO SOLO PRESCRIBAS: despues de donde nosotros insertemos la frase de co
 FORMATO DE RESPUESTA (${duracionTotal} min total para ${edad} anos):
 [1-2 lineas de explicacion pedagogica del objetivo de hoy — NO menciones aqui si entrena solo o acompañado, eso ya esta resuelto aparte]
 
-Sesion ${numeroSesionCorrecta} — [Objetivo especifico] — ${duracionTotal} min
+${lang === 'en' ? 'Session' : 'Sesion'} ${numeroSesionCorrecta} — [Objetivo especifico] — ${duracionTotal} min
 
 1. [Nombre drill especifico] — [X min]
    Series: X | Reps: X | Descanso: X seg
@@ -395,6 +395,7 @@ No uses asteriscos ni markdown. Texto plano.`;
     if (perfil?.weekly_goal && !objetivoCompletado) {
       reply = reply.replace(/Sesion\s*\d+/gi, 'Sesion ' + numeroSesionCorrecta);
       reply = reply.replace(/Sesión\s*\d+/gi, 'Sesión ' + numeroSesionCorrecta);
+      reply = reply.replace(/Session\s*\d+/gi, 'Session ' + numeroSesionCorrecta);
     }
 
     if (fraseHonestidad) {
