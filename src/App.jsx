@@ -939,7 +939,7 @@ export default function App() {
     }
 
     const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-    setAiMessages(m => [...m, { id:Date.now(), from:"me", type:"text", text:textoVisible, time:now }]);
+    setAiMessages(m => [...m, { id:Date.now(), from:"me", type:"text", text: t.suggestionLabels?.[textoVisible] || textoVisible, time:now }]);
     setAiInput("");
     setThinking(true);
 
