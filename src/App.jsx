@@ -2356,22 +2356,22 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             </div>
             {onboardingStep === 1 && (
               <div>
-                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>¡Bienvenido! 👋</div>
-                <div style={{fontSize:'14px',color:'#556677',marginBottom:'12px'}}>Paso 1 de 3 — Tu identidad</div>
-                <div style={{fontSize:'13px',color:'rgba(255,255,255,0.35)',fontStyle:'italic',marginBottom:'20px',lineHeight:'1.5',padding:'0 8px'}}>No te prometemos que te van a descubrir. Te ayudamos a convertirte en el jugador que merece ser descubierto.</div>
+                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>{t.onboardingWelcomeTitle}</div>
+                <div style={{fontSize:'14px',color:'#556677',marginBottom:'12px'}}>{t.onboardingStep1}</div>
+                <div style={{fontSize:'13px',color:'rgba(255,255,255,0.35)',fontStyle:'italic',marginBottom:'20px',lineHeight:'1.5',padding:'0 8px'}}>{t.onboardingDisclaimer}</div>
                 <div style={{textAlign:'center',marginBottom:'24px'}}>
                   <label style={{cursor:'pointer'}}>
                     {userProfile?.avatar_url
                       ? <img src={userProfile.avatar_url} style={{width:'80px',height:'80px',borderRadius:'24px',objectFit:'cover',margin:'0 auto 8px',display:'block'}} />
                       : <div style={{width:'80px',height:'80px',borderRadius:'24px',background:'#121820',border:'2px dashed rgba(0,230,118,0.4)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',margin:'0 auto 8px'}}>
                           <span><Camera size={24} /></span>
-                          <span style={{fontSize:'10px',color:'#556677',marginTop:'4px'}}>Subir foto (opcional)</span>
+                          <span style={{fontSize:'10px',color:'#556677',marginTop:'4px'}}>{t.uploadPhotoOptional}</span>
                         </div>
                     }
                     <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files[0] && uploadAvatar(e.target.files[0])} />
                   </label>
                 </div>
-                {[{label:'Nombre completo',key:'full_name',placeholder:'Tu nombre'},{label:'Usuario',key:'username',placeholder:'@usuario'},{label:'Biografía (opcional)',key:'bio',placeholder:'Cuéntanos sobre ti...'}].map(f => (
+                {[{label:t.fullNameLabel,key:'full_name',placeholder:t.yourNamePlaceholder},{label:t.usernameLabel,key:'username',placeholder:t.usernamePlaceholder},{label:t.bioLabelOptional,key:'bio',placeholder:t.yourBioPlaceholder}].map(f => (
                   <div key={f.key} style={{marginBottom:'14px'}}>
                     <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{f.label}</div>
                     <input type="text" value={onboardingForm[f.key]||''} onChange={e => setOnboardingForm(prev=>({...prev,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
@@ -2381,10 +2381,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             )}
             {onboardingStep === 2 && (
               <div>
-                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>Tu posición ⚽</div>
-                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 2 de 3 — Dónde juegas</div>
+                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>{t.yourPositionTitle}</div>
+                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>{t.onboardingStep2}</div>
                 <div style={{marginBottom:'14px'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Posición</div>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>{t.positionLabel}</div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                     {[{v:'POR',e:'🧤'},{v:'DEF',e:'🛡️'},{v:'MED',e:'⚙️'},{v:'DEL',e:'⚡'}].map(p => (
                       <div key={p.v} onClick={() => setOnboardingForm(prev=>({...prev,position:p.v}))} style={{padding:'14px',background:onboardingForm.position===p.v?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.position===p.v?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center'}}>
@@ -2394,25 +2394,25 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     ))}
                   </div>
                 </div>
-                {[{label:'País',key:'country',placeholder:'Tu país'},{label:'Ciudad',key:'city',placeholder:'Tu ciudad'},{label:'Club o equipo (opcional)',key:'club',placeholder:'Nombre de tu club o equipo'}].map(f => (
+                {[{label:t.countryLabel,key:'country',placeholder:t.yourCountryPlaceholder},{label:t.cityLabel,key:'city',placeholder:t.yourCityPlaceholder},{label:t.clubLabel,key:'club',placeholder:t.clubPlaceholder}].map(f => (
                   <div key={f.key} style={{marginBottom:'14px'}}>
                     <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{f.label}</div>
                     <input type={f.type||'text'} value={onboardingForm[f.key]||''} onChange={e => setOnboardingForm(prev=>({...prev,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
                   </div>
                 ))}
                 <div style={{marginBottom:'14px'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Nivel competitivo</div>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>{t.levelLabel}</div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
-                    {['Recreativo','Amateur','Semi-profesional','Academia'].map(n => (
-                      <div key={n} onClick={()=>setOnboardingForm(prev=>({...prev,level:n}))} style={{padding:'10px',background:onboardingForm.level===n?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.level===n?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'600',color:onboardingForm.level===n?'#00E676':'#8899A6'}}>{n}</div>
+                    {[{v:'Recreativo',l:t.levelRecreational},{v:'Amateur',l:t.levelAmateur},{v:'Semi-profesional',l:t.levelSemiPro},{v:'Academia',l:t.levelAcademy}].map(o => (
+                      <div key={o.v} onClick={()=>setOnboardingForm(prev=>({...prev,level:o.v}))} style={{padding:'10px',background:onboardingForm.level===o.v?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.level===o.v?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'600',color:onboardingForm.level===o.v?'#00E676':'#8899A6'}}>{o.l}</div>
                     ))}
                   </div>
                 </div>
                 <div style={{marginBottom:'14px'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>¿Cuántas veces entrenas por semana?</div>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>{t.trainingFreqLabel}</div>
                   <div style={{display:'flex',gap:'8px'}}>
                     {['1-2','3-4','5+'].map(f => (
-                      <div key={f} onClick={()=>setOnboardingForm(prev=>({...prev,training_freq:f}))} style={{flex:1,padding:'10px',background:onboardingForm.training_freq===f?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.training_freq===f?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'13px',fontWeight:'600',color:onboardingForm.training_freq===f?'#00E676':'#8899A6'}}>{f} días</div>
+                      <div key={f} onClick={()=>setOnboardingForm(prev=>({...prev,training_freq:f}))} style={{flex:1,padding:'10px',background:onboardingForm.training_freq===f?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.training_freq===f?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'13px',fontWeight:'600',color:onboardingForm.training_freq===f?'#00E676':'#8899A6'}}>{f} {t.daysSuffix}</div>
                     ))}
                   </div>
                 </div>
@@ -2420,8 +2420,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             )}
             {onboardingStep === 3 && (
               <div>
-                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>Datos físicos 💪</div>
-                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>Paso 3 de 3 — Tu ficha de jugador</div>
+                <div style={{fontSize:'22px',fontWeight:'800',color:'#ECEFF4',marginBottom:'4px'}}>{t.physicalDataTitle}</div>
+                <div style={{fontSize:'14px',color:'#556677',marginBottom:'24px'}}>{t.onboardingStep3}</div>
                 <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
                   <button onClick={()=>setOnboardingForm(prev=>({...prev,units:'metric'}))} style={{flex:1,padding:'8px',background:onboardingForm.units!=='imperial'?'#00E676':'#121820',border:'none',borderRadius:'10px',color:onboardingForm.units!=='imperial'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',fontSize:'12px'}}>cm / kg</button>
                   <button onClick={()=>setOnboardingForm(prev=>({...prev,units:'imperial'}))} style={{flex:1,padding:'8px',background:onboardingForm.units==='imperial'?'#00E676':'#121820',border:'none',borderRadius:'10px',color:onboardingForm.units==='imperial'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif',fontSize:'12px'}}>ft / lbs</button>
@@ -2437,27 +2437,27 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   </div>
                 </div>
                 <div style={{marginBottom:'14px'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>Pie dominante</div>
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'8px'}}>{t.dominantFootLabel}</div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px'}}>
-                    {['Derecho','Izquierdo','Ambos'].map(p => (
-                      <div key={p} onClick={() => setOnboardingForm(prev=>({...prev,dominant_foot:p}))} style={{padding:'10px',background:onboardingForm.dominant_foot===p?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.dominant_foot===p?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'700',color:onboardingForm.dominant_foot===p?'#00E676':'#ECEFF4'}}>
-                        {p}
+                    {[{v:'Derecho',l:t.rightFoot},{v:'Izquierdo',l:t.leftFoot},{v:'Ambos',l:t.bothFeet}].map(o => (
+                      <div key={o.v} onClick={() => setOnboardingForm(prev=>({...prev,dominant_foot:o.v}))} style={{padding:'10px',background:onboardingForm.dominant_foot===o.v?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.dominant_foot===o.v?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center',fontSize:'12px',fontWeight:'700',color:onboardingForm.dominant_foot===o.v?'#00E676':'#ECEFF4'}}>
+                        {o.l}
                       </div>
                     ))}
                   </div>
                 </div>
                 <div style={{marginBottom:'14px'}}>
-                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Objetivo</div>
-                  <input type="text" value={onboardingForm.goal} onChange={e=>setOnboardingForm(prev=>({...prev,goal:e.target.value}))} placeholder="Ej: Busco academia profesional en Europa" style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
+                  <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{t.goalLabel}</div>
+                  <input type="text" value={onboardingForm.goal} onChange={e=>setOnboardingForm(prev=>({...prev,goal:e.target.value}))} placeholder={t.goalPlaceholder} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
                 </div>
               </div>
             )}
             <div style={{marginTop:'auto',paddingTop:'20px'}}>
               <button onClick={() => { if(onboardingStep < 3) setOnboardingStep(s=>s+1); else saveOnboarding(); }} style={{width:'100%',padding:'14px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'16px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                {onboardingStep < 3 ? 'Continuar →' : '¡Empezar! 🚀'}
+                {onboardingStep < 3 ? t.continueBtn : t.startBtn}
               </button>
               <div onClick={() => { setShowOnboarding(false); if(session) { localStorage.setItem('onboarding_skipped_' + session.user.id, '1'); supabase.from('profiles').update({onboarding_seen: true}).eq('id', session.user.id); } }} style={{textAlign:'center',marginTop:'12px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>
-                Completar después
+                {t.completeLater}
               </div>
             </div>
           </div>
