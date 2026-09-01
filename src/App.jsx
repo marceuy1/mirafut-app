@@ -316,7 +316,7 @@ export default function App() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [currentAgent, setCurrentAgent] = useState("coach");
   const [aiMessages, setAiMessages] = useState([
-    { id:1, from:"coach", type:"text", text:"¡Hola! Soy tu Coach ⚽ Te ayudo a mejorar con sesiones de entrenamiento personalizadas según tu posición y objetivo semanal. Tocá 'Establecer objetivo de la semana' abajo para empezar tu primera semana.", time:"14:20" },
+    { id:1, from:"coach", type:"text", text:"¡Hola! Soy tu Coach ⚽ Te acompaño en tu entrenamiento semanal según tu posición y objetivo. ¿Cómo te sientes hoy para entrenar?", time:"14:20" },
     { id:2, from:"coach", type:"suggestions", options:["Todo bien","Vengo de entrenar","🏟️ Vengo de jugar","Nervioso/a"], time:"14:20" },
   ]);
   const [aiInput, setAiInput] = useState("");
@@ -402,7 +402,7 @@ export default function App() {
     } else {
       setWeeklyGoal(null);
       setAiMessages([
-        { id:1, from:'coach', type:'text', text:'¡Hola! Soy tu Coach ⚽ Te ayudo a mejorar con sesiones de entrenamiento personalizadas según tu posición y objetivo semanal. Tocá "Establecer objetivo de la semana" abajo para empezar tu primera semana.', time:'14:20' },
+        { id:1, from:'coach', type:'text', text:'¡Hola! Soy tu Coach ⚽ Te acompaño en tu entrenamiento semanal según tu posición y objetivo. ¿Cómo te sientes hoy para entrenar?', time:'14:20' },
         { id:2, from:'coach', type:'suggestions', options:['Todo bien','Vengo de entrenar','🏟️ Vengo de jugar','Nervioso/a'], time:'14:20' }
       ]);
     }
