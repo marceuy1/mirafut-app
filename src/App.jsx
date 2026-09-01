@@ -1729,6 +1729,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {/* ====== HOME FEED ====== */}
           {tab === "home" && !viewPost && !viewProfile && (
             <div className="posts-grid">
+              {filteredPosts.length === 0 && (
+                <div style={{textAlign:'center',padding:'48px 20px',color:'#556677',fontSize:'14px'}}>{t.communityStarting}</div>
+              )}
               {filteredPosts.map(p => (
                 <div key={p.id} className="post">
                   {p.image ? (
