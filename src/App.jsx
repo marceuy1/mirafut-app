@@ -612,6 +612,10 @@ export default function App() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      // TOKEN_REFRESHED se dispara en segundo plano (ej. al volver de otra pestaña)
+      // sin que cambie el usuario real. Actualizar el estado ahi reiniciaba el
+      // onboarding y cualquier otro efecto atado a [session] a mitad de camino.
+      if (_event === 'TOKEN_REFRESHED') return;
       setSession(session);
     });
 
