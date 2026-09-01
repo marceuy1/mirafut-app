@@ -1,4 +1,16 @@
 import { supabase } from './supabaseClient';
+
+// Analytics minimos para Beta 1: un evento = una fila en la tabla `events`.
+// Nunca pasar contenido de usuario (texto de posts, mensajes, objetivo escrito,
+// etc.) en metadata; solo valores tecnicos controlados (ej. session_number).
+async function trackEvent(userId, eventName, metadata = null) {
+  if (!userId) return;
+  try {
+    await supabase.from('events').insert([{ user_id: userId, event_name: eventName, metadata }]);
+  } catch (e) {
+    console.error('trackEvent error:', e);
+  }
+}
 import { translations, getLanguage } from './translations';
 import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
@@ -126,6 +138,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
         if (data.user) {
           const { error: profileErr } = await supabase.from('profiles').upsert([{ id: data.user.id, username: email.split('@')[0], email, full_name: fullName, avatar_url: null, bio: '', age: edadCalc, birth_date: birthDate, account_type: accountType, country: '', city: '', position: '', verified: false, followers_count: 0, following_count: 0 }]);
           if (profileErr) console.error('Error guardando perfil:', profileErr);
+          else trackEvent(data.user.id, 'signup_completed');
           fetch('/api/send-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -401,6 +414,8 @@ export default function App() {
     const newDone = Math.min(weeklyGoal.sessions_done + 1, weeklyGoal.sessions_target);
     const completed = newDone >= weeklyGoal.sessions_target;
     await supabase.from('weekly_goals').update({ sessions_done: newDone, completed }).eq('id', weeklyGoal.id);
+    trackEvent(session.user.id, 'coach_session_completed', { session_number: newDone });
+    if (completed) trackEvent(session.user.id, 'coach_week_completed', { sessions_target: weeklyGoal.sessions_target });
     // Mantenemos weeklyGoal (marcado como completed) en vez de vaciarlo,
     // asi el Coach todavia tiene contexto del objetivo durante la reflexion de cierre.
     setWeeklyGoal(prev => ({...prev, sessions_done: newDone, completed}));
@@ -463,7 +478,10 @@ export default function App() {
       data = result.data;
       error = result.error;
     } catch(e) { console.log('INSERT exception:', e); }
-    if (data) setWeeklyGoal(data);
+    if (data) {
+      setWeeklyGoal(data);
+      trackEvent(session.user.id, 'coach_goal_set', { sessions_target: data.sessions_target });
+    }
     setShowWeeklyGoal(false);
     setSessionInProgress(false);
     // Limpiar cualquier señal de espera que haya quedado prendida de un objetivo anterior
@@ -602,7 +620,13 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-
+      if (session) {
+        const today = new Date().toISOString().slice(0, 10);
+        const lastVisitKey = 'mirafut_last_visit_' + session.user.id;
+        const lastVisit = localStorage.getItem(lastVisitKey);
+        if (lastVisit && lastVisit !== today) trackEvent(session.user.id, 'return_visit');
+        localStorage.setItem(lastVisitKey, today);
+      }
     });
 
     const {
@@ -951,6 +975,7 @@ export default function App() {
         // Un unico CTA: apenas se genera la sesion, la tarjeta de abajo pasa
         // directo a mostrar "Terminé mi sesión" (no hay boton duplicado en el chat).
         setSessionInProgress(true);
+        trackEvent(session.user.id, 'coach_session_started', { session_number: (weeklyGoal?.sessions_done || 0) + 1 });
       }
 
       setAiMessages(m => [...m, {
@@ -1115,6 +1140,7 @@ export default function App() {
       goal: onboardingForm.goal || null,
     }).eq('id', session.user.id);
     await supabase.from('profiles').update({onboarding_seen: true}).eq('id', session.user.id);
+    trackEvent(session.user.id, 'onboarding_completed');
     setShowOnboarding(false);
     loadUserProfile(session.user.id);
   };
@@ -1249,6 +1275,7 @@ export default function App() {
     if (error) {
       alert("Error al crear el post: " + error.message);
     } else {
+      trackEvent(session.user.id, 'post_created');
       setNewPost(""); setPostImage(null); setPostImageUrl(null); setVideoUrl('');
       setShowNewPost(false);
       loadRealPosts();
