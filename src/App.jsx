@@ -1303,8 +1303,6 @@ export default function App() {
   };
 
   // Merge real posts (from Supabase) at top, then hardcoded posts
-  const COUNTRIES = [...new Set([...USERS.map(u => u.country)])].sort();
-
   const allPosts = [
     ...realPosts.map(p => ({
       id: 'real-' + p.id,
@@ -1325,6 +1323,8 @@ export default function App() {
       country: p.profiles?.country || null
     }))
   ];
+
+  const COUNTRIES = [...new Set(allPosts.map(p => p.country).filter(Boolean))].sort();
 
   const filteredPosts = allPosts
     .filter(p => !filterPosition || p.position === filterPosition)
