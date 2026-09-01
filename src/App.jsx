@@ -614,7 +614,7 @@ export default function App() {
     const PAGE_SIZE = 10;
     const { data, error } = await supabase
       .from('posts')
-      .select('*, profiles(full_name, avatar_url, verified, position), likes(count), comments(count)')
+      .select('*, profiles(full_name, avatar_url, verified, position, country), likes(count), comments(count)')
       .order('created_at', { ascending: false })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
     if (!error && data) {
@@ -1321,14 +1321,14 @@ export default function App() {
       commentList: [],
       avatar_url: p.profiles?.avatar_url || null,
       video_url: p.video_url || null,
-      position: p.profiles?.position || null
-    })),
-    ...POSTS
+      position: p.profiles?.position || null,
+      country: p.profiles?.country || null
+    }))
   ];
 
   const filteredPosts = allPosts
-    .filter(p => !filterPosition || (USERS.find(u => u.id === p.userId)?.position === filterPosition))
-    .filter(p => !filterCountry || (USERS.find(u => u.id === p.userId)?.country === filterCountry));
+    .filter(p => !filterPosition || p.position === filterPosition)
+    .filter(p => !filterCountry || p.country === filterCountry);
 
   return (
     <>
