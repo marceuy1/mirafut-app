@@ -2551,8 +2551,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div style={{background:'#00E676',borderRadius:'14px',padding:'20px 16px 16px',marginBottom:'16px'}}>
                 <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'10px'}}>
-                  <div style={{background:'#080808',borderRadius:'10px',padding:'6px',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                    <Logo iconOnly size={24} />
+                  <div style={{background:'#080808',borderRadius:'16px',padding:'10px',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <Logo iconOnly size={40} />
                   </div>
                   <div>
                     <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.6)'}}>CÓMO FUNCIONA</div>
