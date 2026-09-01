@@ -225,7 +225,6 @@ export default function App() {
   const [showWeeklyGoal, setShowWeeklyGoal] = useState(false);
   const [sessionInProgress, setSessionInProgress] = useState(false);
   const [awaitingTrainingContext, setAwaitingTrainingContext] = useState(false);
-  const [partialTrainingContext, setPartialTrainingContext] = useState('');
   const [awaitingSessionFeedback, setAwaitingSessionFeedback] = useState(false);
   const [awaitingFinalReflection, setAwaitingFinalReflection] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
