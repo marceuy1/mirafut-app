@@ -30,13 +30,25 @@ function matchesCase2(title) {
   return title.includes('escane') && title.includes('recepci') && title.includes('giro');
 }
 
+// Guardarrail de seguridad (NO es expansion de alias): el Caso 2 requiere
+// un companero/pasador. Si el mensaje indica que la sesion fue adaptada
+// para hacerse en solitario, nunca mostramos esa demostracion aunque el
+// titulo del ejercicio coincida textualmente - mostrar un pasador en una
+// sesion que el propio Coach dijo que es individual es mas confuso que
+// no mostrar nada.
+function isAdaptedForSolo(text) {
+  const low = text.toLowerCase();
+  return low.includes('en solitario') || low.includes('sin compañero') || low.includes('sin companero') || low.includes('sin pasador') || low.includes('hacerlo tú solo') || low.includes('hacerlo tu solo');
+}
+
 export function detectExerciseVisual(text) {
   if (!text) return null;
+  const solo = isAdaptedForSolo(text);
   const titles = extractExerciseTitles(text);
   if (titles.length > 0) {
     for (const title of titles) {
       if (matchesCase1(title)) return 'case1';
-      if (matchesCase2(title)) return 'case2';
+      if (matchesCase2(title)) return solo ? null : 'case2';
     }
     return null;
   }
@@ -44,6 +56,6 @@ export function detectExerciseVisual(text) {
   // estructurada): exigimos el mismo criterio estricto sobre todo el texto.
   const low = text.toLowerCase();
   if (matchesCase1(low)) return 'case1';
-  if (matchesCase2(low)) return 'case2';
+  if (matchesCase2(low)) return solo ? null : 'case2';
   return null;
 }
