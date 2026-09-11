@@ -2008,7 +2008,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       <div className="ai-group">
                         <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`}>{m.from==='me' ? renderMarkdown(m.text) : renderCoachMessage(m.text, userProfile?.position)}</div>
                         {exVisual && (
-                          <button onClick={() => { setShowExerciseVisual(exVisual); if (session) trackEvent(session.user.id, 'exercise_visual_opened', { case: exVisual }); }} style={{marginTop:'8px',padding:'8px 14px',background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.25)',borderRadius:'10px',color:'#00E676',fontSize:'13px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>▶ Ver ejercicio</button>
+                          <button onClick={() => { setShowExerciseVisual(exVisual); if (session) trackEvent(session.user.id, 'exercise_visual_opened', { case: exVisual }); }} style={{marginTop:'8px',padding:'8px 14px',background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.25)',borderRadius:'10px',color:'#00E676',fontSize:'13px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>▶ Ver ejercicio: {exVisual === 'case1' ? 'Conducción + cambio de dirección' : 'Escaneo + recepción y giro'}</button>
                         )}
 
                         <div className="ai-time" style={{textAlign:m.from==='me'?'right':'left'}}>{m.time}</div>
