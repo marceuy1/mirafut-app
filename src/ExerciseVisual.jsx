@@ -217,6 +217,7 @@ const REGISTRY = {
     meta: '4 conos · 8 segundos',
     tag: 'Balón',
     duration: 8,
+    requiresPartner: false,
     Component: DribblingPath,
   },
   case2: {
@@ -224,9 +225,17 @@ const REGISTRY = {
     meta: '4 conos · 14 segundos',
     tag: 'Balón + compañero',
     duration: 14,
+    requiresPartner: true,
     Component: ScanReceiveTurn,
   },
 };
+
+// Metadata liviana exportada aparte (sin el campo Component, que es JSX y
+// no debe importarse en modulos no-React como exerciseVisualDetect.js).
+// Fuente unica de verdad para "este caso necesita compañero/pasador".
+export const EXERCISE_REQUIREMENTS = Object.fromEntries(
+  Object.entries(REGISTRY).map(([key, v]) => [key, { requiresPartner: v.requiresPartner }])
+);
 
 export default function ExerciseVisual({ type, onClose, onReplay }) {
   const entry = REGISTRY[type];

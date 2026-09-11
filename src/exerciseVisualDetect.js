@@ -30,32 +30,41 @@ function matchesCase2(title) {
   return title.includes('escane') && title.includes('recepci') && title.includes('giro');
 }
 
-// Guardarrail de seguridad (NO es expansion de alias): el Caso 2 requiere
-// un companero/pasador. Si el mensaje indica que la sesion fue adaptada
-// para hacerse en solitario, nunca mostramos esa demostracion aunque el
-// titulo del ejercicio coincida textualmente - mostrar un pasador en una
-// sesion que el propio Coach dijo que es individual es mas confuso que
-// no mostrar nada.
+import { EXERCISE_REQUIREMENTS } from './ExerciseVisual';
+
+// Guardarrail de seguridad (NO es expansion de alias): si el caso
+// detectado requiere companero/pasador (EXERCISE_REQUIREMENTS[caso].requiresPartner)
+// y el mensaje indica que la sesion fue adaptada para hacerse en solitario,
+// nunca mostramos esa demostracion aunque el titulo coincida textualmente -
+// mostrar un pasador en una sesion que el propio Coach dijo que es
+// individual es mas confuso que no mostrar nada. Generico: si en el futuro
+// se agrega un caso nuevo con requiresPartner true, esta misma guarda aplica
+// sin tocar esta funcion.
 function isAdaptedForSolo(text) {
   const low = text.toLowerCase();
-  return low.includes('en solitario') || low.includes('sin compañero') || low.includes('sin companero') || low.includes('sin pasador') || low.includes('hacerlo tú solo') || low.includes('hacerlo tu solo');
+  return low.includes('en solitario') || low.includes('sin compañero') || low.includes('sin companero') || low.includes('sin pasador') || low.includes('hacerlo tú solo') || low.includes('hacerlo tu solo') || low.includes('autopase') || low.includes('auto-pase');
+}
+
+function passesRequirements(caseKey, text) {
+  const reqs = EXERCISE_REQUIREMENTS[caseKey];
+  if (reqs && reqs.requiresPartner && isAdaptedForSolo(text)) return false;
+  return true;
 }
 
 export function detectExerciseVisual(text) {
   if (!text) return null;
-  const solo = isAdaptedForSolo(text);
   const titles = extractExerciseTitles(text);
   if (titles.length > 0) {
     for (const title of titles) {
-      if (matchesCase1(title)) return 'case1';
-      if (matchesCase2(title)) return solo ? null : 'case2';
+      if (matchesCase1(title) && passesRequirements('case1', text)) return 'case1';
+      if (matchesCase2(title) && passesRequirements('case2', text)) return 'case2';
     }
     return null;
   }
   // Fallback si el mensaje no trae titulos numerados (no es una sesion
   // estructurada): exigimos el mismo criterio estricto sobre todo el texto.
   const low = text.toLowerCase();
-  if (matchesCase1(low)) return 'case1';
-  if (matchesCase2(low)) return solo ? null : 'case2';
+  if (matchesCase1(low) && passesRequirements('case1', text)) return 'case1';
+  if (matchesCase2(low) && passesRequirements('case2', text)) return 'case2';
   return null;
 }
