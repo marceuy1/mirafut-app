@@ -12,6 +12,8 @@ async function trackEvent(userId, eventName, metadata = null) {
   }
 }
 import { translations, getLanguage } from './translations';
+import ExerciseVisual from './ExerciseVisual';
+import { detectExerciseVisual } from './exerciseVisualDetect';
 import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -174,6 +176,7 @@ export default function App() {
   
   // App state - TODOS los useState ANTES de los useEffect
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showExerciseVisual, setShowExerciseVisual] = useState(null); // null | 'case1' | 'case2'
   const [showContact, setShowContact] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [weeklyGoal, setWeeklyGoal] = useState(null);
@@ -1998,11 +2001,15 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     const sp = SPECIALISTS.find(s => s.id === m.specialist);
                     return <div key={m.id} className="spec-sug"><div className="spec-sug-h"><div className="spec-sug-i" style={{background:`${sp.color}20`,color:sp.color,display:"flex",alignItems:"center",justifyContent:"center"}}>{sp.Icon && <sp.Icon size={16} />}</div><div><div className="spec-sug-n">{sp.name}</div><div className="spec-sug-r">{sp.desc}</div></div></div><button className="spec-sug-b" style={{background:sp.color,color:'#0a0e14'}} onClick={()=>switchAgent(m.specialist)}>Conectar con {sp.name} →</button></div>;
                   }
+                  const exVisual = m.from !== 'me' ? detectExerciseVisual(m.text) : null;
                   return (
                     <div key={m.id} className={`ai-row ${m.from==='me'?'me':''}`}>
                       {m.from !== 'me' && <div className="ai-av" style={{background:`${ma?.color||'#00E676'}20`,color:ma?.color||'#00E676',display:'flex',alignItems:'center',justifyContent:'center'}}>{ma?.Icon && <ma.Icon size={16} />}</div>}
                       <div className="ai-group">
                         <div className={`ai-bubble ${m.from==='me'?'ai-me':'ai-them'}`}>{m.from==='me' ? renderMarkdown(m.text) : renderCoachMessage(m.text, userProfile?.position)}</div>
+                        {exVisual && (
+                          <button onClick={() => { setShowExerciseVisual(exVisual); if (session) trackEvent(session.user.id, 'exercise_visual_opened', { case: exVisual }); }} style={{marginTop:'8px',padding:'8px 14px',background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.25)',borderRadius:'10px',color:'#00E676',fontSize:'13px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>▶ Ver ejercicio</button>
+                        )}
 
                         <div className="ai-time" style={{textAlign:m.from==='me'?'right':'left'}}>{m.time}</div>
                       </div>
@@ -2468,6 +2475,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
             </div>
           </div>
+        )}
+
+        {showExerciseVisual && (
+          <ExerciseVisual
+            type={showExerciseVisual}
+            onClose={() => setShowExerciseVisual(null)}
+            onReplay={() => { if (session) trackEvent(session.user.id, 'exercise_visual_replayed', { case: showExerciseVisual }); }}
+          />
         )}
 
         {/* ADMIN PANEL */}
