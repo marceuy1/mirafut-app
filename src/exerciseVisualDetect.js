@@ -42,7 +42,23 @@ import { EXERCISE_REQUIREMENTS } from './ExerciseVisual';
 // sin tocar esta funcion.
 function isAdaptedForSolo(text) {
   const low = text.toLowerCase();
-  return low.includes('en solitario') || low.includes('sin compañero') || low.includes('sin companero') || low.includes('sin pasador') || low.includes('hacerlo tú solo') || low.includes('hacerlo tu solo') || low.includes('autopase') || low.includes('auto-pase');
+  const phrases = [
+    'en solitario',
+    'sin compañero',
+    'sin companero',
+    'sin pasador',
+    'hacerlo tú solo',
+    'hacerlo tu solo',
+    'hacerlo solo',
+    'hacerlo sola',
+    'de forma individual',
+    'modo individual',
+    'por tu cuenta',
+    'autopase',
+    'auto-pase',
+    'autolanzado',
+  ];
+  return phrases.some(p => low.includes(p));
 }
 
 function passesRequirements(caseKey, text) {
