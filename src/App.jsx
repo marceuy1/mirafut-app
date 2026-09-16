@@ -474,7 +474,8 @@ export default function App() {
     const options = adminDebate.options.split(',').map(o => o.trim()).filter(Boolean);
     if (options.length < 2) { alert('Necesitas al menos 2 opciones separadas por coma'); return; }
     await supabase.from('debates').update({ends_at: new Date(0).toISOString()}).gte('ends_at', new Date().toISOString());
-    await supabase.from('debates').insert([{question: adminDebate.question, options: JSON.stringify(options), ends_at: adminDebate.noExpiration ? null : new Date(Date.now() + adminDebate.days * 86400000).toISOString(), analysis_text: adminDebate.analysis.trim() || null}]);
+    const { error: debateInsertError } = await supabase.from('debates').insert([{question: adminDebate.question, options: JSON.stringify(options), ends_at: adminDebate.noExpiration ? null : new Date(Date.now() + adminDebate.days * 86400000).toISOString(), analysis_text: adminDebate.analysis.trim() || null}]);
+    if (debateInsertError) { alert('Error al publicar el debate: ' + debateInsertError.message); return; }
     setAdminDebate({question:'', options:'', days:7, analysis:'', noExpiration:false});
     loadDebate();
     alert('Debate actualizado');
@@ -483,7 +484,8 @@ export default function App() {
   const closeDebateManually = async () => {
     if (!debate) return;
     if (!window.confirm('¿Cerrar este debate ahora? Se bloquearán los votos y se mostrarán los resultados + Análisis MiraFut.')) return;
-    await supabase.from('debates').update({closed: true}).eq('id', debate.id);
+    const { error: closeError } = await supabase.from('debates').update({closed: true}).eq('id', debate.id);
+    if (closeError) { alert('Error al cerrar el debate: ' + closeError.message); return; }
     loadDebate();
     alert('Debate cerrado');
   };
