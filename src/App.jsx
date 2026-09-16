@@ -1682,6 +1682,18 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           )}
 
           {/* ====== DEBATE DE LA SEMANA ====== */}
+          {tab === "home" && !viewPost && !viewProfile && sorteo && !debate && (
+            <div style={{margin:'16px 16px 4px',background:'#121820',borderRadius:'20px',overflow:'hidden',border:'1px solid rgba(255,255,255,0.06)'}}>
+              <div style={{background:'#00E676',padding:'12px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                  <span style={{fontSize:'18px'}}>🎁</span>
+                  <div style={{fontSize:'12px',fontWeight:'800',color:'#0a0e14'}}>{sorteo?.premio || t.giveaway}</div>
+                </div>
+                <button onClick={() => setShowSorteo(true)} style={{background:'rgba(0,0,0,0.15)',border:'none',borderRadius:'20px',padding:'4px 10px',fontSize:'11px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{t.giveaway}</button>
+              </div>
+            </div>
+          )}
+
           {tab === "home" && !viewPost && !viewProfile && debate && (
             <div style={{margin:'16px 16px 4px',background:'#121820',borderRadius:'20px',overflow:'hidden',border:'1px solid rgba(255,255,255,0.06)'}}>
               <div style={{background:'#00E676',padding:'12px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
