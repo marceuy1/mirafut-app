@@ -194,7 +194,7 @@ export default function App() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [sorteo, setSorteo] = useState(null);
   const [adminTab, setAdminTab] = useState('debate');
-  const [adminDebate, setAdminDebate] = useState({question:'', options:'', days:7, analysis:''});
+  const [adminDebate, setAdminDebate] = useState({question:'', options:'', days:7, analysis:'', noExpiration:false});
   const [adminSorteo, setAdminSorteo] = useState({premio:'', descripcion:'', days:30, imagen_url:''});
   const [sorteoImageFile, setSorteoImageFile] = useState(null);
   const [sorteoImagePreview, setSorteoImagePreview] = useState(null);
@@ -474,10 +474,18 @@ export default function App() {
     const options = adminDebate.options.split(',').map(o => o.trim()).filter(Boolean);
     if (options.length < 2) { alert('Necesitas al menos 2 opciones separadas por coma'); return; }
     await supabase.from('debates').update({ends_at: new Date(0).toISOString()}).gte('ends_at', new Date().toISOString());
-    await supabase.from('debates').insert([{question: adminDebate.question, options: JSON.stringify(options), ends_at: new Date(Date.now() + adminDebate.days * 86400000).toISOString(), analysis_text: adminDebate.analysis.trim() || null}]);
-    setAdminDebate({question:'', options:'', days:7, analysis:''});
+    await supabase.from('debates').insert([{question: adminDebate.question, options: JSON.stringify(options), ends_at: adminDebate.noExpiration ? null : new Date(Date.now() + adminDebate.days * 86400000).toISOString(), analysis_text: adminDebate.analysis.trim() || null}]);
+    setAdminDebate({question:'', options:'', days:7, analysis:'', noExpiration:false});
     loadDebate();
     alert('Debate actualizado');
+  };
+
+  const closeDebateManually = async () => {
+    if (!debate) return;
+    if (!window.confirm('¿Cerrar este debate ahora? Se bloquearán los votos y se mostrarán los resultados + Análisis MiraFut.')) return;
+    await supabase.from('debates').update({closed: true}).eq('id', debate.id);
+    loadDebate();
+    alert('Debate cerrado');
   };
 
   const uploadSorteoImage = async (file) => {
@@ -538,7 +546,7 @@ export default function App() {
   const voteDebate = async (optionIndex) => {
     if (requireAuth()) return;
     if (userVote !== null) return;
-    if (debate && new Date(debate.ends_at) < new Date()) return;
+    if (debate && (debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date()))) return;
     const { error } = await supabase.from('debate_votes').insert([{
       debate_id: debate.id,
       user_id: session.user.id,
@@ -1698,10 +1706,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div style={{margin:'16px 16px 4px',background:'#121820',borderRadius:'20px',overflow:'hidden',border:'1px solid rgba(255,255,255,0.06)'}}>
               <div style={{background:'#00E676',padding:'12px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                 <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-                  <span style={{fontSize:'18px'}}>{new Date(debate.ends_at) < new Date() ? '📊' : '🔥'}</span>
+                  <span style={{fontSize:'18px'}}>{(debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date())) ? '📊' : '🔥'}</span>
                   <div>
-                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'#0a0e14',opacity:0.7}}>{new Date(debate.ends_at) < new Date() ? t.mirafutAnalysis : t.debateOfWeek}</div>
-                    <div style={{fontSize:'11px',color:'#0a0e14',opacity:0.6}}>{new Date(debate.ends_at) < new Date() ? t.debateClosed : (Math.max(0,Math.ceil((new Date(debate.ends_at)-new Date())/(1000*60*60*24))) + ' ' + t.daysLeft)}</div>
+                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'#0a0e14',opacity:0.7}}>{(debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date())) ? t.mirafutAnalysis : t.debateOfWeek}</div>
+                    <div style={{fontSize:'11px',color:'#0a0e14',opacity:0.6}}>{(debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date())) ? t.debateClosed : (debate.ends_at ? (Math.max(0,Math.ceil((new Date(debate.ends_at)-new Date())/(1000*60*60*24))) + ' ' + t.daysLeft) : '')}</div>
                   </div>
                 </div>
                 <div style={{background:'rgba(0,0,0,0.15)',padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} {debateVotes.length === 1 ? t.vote : t.votes}</div>
@@ -1716,7 +1724,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   const count = debateVotes.filter(v => v.option_index === i).length;
                   const pct = debateVotes.length > 0 ? Math.round(count / debateVotes.length * 100) : 0;
                   const voted = userVote === i;
-                  const closed = new Date(debate.ends_at) < new Date();
+                  const closed = debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date());
                   const showResults = userVote !== null || closed;
                   return (
                     <div key={i} onClick={() => { if (!closed) voteDebate(i); }} style={{position:'relative',borderRadius:'12px',overflow:'hidden',cursor:(userVote === null && !closed) ? 'pointer' : 'default'}}>
@@ -1729,7 +1737,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   );
                 })}
               </div>
-              {new Date(debate.ends_at) < new Date() && debate.analysis_text && (
+              {(debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date())) && debate.analysis_text && (
                 <div style={{margin:'0 16px 16px',padding:'14px',background:'rgba(0,230,118,0.06)',border:'1px solid rgba(0,230,118,0.18)',borderRadius:'12px'}}>
                   <div style={{fontSize:'11px',fontWeight:'800',color:'#00E676',letterSpacing:'1px',marginBottom:'6px'}}>🏆 {t.mirafutAnalysis}</div>
                   <div style={{fontSize:'13px',color:'#ECEFF4',lineHeight:'1.5',whiteSpace:'pre-wrap'}}>{debate.analysis_text}</div>
@@ -2530,12 +2538,19 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <textarea value={adminDebate.question} onChange={e=>setAdminDebate(p=>({...p,question:e.target.value}))} placeholder="Pregunta del debate..." rows={2} style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none',marginBottom:'8px'}}/>
                   <input value={adminDebate.options} onChange={e=>setAdminDebate(p=>({...p,options:e.target.value}))} placeholder="Opciones separadas por coma: Portero, Defensa, Mediocampista" style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',marginBottom:'8px'}}/>
                   <textarea value={adminDebate.analysis} onChange={e=>setAdminDebate(p=>({...p,analysis:e.target.value}))} placeholder="Análisis MiraFut (se muestra cuando el debate cierre)..." rows={3} style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none',marginBottom:'8px'}}/>
-                  <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}}>
+                  <label style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px',cursor:'pointer'}}>
+                    <input type="checkbox" checked={adminDebate.noExpiration} onChange={e=>setAdminDebate(p=>({...p,noExpiration:e.target.checked}))} />
+                    <span style={{fontSize:'13px',color:'#556677'}}>Sin fecha de cierre (lo cierro manualmente desde acá)</span>
+                  </label>
+                  <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px',opacity:adminDebate.noExpiration?0.4:1}}>
                     <span style={{fontSize:'13px',color:'#556677'}}>Duración:</span>
-                    <input type="number" value={adminDebate.days} onChange={e=>setAdminDebate(p=>({...p,days:parseInt(e.target.value)}))} style={{width:'60px',padding:'6px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'8px',color:'#ECEFF4',fontSize:'13px',outline:'none',textAlign:'center'}}/>
+                    <input type="number" disabled={adminDebate.noExpiration} value={adminDebate.days} onChange={e=>setAdminDebate(p=>({...p,days:parseInt(e.target.value)}))} style={{width:'60px',padding:'6px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'8px',color:'#ECEFF4',fontSize:'13px',outline:'none',textAlign:'center'}}/>
                     <span style={{fontSize:'13px',color:'#556677'}}>días</span>
                   </div>
                   <button onClick={saveAdminDebate} style={{width:'100%',padding:'12px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Publicar debate</button>
+                  {debate && !debate.closed && (!debate.ends_at || new Date(debate.ends_at) > new Date()) && (
+                    <button onClick={closeDebateManually} style={{width:'100%',padding:'12px',marginTop:'8px',background:'transparent',border:'1px solid rgba(255,82,82,0.4)',borderRadius:'12px',color:'#FF5252',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Cerrar debate actual ahora</button>
+                  )}
                 </div>
               )}
 
