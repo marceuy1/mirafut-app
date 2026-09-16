@@ -1718,7 +1718,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <button onClick={() => setShowSorteo(true)} style={{background:'rgba(0,0,0,0.15)',border:'none',borderRadius:'20px',padding:'4px 10px',fontSize:'11px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{t.giveaway}</button>
               </div>
               <div style={{padding:'16px 16px 12px'}}>
-                <div style={{fontSize:'17px',fontWeight:'800',color:'#ECEFF4',lineHeight:'1.3',marginBottom:'4px'}}>{debate.question}</div>
+                <div style={{fontSize:'17px',fontWeight:'800',color:'#ECEFF4',lineHeight:'1.4',marginBottom:'4px',whiteSpace:'pre-wrap'}}>{debate.question}</div>
                 <div style={{fontSize:'12px',color:'#556677'}}>{t.voteAndOpine}</div>
               </div>
               <div style={{padding:'0 16px 16px',display:'flex',flexDirection:'column',gap:'10px'}}>
