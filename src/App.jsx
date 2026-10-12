@@ -286,6 +286,8 @@ export default function App() {
   const pendingTabRef = useRef('home');
   const agent = SPECIALISTS.find(s => s.id === currentAgent);
   const t = useMemo(() => translations[lang], [lang]);
+  // Solo cambia el texto visible; el valor guardado (POR/DEF/MED/DEL) no se toca
+  const posLabel = (p) => (p && t['pos' + p]) || p;
   const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
@@ -1662,7 +1664,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     {pos === '' ? t.filterAll : (
                       <span style={{display:'inline-flex',alignItems:'center',gap:'5px'}}>
                         {pos === 'POR' ? <Hand size={13} /> : pos === 'DEF' ? <Shield size={13} /> : pos === 'MED' ? <Settings size={13} /> : <Zap size={13} />}
-                        {pos}
+                        {posLabel(pos)}
                       </span>
                     )}
                   </button>
@@ -1887,7 +1889,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="profile">
               {viewProfile.avatar_url ? <img src={viewProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover",margin:"0 auto 12px",display:"block"}} /> : <div className="prof-av">{viewProfile.avatar}</div>}
               <div className="prof-name">{viewProfile.name} {viewProfile.verified && <V/>}</div>
-              <div className="prof-meta" style={{display:'flex',alignItems:'center',gap:'5px'}}><MapPin size={13} /> {viewProfile.account_type === 'teen' ? viewProfile.country : (viewProfile.city ? viewProfile.city + ', ' : '') + viewProfile.country} · {viewProfile.account_type === 'teen' ? t.yearsOldRange : (viewProfile.age ? viewProfile.age + ' ' + t.yearsOldSuffix : '')} · {viewProfile.position}</div>
+              <div className="prof-meta" style={{display:'flex',alignItems:'center',gap:'5px'}}><MapPin size={13} /> {viewProfile.account_type === 'teen' ? viewProfile.country : (viewProfile.city ? viewProfile.city + ', ' : '') + viewProfile.country} · {viewProfile.account_type === 'teen' ? t.yearsOldRange : (viewProfile.age ? viewProfile.age + ' ' + t.yearsOldSuffix : '')} · {posLabel(viewProfile.position)}</div>
               <div className="prof-bio">{viewProfile.bio}</div>
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{viewProfile.followers||0}</div><div className="prof-stat-l">Seguidores</div></div>
@@ -1916,7 +1918,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   {viewProfile.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Altura</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.height} cm</div></div>}
                   {viewProfile.weight && viewProfile.account_type !== 'teen' && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Peso</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.weight} kg</div></div>}
                   {viewProfile.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Pie dominante</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.dominant_foot}</div></div>}
-                  {viewProfile.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Posición</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{viewProfile.position}</div></div>}
+                  {viewProfile.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Posición</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{posLabel(viewProfile.position)}</div></div>}
                 </div>
               )}
               {viewProfile.goal && (
@@ -2123,7 +2125,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="profile">
               {userProfile?.avatar_url ? <img src={userProfile.avatar_url} style={{width:"80px",height:"80px",borderRadius:"22px",objectFit:"cover"}} /> : <div className="prof-av">{userProfile?.full_name ? userProfile.full_name.substring(0,2).toUpperCase() : "TU"}</div>}
               <div className="prof-name">{userProfile?.full_name || 'Tu nombre'}</div>
-              <div className="prof-meta">{userProfile?.position ? `${userProfile.position} · ` : ''}{userProfile?.city ? `${userProfile.city}, ` : ''}{userProfile?.country}{userProfile?.age ? ` · ${userProfile.age} ${t.yearsOldSuffix}` : ''}</div>
+              <div className="prof-meta">{userProfile?.position ? `${posLabel(userProfile.position)} · ` : ''}{userProfile?.city ? `${userProfile.city}, ` : ''}{userProfile?.country}{userProfile?.age ? ` · ${userProfile.age} ${t.yearsOldSuffix}` : ''}</div>
               {!userProfile?.country && <div style={{color:'#00E676',fontSize:'12px',marginTop:'4px',display:'flex',alignItems:'center',gap:'5px'}}><Sparkles size={13} /> {t.completeProfile}</div>}
               <div className="prof-stats">
                 <div className="prof-stat"><div className="prof-stat-v">{followerCount}</div><div className="prof-stat-l">{t.followers}</div></div>
@@ -2136,7 +2138,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   {userProfile?.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.height}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.height} {userProfile.units==='imperial'?'ft':'cm'}</div></div>}
                   {userProfile?.weight && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.weight}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.weight} {userProfile.units==='imperial'?'lbs':'kg'}</div></div>}
                   {userProfile?.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.dominantFoot}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.dominant_foot}</div></div>}
-                  {userProfile?.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.positionLabel}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{userProfile.position}</div></div>}
+                  {userProfile?.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.positionLabel}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{posLabel(userProfile.position)}</div></div>}
                 </div>
               )}
               {userProfile?.goal && (
@@ -2437,7 +2439,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     {[{v:'POR',e:'🧤'},{v:'DEF',e:'🛡️'},{v:'MED',e:'⚙️'},{v:'DEL',e:'⚡'}].map(p => (
                       <div key={p.v} onClick={() => setOnboardingForm(prev=>({...prev,position:p.v}))} style={{padding:'14px',background:onboardingForm.position===p.v?'rgba(0,230,118,0.12)':'#121820',border:onboardingForm.position===p.v?'1.5px solid #00E676':'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',cursor:'pointer',textAlign:'center'}}>
                         <div style={{fontSize:'24px',marginBottom:'4px'}}>{p.e}</div>
-                        <div style={{fontSize:'13px',fontWeight:'700',color:onboardingForm.position===p.v?'#00E676':'#ECEFF4'}}>{p.v}</div>
+                        <div style={{fontSize:'13px',fontWeight:'700',color:onboardingForm.position===p.v?'#00E676':'#ECEFF4'}}>{posLabel(p.v)}</div>
                       </div>
                     ))}
                   </div>
