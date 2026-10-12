@@ -1,8 +1,8 @@
 export const translations = {
   es: {
     tagline: 'TALENTO SIN FRONTERAS',
-    heroTitle: 'Desarrolla. Muéstrate. Consigue tu oportunidad.',
-    heroSubtitle: 'Tu sueño profesional comienza aquí. Mejora, muestra tu talento y prepárate para tu oportunidad.',
+    heroTitle: 'Tu juego. Tu crecimiento. Tu futuro.',
+    heroSubtitle: 'Entrenamiento de fútbol personalizado para ayudarte a mejorar, ser constante y alcanzar tus metas, sin importar tu nivel.',
     heroQuote: 'No prometemos que te descubrirán. Te ayudamos a convertirte en el jugador que merece ser descubierto.',
     players: 'Jugadores',
     activePosts: 'Posts activos',
@@ -214,8 +214,8 @@ export const translations = {
   },
   en: {
     tagline: 'TALENT WITHOUT BORDERS',
-    heroTitle: 'Develop. Get Seen. Get Your Opportunity',
-    heroSubtitle: 'Your professional dream starts here. Improve, showcase your talent, and get your opportunity',
+    heroTitle: 'Your Game. Your Growth. Your Future.',
+    heroSubtitle: 'Personalized soccer training to help you improve, build consistency, and reach your goals — whatever your level.',
     heroQuote: "We don't promise to get you discovered. We help you become the player who deserves to be discovered — and then we work to get you there.",
     players: 'Players',
     activePosts: 'Active posts',
