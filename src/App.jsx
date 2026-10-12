@@ -60,8 +60,8 @@ const timeAgo = (dateStr) => {
 
 function V() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="#00C853"><path d="M12 2L3.5 6.5v5c0 4.83 3.6 9.36 8.5 10.5 4.9-1.14 8.5-5.67 8.5-10.5v-5L12 2zm-1 14.59l-3.29-3.3 1.41-1.41L11 13.76l4.88-4.88 1.41 1.41L11 16.59z"/></svg>; }
 
-function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
-  const tl = translations['es'];
+function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp, lang, onShowTerms }) {
+  const tl = translations[lang] || translations['es'];
   const [isSignUp, setIsSignUp] = useState(startInSignUp !== undefined ? startInSignUp : false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -77,7 +77,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
     try {
       if (isSignUp) {
         if (!birthDate) {
-          setError('Ingresa tu fecha de nacimiento');
+          setError(tl.authFormBirthRequired);
           return;
         }
         const hoyCalc = new Date();
@@ -86,7 +86,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
         const mDiff = hoyCalc.getMonth() - nacCalc.getMonth();
         if (mDiff < 0 || (mDiff === 0 && hoyCalc.getDate() < nacCalc.getDate())) edadCalc--;
         if (edadCalc < 13) {
-          setError('Debes tener al menos 13 años para crear una cuenta en MiraFut.');
+          setError(tl.authFormMinAge);
           return;
         }
         const accountType = edadCalc < 18 ? 'teen' : 'adult';
@@ -117,7 +117,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
       }
     } catch (err) {
       if (err.message && !err.message.toLowerCase().includes('uninitialized')) {
-        setError(err.message || 'Error. Intenta de nuevo.');
+        setError(err.message || tl.authFormGenericError);
       }
     } finally {
       setLoading(false);
@@ -135,34 +135,34 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp }) {
         <button onClick={onClose} style={{background:'none',border:'none',color:'#8899A6',fontSize:'22px',cursor:'pointer'}}>×</button>
       </div>
       <form onSubmit={handleAuth}>
-        {isSignUp && <input type="text" placeholder="Nombre completo" value={fullName} onChange={e=>setFullName(e.target.value)} required style={inp} />}
+        {isSignUp && <input type="text" placeholder={tl.authFormFullName} value={fullName} onChange={e=>setFullName(e.target.value)} required style={inp} />}
         {isSignUp && (
           <div style={{marginBottom:'12px'}}>
-            <label style={{fontSize:'12px',color:'#8899A6',display:'block',marginBottom:'6px'}}>Fecha de nacimiento</label>
+            <label style={{fontSize:'12px',color:'#8899A6',display:'block',marginBottom:'6px'}}>{tl.authFormBirthDate}</label>
             <input type="date" value={birthDate} onChange={e=>setBirthDate(e.target.value)} required max={new Date().toISOString().split('T')[0]} style={inp} />
           </div>
         )}
         <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required style={inp} />
-        <input type="password" placeholder="Contraseña (mín. 6 caracteres)" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6} style={inp} />
+        <input type="password" placeholder={tl.authFormPassword} value={password} onChange={e=>setPassword(e.target.value)} required minLength={6} style={inp} />
         {error && <div style={{color:'#FF5252',fontSize:'12px',marginBottom:'10px'}}>{error}</div>}
         <button type="submit" disabled={loading} style={{width:'100%',padding:'12px',background:loading?'#556677':'linear-gradient(135deg,#00E676,#00C853)',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'10px'}}>
-          {loading ? 'Cargando...' : isSignUp ? 'Crear cuenta' : 'Iniciar sesión'}
+          {loading ? tl.authFormLoading : isSignUp ? tl.authFormCreateAccount : tl.authFormSignIn}
         </button>
       </form>
       {isSignUp && (
         <div style={{display:'flex',alignItems:'flex-start',gap:'8px',margin:'8px 0',padding:'10px',background:'rgba(255,255,255,0.03)',borderRadius:'10px'}}>
           <input type="checkbox" id="terms" required style={{marginTop:'2px',accentColor:'#00E676',flexShrink:0}} />
           <label htmlFor="terms" style={{fontSize:'12px',color:'#8899A6',lineHeight:'1.5',cursor:'pointer'}}>
-            Acepto los{' '}
-            <span onClick={() => setShowTerms(true)} style={{color:'#00E676',cursor:'pointer',textDecoration:'underline'}}>Términos y Privacidad</span>
-            {' '}de MiraFut
+            {tl.authFormAcceptPre}{' '}
+            <span onClick={() => onShowTerms && onShowTerms()} style={{color:'#00E676',cursor:'pointer',textDecoration:'underline'}}>{tl.authFormTerms}</span>
+            {' '}{tl.authFormAcceptPost}
           </label>
         </div>
       )}
-      <button onClick={() => setIsSignUp(!isSignUp)} style={{width:'100%',background:'none',border:'none',color:'#00E676',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>{isSignUp ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}</button>
-      {!isSignUp && <button onClick={async () => { if(!email) { setError('Ingresa tu email primero'); return; } const {error} = await supabase.auth.resetPasswordForEmail(email, {redirectTo:'https://mirafut.com'}); if(error) setError(error.message); else setError('✅ Te enviamos un link para restablecer tu contraseña'); }} style={{width:'100%',background:'none',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>¿Olvidaste tu contraseña?</button>}
+      <button onClick={() => setIsSignUp(!isSignUp)} style={{width:'100%',background:'none',border:'none',color:'#00E676',fontSize:'13px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>{isSignUp ? tl.authFormHaveAccount : tl.authFormNoAccount}</button>
+      {!isSignUp && <button onClick={async () => { if(!email) { setError(tl.authFormEmailFirst); return; } const {error} = await supabase.auth.resetPasswordForEmail(email, {redirectTo:'https://mirafut.com'}); if(error) setError(error.message); else setError(tl.authFormResetSent); }} style={{width:'100%',background:'none',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit, sans-serif',marginBottom:'8px'}}>{tl.authFormForgot}</button>}
       <button onClick={onClose} style={{width:'100%',background:'none',border:'none',color:'#556677',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit, sans-serif'}}>
-        Seguir explorando →
+        {tl.authFormKeepExploring}
       </button>
     </div>
   );
@@ -2852,6 +2852,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 }}
                 onClose={() => setShowAuthPrompt(false)}
                 postLoginTab={postAuthTab}
+                lang={lang}
+                onShowTerms={() => setShowTerms(true)}
                 startInSignUp={wantsSignUp}
               />
             </div>
