@@ -13,7 +13,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         from: 'MiraFut <noreply@mirafut.com>',
-        to: [to],
+        to: Array.isArray(to) ? to : [to],
         subject,
         html
       })
