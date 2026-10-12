@@ -1581,7 +1581,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 🔔
                 {notifications.filter(n => !n.read).length > 0 && <span style={{position:"absolute",top:"-2px",right:"-2px",background:"#FF5252",color:"white",fontSize:"9px",fontWeight:"700",minWidth:"16px",height:"16px",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 3px"}}>{notifications.filter(n => !n.read).length}</span>}
               </button>
-              {session && session.user.email === ADMIN_EMAIL && (
+              {session && session.user.email === ADMIN_EMAIL && isDesktop && (
                 <button onClick={() => setShowAdmin(true)} style={{background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.3)',borderRadius:'8px',color:'#00E676',fontSize:'11px',fontWeight:'700',padding:'5px 10px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>⚙️ Admin</button>
               )}
               {session && (
@@ -2155,6 +2155,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               }}><Link size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.shareProfile}</button>
               <button className="prof-btn sec" onClick={() => setShowContact(true)}><Mail size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.tellYourStory}</button>
               <button className="prof-btn sec" onClick={() => setShowSettings(true)}><Settings size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.settings}</button>
+              {!isDesktop && session?.user?.email === ADMIN_EMAIL && (
+                <button className="prof-btn sec" onClick={() => setShowAdmin(true)}>⚙️ Admin</button>
+              )}
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}><LogOut size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.logout}</button>
               <div style={{height:'1px',background:'rgba(255,255,255,0.04)',margin:'12px 0'}}/>
               <button onClick={() => setShowHelp(true)} style={{width:'100%',padding:'11px',background:'transparent',border:'1px solid rgba(0,230,118,0.15)',borderRadius:'12px',color:'#ECEFF4',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
