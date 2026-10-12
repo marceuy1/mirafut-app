@@ -2702,7 +2702,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
         {/* TERMS MODAL */}
         {showTerms && (
-          <div className="modal-bg show" style={{zIndex:10000}} onClick={() => setShowTerms(false)}>
+          <div className="modal-bg show" style={{zIndex:100000}} onClick={() => setShowTerms(false)}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div className="modal-hdr">
                 <div className="modal-title"><ClipboardList size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.termsPrivacyLink}</div>
