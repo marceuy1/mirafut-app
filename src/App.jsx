@@ -1650,13 +1650,13 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         <div className="mc" ref={mcRef}>
           {tab === "home" && !viewPost && !viewProfile && session && !weeklyGoal && (
             <div style={{background:'linear-gradient(135deg,rgba(0,230,118,0.08),rgba(0,200,83,0.03))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'20px',padding:'24px',margin:'16px',textAlign:'center'}}>
-              <div style={{fontSize:'20px',fontWeight:'800',color:'#ECEFF4',marginBottom:'6px'}}>¡Bienvenido{userProfile?.full_name ? ', ' + userProfile.full_name.split(' ')[0] : ''}! 👋</div>
-              <div style={{fontSize:'14px',color:'#8899A6',marginBottom:'16px'}}>Empieza tu primera semana en MiraFut.</div>
+              <div style={{fontSize:'20px',fontWeight:'800',color:'#ECEFF4',marginBottom:'6px'}}>{t.homeWelcomeWord}{userProfile?.full_name ? ', ' + userProfile.full_name.split(' ')[0] : ''}! 👋</div>
+              <div style={{fontSize:'14px',color:'#8899A6',marginBottom:'16px'}}>{t.homeFirstWeek}</div>
               <div style={{background:'#121820',borderRadius:'14px',padding:'16px',marginBottom:'16px',textAlign:'left'}}>
-                <div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4',marginBottom:'4px'}}>🎯 Define tu objetivo</div>
-                <div style={{fontSize:'13px',color:'#8899A6'}}>Coach preparará sesiones adaptadas a tu desarrollo.</div>
+                <div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4',marginBottom:'4px'}}>🎯 {t.homeDefineGoal}</div>
+                <div style={{fontSize:'13px',color:'#8899A6'}}>{t.homeCoachWillPrepare}</div>
               </div>
-              <button onClick={() => setTab('coach')} style={{width:'100%',padding:'12px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Comenzar con Coach →</button>
+              <button onClick={() => setTab('coach')} style={{width:'100%',padding:'12px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{t.homeStartCoach}</button>
             </div>
           )}
           {/* ====== FILTROS ====== */}
