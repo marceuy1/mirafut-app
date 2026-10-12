@@ -154,7 +154,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp, lang, onS
           <input type="checkbox" id="terms" required style={{marginTop:'2px',accentColor:'#00E676',flexShrink:0}} />
           <label htmlFor="terms" style={{fontSize:'12px',color:'#8899A6',lineHeight:'1.5',cursor:'pointer'}}>
             {tl.authFormAcceptPre}{' '}
-            <span onClick={() => onShowTerms && onShowTerms()} style={{color:'#00E676',cursor:'pointer',textDecoration:'underline'}}>{tl.authFormTerms}</span>
+            <span onClick={(e) => { e.preventDefault(); e.stopPropagation(); onShowTerms && onShowTerms(); }} style={{color:'#00E676',cursor:'pointer',textDecoration:'underline'}}>{tl.authFormTerms}</span>
             {' '}{tl.authFormAcceptPost}
           </label>
         </div>
@@ -2702,7 +2702,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
         {/* TERMS MODAL */}
         {showTerms && (
-          <div className="modal-bg show" onClick={() => setShowTerms(false)}>
+          <div className="modal-bg show" style={{zIndex:10000}} onClick={() => setShowTerms(false)}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div className="modal-hdr">
                 <div className="modal-title"><ClipboardList size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.termsPrivacyLink}</div>
