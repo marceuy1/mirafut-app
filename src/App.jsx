@@ -135,6 +135,7 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp, lang, onS
         <button onClick={onClose} style={{background:'none',border:'none',color:'#8899A6',fontSize:'22px',cursor:'pointer'}}>×</button>
       </div>
       <form onSubmit={handleAuth}>
+        {isSignUp && <div style={{textAlign:'center',fontSize:'12px',fontWeight:'700',color:'#00E676',background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.25)',borderRadius:'10px',padding:'8px',marginBottom:'12px'}}>{tl.freeBetaBadge}</div>}
         {isSignUp && <input type="text" placeholder={tl.authFormFullName} value={fullName} onChange={e=>setFullName(e.target.value)} required style={inp} />}
         {isSignUp && (
           <div style={{marginBottom:'12px'}}>
@@ -1615,6 +1616,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div style={{textAlign:'center',marginBottom:'8px'}}>
               <div style={{fontSize:'18px',fontWeight:'800',color:'#00E676',marginBottom:'4px'}}>{t.earlyStageTitle}</div>
               <div style={{fontSize:'14px',color:'#8899A6'}}>{t.earlyStageSubtitle}</div>
+              <div style={{display:'inline-block',marginTop:'10px',padding:'5px 12px',borderRadius:'20px',background:'rgba(0,230,118,0.12)',border:'1px solid rgba(0,230,118,0.3)',color:'#00E676',fontSize:'12px',fontWeight:'700'}}>{t.freeBetaBadge}</div>
             </div>
 
             <div style={{display:'flex',gap:'16px',justifyContent:'center',marginTop:'20px',flexWrap:'wrap',maxWidth:'700px',marginLeft:'auto',marginRight:'auto'}}>
