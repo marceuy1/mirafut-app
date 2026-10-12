@@ -689,9 +689,13 @@ export default function App() {
       loadLikes();
       loadChatList();
       setShowAuthPrompt(false);
-      supabase.from('profiles').select('position, onboarding_seen').eq('id', session.user.id).single().then(({ data }) => {
+      supabase.from('profiles').select('position, onboarding_seen, full_name').eq('id', session.user.id).single().then(({ data }) => {
         const skipped = localStorage.getItem('onboarding_skipped_' + session.user.id);
-        if (!data?.onboarding_seen && !skipped) { setShowOnboarding(true); setOnboardingStep(1); }
+        if (!data?.onboarding_seen && !skipped) {
+          // El nombre ya se pidio en el registro: precargarlo (sin pisar lo que el usuario ya escribio)
+          if (data?.full_name) setOnboardingForm(prev => ({ ...prev, full_name: prev.full_name || data.full_name }));
+          setShowOnboarding(true); setOnboardingStep(1);
+        }
       });
     }
   }, [session]);
