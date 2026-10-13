@@ -193,6 +193,14 @@ export default function App() {
   const [blockedList, setBlockedList] = useState([]);
   const [blockedByList, setBlockedByList] = useState([]);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDetail, setReportDetail] = useState('');
+  const [reportSending, setReportSending] = useState(false);
+  const [pendingReports, setPendingReports] = useState(0);
+  const [adminReports, setAdminReports] = useState([]);
+  const [adminReportNames, setAdminReportNames] = useState({});
+  const [adminReportsLoading, setAdminReportsLoading] = useState(false);
   const [sorteo, setSorteo] = useState(null);
   const [adminTab, setAdminTab] = useState('debate');
   const [adminDebate, setAdminDebate] = useState({question:'', options:'', days:7, analysis:'', noExpiration:false});
@@ -843,6 +851,15 @@ export default function App() {
     });
   };
 
+  useEffect(() => {
+    if (session && session.user.email === ADMIN_EMAIL) refreshPendingReports();
+    else setPendingReports(0);
+  }, [session]);
+
+  useEffect(() => {
+    if (showAdmin && adminTab === 'reports') loadAdminReports();
+  }, [showAdmin, adminTab]);
+
   if (loading) {
     return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
   }
@@ -1207,17 +1224,107 @@ export default function App() {
     }
   };
 
-  const reportUser = async (userId) => {
+  // ===== Reportes (nivel 2): perfiles, publicaciones, comentarios, comentarios de debate y mensajes =====
+  // La base de datos (disparador) decide autor reportado, copia del contenido, estado y retencion.
+  const REPORT_REASONS = [
+    { code: 'inappropriate', es: 'Contenido inapropiado', en: 'Inappropriate content' },
+    { code: 'harassment', es: 'Acoso o bullying', en: 'Harassment or bullying' },
+    { code: 'spam', es: 'Spam o engaño', en: 'Spam or scam' },
+    { code: 'other', es: 'Otro motivo', en: 'Other reason' }
+  ];
+  const RT = lang === 'en' ? {
+    title: 'Report',
+    intro: 'Tell us what is wrong. Our team reviews every report, and the other person will not know who reported. If someone is in danger, contact your local emergency services.',
+    detail: 'Details (optional, max 300 characters)',
+    send: 'Send report',
+    sending: 'Sending...',
+    thanks: 'Thank you, we will review your report.',
+    failed: 'We could not send your report. Please try again in a few minutes.',
+    duplicate: 'You already reported this. We are reviewing it.',
+    gone: 'This content is no longer available.',
+    report: 'Report'
+  } : {
+    title: 'Reportar',
+    intro: 'Cuéntanos qué pasa. Nuestro equipo revisa cada reporte y la otra persona no sabrá quién reportó. Si alguien está en peligro, llama a los servicios de emergencia de tu país.',
+    detail: 'Detalles (opcional, máx. 300 caracteres)',
+    send: 'Enviar reporte',
+    sending: 'Enviando...',
+    thanks: 'Gracias, vamos a revisar tu reporte.',
+    failed: 'No pudimos enviar tu reporte. Inténtalo de nuevo en unos minutos.',
+    duplicate: 'Ya habías reportado esto. Lo estamos revisando.',
+    gone: 'Este contenido ya no está disponible.',
+    report: 'Reportar'
+  };
+  const flagBtnStyle = { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#ECEFF4', fontFamily: 'Outfit,sans-serif', lineHeight: 1, opacity: 1, padding: '5px 9px', marginLeft: '6px', flexShrink: 0, whiteSpace: 'nowrap' };
+
+  // type: 'post' | 'comment' | 'debate_comment' | 'message' | null (null = perfil, id = id del usuario)
+  const openReport = (type, id) => {
     if (requireAuth()) return;
-    const reason = prompt(lang === 'en' ? 'Why do you want to report this user? (optional)' : '¿Por qué querés reportar a este usuario? (opcional)');
-    if (reason === null) return;
-    const { error: repErr } = await supabase.from('reports').insert([{ reporter_id: session.user.id, reported_id: userId, reason: reason || '' }]);
+    setReportReason('');
+    setReportDetail('');
+    setReportTarget({ type, id });
+  };
+
+  const submitReport = async () => {
+    if (!reportTarget || !reportReason || reportSending || !session) return;
+    setReportSending(true);
+    const detail = reportDetail.trim();
+    const reason = detail ? reportReason + ': ' + detail : reportReason;
+    const row = reportTarget.type
+      ? { reporter_id: session.user.id, content_type: reportTarget.type, content_id: reportTarget.id, reason }
+      : { reporter_id: session.user.id, reported_id: reportTarget.id, reason };
+    const { error: repErr } = await supabase.from('reports').insert([row]);
+    setReportSending(false);
     if (repErr) {
       console.error('report failed', repErr);
-      alert(lang === 'en' ? 'We could not send your report. Please try again in a few minutes.' : 'No pudimos enviar tu reporte. Inténtalo de nuevo en unos minutos.');
+      if (repErr.code === '23505') { setReportTarget(null); alert(RT.duplicate); return; }
+      if (repErr.code === 'P0002') { setReportTarget(null); alert(RT.gone); return; }
+      alert(RT.failed);
       return;
     }
-    alert(lang === 'en' ? 'Thank you, we will review your report.' : 'Gracias, vamos a revisar tu reporte.');
+    setReportTarget(null);
+    alert(RT.thanks);
+  };
+
+  const reportUser = (userId) => openReport(null, userId);
+
+  // ----- Administracion de reportes (la base de datos solo deja leer/cambiar a la cuenta admin) -----
+  const refreshPendingReports = async () => {
+    const { count } = await supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'pending');
+    setPendingReports(count || 0);
+  };
+
+  const loadAdminReports = async () => {
+    setAdminReportsLoading(true);
+    const { data, error: loadErr } = await supabase.from('reports').select('*').order('created_at', { ascending: false }).limit(100);
+    if (loadErr || !data) {
+      console.error('load reports failed', loadErr);
+      setAdminReportsLoading(false);
+      return;
+    }
+    const ids = [...new Set(data.flatMap(r => [r.reporter_id, r.reported_id]).filter(Boolean))];
+    const names = {};
+    if (ids.length) {
+      const { data: profs } = await supabase.from('profiles').select('id, full_name, username').in('id', ids);
+      (profs || []).forEach(p => { names[p.id] = p.full_name || p.username || p.id.slice(0, 8); });
+    }
+    data.sort((a, b) => ((a.status === 'pending' ? 0 : 1) - (b.status === 'pending' ? 0 : 1)) || (new Date(b.created_at) - new Date(a.created_at)));
+    setAdminReportNames(names);
+    setAdminReports(data);
+    setAdminReportsLoading(false);
+    refreshPendingReports();
+  };
+
+  const setAdminReportStatus = async (id, status) => {
+    const { error: stErr } = await supabase.rpc('admin_set_report_status', { p_report_id: id, p_status: status });
+    if (stErr) { console.error('set report status failed', stErr); alert('No se pudo actualizar el reporte.'); return; }
+    loadAdminReports();
+  };
+
+  const setAdminReportHold = async (id, hold) => {
+    const { error: holdErr } = await supabase.rpc('admin_set_report_legal_hold', { p_report_id: id, p_hold: hold });
+    if (holdErr) { console.error('set legal hold failed', holdErr); alert('No se pudo cambiar la retención legal.'); return; }
+    loadAdminReports();
   };
 
   const loadFollowing = async () => {
@@ -1594,7 +1701,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 {notifications.filter(n => !n.read).length > 0 && <span style={{position:"absolute",top:"-2px",right:"-2px",background:"#FF5252",color:"white",fontSize:"9px",fontWeight:"700",minWidth:"16px",height:"16px",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 3px"}}>{notifications.filter(n => !n.read).length}</span>}
               </button>
               {session && session.user.email === ADMIN_EMAIL && isDesktop && (
-                <button onClick={() => setShowAdmin(true)} style={{background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.3)',borderRadius:'8px',color:'#00E676',fontSize:'11px',fontWeight:'700',padding:'5px 10px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>⚙️ Admin</button>
+                <button onClick={() => setShowAdmin(true)} style={{background:'rgba(0,230,118,0.1)',border:'1px solid rgba(0,230,118,0.3)',borderRadius:'8px',color:'#00E676',fontSize:'11px',fontWeight:'700',padding:'5px 10px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>⚙️ Admin{pendingReports > 0 ? ' (' + pendingReports + ')' : ''}</button>
               )}
               {session && (
                 <div onClick={() => setTab('profile')} style={{display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',padding:'4px 8px',borderRadius:'20px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)'}}>
@@ -1766,7 +1873,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div key={i} style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
                       <div style={{width:'28px',height:'28px',borderRadius:'9px',background:'rgba(0,230,118,0.12)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:'800',color:'#00E676',flexShrink:0}}>{c.profiles?.full_name?c.profiles.full_name.substring(0,2).toUpperCase():'U'}</div>
                       <div style={{background:'rgba(255,255,255,0.04)',borderRadius:'10px',padding:'8px 10px',flex:1}}>
-                        <div style={{fontSize:'12px',fontWeight:'700',color:'#ECEFF4'}}>{c.profiles?.full_name||t.defaultUser}</div>
+                        <div style={{fontSize:'12px',fontWeight:'700',color:'#ECEFF4',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'8px'}}><span>{c.profiles?.full_name||t.defaultUser}</span>{session && c.id && c.user_id !== session.user.id && (<button title={RT.report} aria-label={RT.report} onClick={() => openReport('debate_comment', c.id)} style={flagBtnStyle}>🚩 {RT.report}</button>)}</div>
                         <div style={{fontSize:'12px',color:'#8899A6',marginTop:'2px'}}>{c.content}</div>
                       </div>
                     </div>
@@ -1835,6 +1942,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     </button>
                     <button className="poab" onClick={() => { setViewPost(p); loadComments(p.id); }}>💬 {p.comments}</button>
                     <button className="poab" onClick={() => sharePost(p)}>{t.share}</button>
+                    {session && p.id.toString().startsWith('real-') && p.userId !== session.user.id && (
+                      <button className="poab" title={RT.report} aria-label={RT.report} onClick={() => openReport('post', p.id.toString().replace('real-',''))}>🚩</button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1865,6 +1975,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   </button>
                   <button className="poab">💬 {viewPost.comments}</button>
                   <button className="poab" onClick={() => sharePost(p)}>{t.share}</button>
+                  {session && viewPost.id.toString().startsWith('real-') && viewPost.userId !== session.user.id && (
+                    <button className="poab" title={RT.report} aria-label={RT.report} onClick={() => openReport('post', viewPost.id.toString().replace('real-',''))}>🚩</button>
+                  )}
                 </div>
                 <div className="comments">
                   <div className="com-title">{t.comments}</div>
@@ -1873,7 +1986,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <div key={i} className="com-item">
                       <div className="com-av">{c.profiles?.full_name ? c.profiles.full_name.substring(0,2).toUpperCase() : 'U'}</div>
                       <div className="com-content">
-                        <div className="com-name">{c.profiles?.full_name || 'Usuario'}</div>
+                        <div className="com-name" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'8px'}}><span>{c.profiles?.full_name || 'Usuario'}</span>{session && c.id && c.user_id !== session.user.id && (<button title={RT.report} aria-label={RT.report} onClick={() => openReport('comment', c.id)} style={flagBtnStyle}>🚩 {RT.report}</button>)}</div>
                         <div className="com-text">{c.content}</div>
                       </div>
                     </div>
@@ -1997,7 +2110,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 {realChatMsgs.map(m => (
                   <div key={m.id} className={`chat-msg ${m.from_user_id === session?.user?.id ? 'me' : 'them'}`}>
                     <div>{m.content}</div>
-                    <div style={{fontSize:'10px',opacity:0.5,marginTop:'2px'}}>{timeAgo(m.created_at)}</div>
+                    <div style={{marginTop:'2px',display:'flex',alignItems:'center',gap:'8px'}}><span style={{fontSize:'10px',opacity:0.5}}>{timeAgo(m.created_at)}</span>{m.id && m.from_user_id !== session?.user?.id && (<button title={RT.report} aria-label={RT.report} onClick={() => openReport('message', m.id)} style={flagBtnStyle}>🚩 {RT.report}</button>)}</div>
                   </div>
                 ))}
                 {realChatMsgs.length === 0 && (
@@ -2169,7 +2282,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <button className="prof-btn sec" onClick={() => setShowContact(true)}><Mail size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.tellYourStory}</button>
               <button className="prof-btn sec" onClick={() => setShowSettings(true)}><Settings size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.settings}</button>
               {!isDesktop && session?.user?.email === ADMIN_EMAIL && (
-                <button className="prof-btn sec" onClick={() => setShowAdmin(true)}>⚙️ Admin</button>
+                <button className="prof-btn sec" onClick={() => setShowAdmin(true)}>⚙️ Admin{pendingReports > 0 ? ' (' + pendingReports + ')' : ''}</button>
               )}
               <button className="prof-btn sec" style={{marginTop:"8px",color:"#FF5252",borderColor:"rgba(255,82,82,0.3)"}} onClick={() => { supabase.auth.signOut(); setSession(null); setTab("home"); }}><LogOut size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.logout}</button>
               <div style={{height:'1px',background:'rgba(255,255,255,0.04)',margin:'12px 0'}}/>
@@ -2533,6 +2646,23 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         )}
 
         {/* ADMIN PANEL */}
+        {reportTarget && (
+          <div className="modal-bg show" onClick={() => { if (!reportSending) setReportTarget(null); }}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
+              <div className="modal-hdr">
+                <div className="modal-title">🚩 {RT.title}</div>
+                <button className="modal-close" onClick={() => { if (!reportSending) setReportTarget(null); }}><X size={18} /></button>
+              </div>
+              <div style={{fontSize:'13px',color:'#8899A6',marginBottom:'12px',lineHeight:'1.5'}}>{RT.intro}</div>
+              {REPORT_REASONS.map(r => (
+                <button key={r.code} onClick={() => setReportReason(r.code)} style={{display:'block',width:'100%',textAlign:'left',padding:'12px',marginBottom:'8px',background:reportReason===r.code?'rgba(0,230,118,0.12)':'#0a0e14',border:'1px solid '+(reportReason===r.code?'#00E676':'rgba(255,255,255,0.08)'),borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{lang === 'en' ? r.en : r.es}</button>
+              ))}
+              <textarea value={reportDetail} maxLength={300} onChange={e => setReportDetail(e.target.value)} placeholder={RT.detail} rows={3} style={{width:'100%',padding:'10px',marginBottom:'12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'13px',fontFamily:'Outfit,sans-serif',boxSizing:'border-box',resize:'none'}} />
+              <button disabled={!reportReason || reportSending} onClick={submitReport} style={{width:'100%',padding:'12px',background:(!reportReason || reportSending)?'rgba(0,230,118,0.3)':'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:(!reportReason || reportSending)?'default':'pointer',fontFamily:'Outfit,sans-serif'}}>{reportSending ? RT.sending : RT.send}</button>
+            </div>
+          </div>
+        )}
+
         {showAdmin && (
           <div className="modal-bg show" onClick={() => setShowAdmin(false)}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
@@ -2544,6 +2674,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <button onClick={() => setAdminTab('debate')} style={{flex:1,padding:'8px',background:adminTab==='debate'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:adminTab==='debate'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🔥 Debate</button>
                 <button onClick={() => setAdminTab('sorteo')} style={{flex:1,padding:'8px',background:adminTab==='sorteo'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:adminTab==='sorteo'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🎁 Sorteo</button>
               </div>
+
+              <button onClick={() => setAdminTab('reports')} style={{width:'100%',padding:'8px',marginBottom:'16px',background:adminTab==='reports'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:adminTab==='reports'?'#0a0e14':(pendingReports>0?'#FF5252':'#ECEFF4'),fontWeight:'700',cursor:'pointer',fontSize:'13px',fontFamily:'Outfit,sans-serif'}}>🚩 Reportes{pendingReports>0 ? ' (' + pendingReports + ' pendientes)' : ''}</button>
 
               {adminTab === 'debate' && (
                 <div>
@@ -2569,6 +2701,41 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   {debate && !debate.closed && (!debate.ends_at || new Date(debate.ends_at) > new Date()) && (
                     <button onClick={closeDebateManually} style={{width:'100%',padding:'12px',marginTop:'8px',background:'transparent',border:'1px solid rgba(255,82,82,0.4)',borderRadius:'12px',color:'#FF5252',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Cerrar debate actual ahora</button>
                   )}
+                </div>
+              )}
+
+              {adminTab === 'reports' && (
+                <div>
+                  {adminReportsLoading && <div style={{color:'#556677',fontSize:'13px',padding:'8px 0'}}>Cargando...</div>}
+                  {!adminReportsLoading && adminReports.length === 0 && <div style={{color:'#556677',fontSize:'13px',padding:'8px 0'}}>No hay reportes.</div>}
+                  {adminReports.map(r => {
+                    const typeLabel = { post: 'Publicación', comment: 'Comentario', debate_comment: 'Comentario de debate', message: 'Mensaje privado' }[r.content_type] || 'Perfil';
+                    const reasonCode = (r.reason || '').split(':')[0];
+                    const reasonLabel = (REPORT_REASONS.find(x => x.code === reasonCode) || {}).es;
+                    const reasonDetail = reasonLabel ? (r.reason || '').slice(reasonCode.length).replace(/^:\s*/, '') : '';
+                    const snap = r.content_snapshot || {};
+                    const mediaUrl = snap.image_url || snap.video_url;
+                    const stColor = r.status === 'pending' ? '#FF5252' : (r.status === 'reviewed' ? '#00E676' : '#8899A6');
+                    return (
+                      <div key={r.id} style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'10px',border:'1px solid '+(r.status==='pending'?'rgba(255,82,82,0.4)':'rgba(255,255,255,0.06)')}}>
+                        <div style={{display:'flex',justifyContent:'space-between',gap:'8px',fontSize:'11px',color:'#556677'}}>
+                          <span>{new Date(r.created_at).toLocaleString()}</span>
+                          <span style={{fontWeight:'800',color:stColor,textTransform:'uppercase'}}>{({pending:'Pendiente',reviewed:'Revisado',dismissed:'Descartado'})[r.status] || r.status}{r.legal_hold ? ' · RETENCIÓN LEGAL' : ''}</span>
+                        </div>
+                        <div style={{fontSize:'13px',color:'#ECEFF4',marginTop:'6px'}}><b>{typeLabel}</b> · {reasonLabel || r.reason || 'Sin motivo'}</div>
+                        {reasonDetail && <div style={{fontSize:'12px',color:'#8899A6',marginTop:'2px'}}>{reasonDetail}</div>}
+                        <div style={{fontSize:'12px',color:'#8899A6',marginTop:'4px'}}>Reportado: {adminReportNames[r.reported_id] || (r.reported_snapshot && (r.reported_snapshot.full_name || r.reported_snapshot.username)) || 'cuenta eliminada'} · Reporta: {r.reporter_id ? (adminReportNames[r.reporter_id] || 'desconocido') : 'cuenta eliminada'}</div>
+                        {snap.content && <div style={{fontSize:'12px',color:'#ECEFF4',marginTop:'8px',padding:'8px 10px',background:'rgba(255,255,255,0.04)',borderLeft:'3px solid #FF5252',borderRadius:'6px',whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{snap.content}</div>}
+                        {mediaUrl && <a href={mediaUrl} target="_blank" rel="noopener noreferrer" style={{display:'inline-block',marginTop:'6px',fontSize:'12px',color:'#00E676'}}>Ver archivo adjunto</a>}
+                        <div style={{display:'flex',gap:'6px',marginTop:'10px',flexWrap:'wrap'}}>
+                          {r.status !== 'reviewed' && <button onClick={() => setAdminReportStatus(r.id, 'reviewed')} style={{padding:'6px 10px',background:'rgba(0,230,118,0.12)',border:'1px solid rgba(0,230,118,0.3)',borderRadius:'8px',color:'#00E676',fontSize:'12px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Revisado</button>}
+                          {r.status !== 'dismissed' && <button onClick={() => setAdminReportStatus(r.id, 'dismissed')} style={{padding:'6px 10px',background:'transparent',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'8px',color:'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Descartar</button>}
+                          {r.status !== 'pending' && <button onClick={() => setAdminReportStatus(r.id, 'pending')} style={{padding:'6px 10px',background:'transparent',border:'1px solid rgba(255,82,82,0.4)',borderRadius:'8px',color:'#FF5252',fontSize:'12px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Volver a pendiente</button>}
+                          <button onClick={() => setAdminReportHold(r.id, !r.legal_hold)} style={{padding:'6px 10px',background:'transparent',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'8px',color:r.legal_hold?'#FFB300':'#8899A6',fontSize:'12px',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{r.legal_hold ? 'Quitar retención legal' : 'Retención legal'}</button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
