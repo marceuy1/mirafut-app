@@ -1209,10 +1209,15 @@ export default function App() {
 
   const reportUser = async (userId) => {
     if (requireAuth()) return;
-    const reason = prompt('¿Por qué querés reportar a este usuario? (opcional)');
+    const reason = prompt(lang === 'en' ? 'Why do you want to report this user? (optional)' : '¿Por qué querés reportar a este usuario? (opcional)');
     if (reason === null) return;
-    await supabase.from('reports').insert([{ reporter_id: session.user.id, reported_id: userId, reason: reason || '' }]);
-    alert('Gracias, vamos a revisar tu reporte.');
+    const { error: repErr } = await supabase.from('reports').insert([{ reporter_id: session.user.id, reported_id: userId, reason: reason || '' }]);
+    if (repErr) {
+      console.error('report failed', repErr);
+      alert(lang === 'en' ? 'We could not send your report. Please try again in a few minutes.' : 'No pudimos enviar tu reporte. Inténtalo de nuevo en unos minutos.');
+      return;
+    }
+    alert(lang === 'en' ? 'Thank you, we will review your report.' : 'Gracias, vamos a revisar tu reporte.');
   };
 
   const loadFollowing = async () => {
