@@ -190,15 +190,44 @@ ${variantesStr}`;
   return { texto, esColectivo: !!entry.colectivo, tipoColectivo: entry.tipoColectivo || 'un ejercicio colectivo real' };
 }
 
-// Extrae el bloque "Sesion N ... Coach Tip: ..." de un texto guardado.
-// Devuelve null si no encuentra un bloque completo y confiable (evita reusar datos truncados/rotos).
-function extraerBloqueSesion(texto) {
-  if (!texto) return null;
-  const m = texto.match(/Sesio?n\s*\d+[\s\S]*/i);
-  if (!m) return null;
-  const bloque = m[0].trim();
-  if (!/Coach Tip/i.test(bloque)) return null;
-  return bloque;
+// ------ BLOQUE DE SESION: reconocimiento y control de completitud ------
+// El encabezado debe estar AL INICIO DE LINEA ("Sesion N", "Sesión N" o "Session N"), para que una
+// mencion dentro de la introduccion ("en la sesión 2 trabajaste...") no inicie el bloque.
+const RE_ENCABEZADO_SESION = /^[ \t#>*_-]*(?:Sesi[oó]n|Session)[ \t]*\d+/im;
+// Titulo de ejercicio: "N. Nombre — X min" (sin sangria). Los subpasos numerados dentro de un "Como:" van indentados.
+const RE_TITULO_EJERCICIO = /^[ \t]{0,1}\d+[.)]\s+\S.*\b(?:min|mins|minutos?|minutes?)\b/i;
+const RE_COMO = /^\s*(?:[-•*]\s*)?(?:C[oó]mo|How)\b[^:\n]{0,20}:/i;
+const RE_COACH_TIP = /Coach'?s?\s+Tip/i;
+const RE_FINAL_COMPLETO = /(?:[.!?…)»"”'’\]]|\p{Extended_Pictographic})\s*$/u;
+
+// Analiza un texto (respuesta del Coach o sesion guardada). NO requiere "Coach Tip" para reconocer el bloque:
+// informa de lo que falta. Devuelve { bloque, tieneEncabezado, ejercicios, faltantes[], completa }.
+export function analizarBloqueSesion(texto) {
+  const vacio = { bloque: null, tieneEncabezado: false, ejercicios: 0, faltantes: ['sin_encabezado'], completa: false };
+  if (!texto || typeof texto !== 'string') return vacio;
+  const m = RE_ENCABEZADO_SESION.exec(texto);
+  if (!m) return vacio;
+  const inicio = m.index + m[0].search(/Sesi[oó]n|Session/i);
+  const bloque = texto.slice(inicio).trim();
+  const lineas = bloque.split(/\r?\n/);
+  const faltantes = [];
+  const titulos = [];
+  lineas.forEach((l, i) => { if (i > 0 && RE_TITULO_EJERCICIO.test(l)) titulos.push(i); });
+  if (titulos.length < 3) faltantes.push('menos_de_3_ejercicios');
+  titulos.forEach((ini, k) => {
+    const fin = k + 1 < titulos.length ? titulos[k + 1] : lineas.length;
+    if (!lineas.slice(ini + 1, fin).some(l => RE_COMO.test(l))) faltantes.push('ejercicio_' + (k + 1) + '_sin_como');
+  });
+  if (!RE_COACH_TIP.test(bloque)) faltantes.push('sin_coach_tip');
+  if (!RE_FINAL_COMPLETO.test(bloque)) faltantes.push('texto_cortado');
+  return { bloque, tieneEncabezado: true, ejercicios: titulos.length, faltantes, completa: faltantes.length === 0 };
+}
+
+// Bloque que se puede REUTILIZAR literalmente ("Dificil"): solo si la sesion esta completa.
+// Una sesion incompleta (aunque tenga encabezado y Coach Tip) nunca se reutiliza.
+export function extraerBloqueReutilizable(texto) {
+  const a = analizarBloqueSesion(texto);
+  return a.completa ? a.bloque : null;
 }
 
 export default async function handler(req, res) {
@@ -245,14 +274,16 @@ export default async function handler(req, res) {
   // los mismos ejercicios de la sesion anterior: es matematicamente imposible que suba
   // la dificultad si es el mismo texto.
   if (!feedbackOnly && esDificil && !dosDificilesSeguidos && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado) {
-    const bloqueAnterior = extraerBloqueSesion(sessionsLog[sessionsLog.length - 1]);
+    const bloqueAnterior = extraerBloqueReutilizable(sessionsLog[sessionsLog.length - 1]);
     if (bloqueAnterior) {
-      let bloqueCorregido = bloqueAnterior
-        .replace(/Sesion\s*\d+/gi, 'Sesion ' + numeroSesionCorrecta)
-        .replace(/Sesión\s*\d+/gi, 'Sesión ' + numeroSesionCorrecta);
-      const reconocimiento = 'Entiendo. Como la sesión anterior te resultó difícil, hoy vamos a repetir los mismos ejercicios para consolidar lo aprendido, sin subir la exigencia.\n\n';
+      // Renumera conservando el idioma/ortografia del encabezado (Sesion / Sesión / Session).
+      let bloqueCorregido = bloqueAnterior.replace(/(Sesi[oó]n|Session)\s*\d+/gi, (_, palabra) =>
+        palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase() + ' ' + numeroSesionCorrecta);
+      const reconocimiento = lang === 'en'
+        ? 'Understood. Since the last session felt hard, today we will repeat the same exercises to consolidate what you learned, without raising the difficulty.\n\n'
+        : 'Entiendo. Como la sesión anterior te resultó difícil, hoy vamos a repetir los mismos ejercicios para consolidar lo aprendido, sin subir la exigencia.\n\n';
       const replyFinal = fraseHonestidad + reconocimiento + bloqueCorregido;
-      return res.status(200).json({ reply: replyFinal, sessionBlock: bloqueCorregido });
+      return res.status(200).json({ reply: replyFinal, sessionBlock: bloqueCorregido, meta: { completa: true, faltantes: [], finishReason: null } });
     }
     // Si no se pudo extraer un bloque confiable de la sesion anterior, seguimos
     // con la generacion normal por IA como red de seguridad (mas abajo).
@@ -390,6 +421,7 @@ No uses asteriscos ni markdown. Texto plano.`;
     });
 
     const data = await response.json();
+    const finishReason = data.choices[0].finish_reason || null;
     let reply = data.choices[0].message.content.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1');
 
     if (perfil?.weekly_goal && !objetivoCompletado) {
@@ -402,11 +434,28 @@ No uses asteriscos ni markdown. Texto plano.`;
       reply = fraseHonestidad + reply;
     }
 
-    // Extraemos el bloque limpio de ejercicios (sin la frase de honestidad) para
-    // que el cliente lo guarde y podamos reutilizarlo literal si el jugador dice "Dificil".
-    const sessionBlock = extraerBloqueSesion(reply);
+    // Bloque limpio de la sesion (sin la frase de honestidad ni la introduccion), SIN exigir "Coach Tip":
+    // el cliente guarda el texto completo en sessions_log y lo reutilizamos literal solo si esta completo.
+    const analisis = analizarBloqueSesion(reply);
+    const faltantes = [...analisis.faltantes];
+    if (finishReason === 'length') faltantes.push('cortado_por_tokens');
+    const completa = faltantes.length === 0;
 
-    return res.status(200).json({ reply, sessionBlock });
+    // Registro tecnico (logs de Vercel): solo numeros y etiquetas fijas; sin mensajes, perfil ni contenido de la sesion.
+    if (perfil?.weekly_goal && !feedbackOnly && !objetivoCompletado) {
+      console.log(JSON.stringify({
+        evt: 'coach_session_gen',
+        lang: lang === 'en' ? 'en' : 'es',
+        finish_reason: finishReason,
+        completion_tokens: data.usage?.completion_tokens ?? null,
+        prompt_tokens: data.usage?.prompt_tokens ?? null,
+        chars: reply.length,
+        completa,
+        faltantes
+      }));
+    }
+
+    return res.status(200).json({ reply, sessionBlock: analisis.bloque, meta: { completa, faltantes, finishReason } });
   } catch (error) {
     return res.status(500).json({ error: 'Error al conectar con OpenAI' });
   }

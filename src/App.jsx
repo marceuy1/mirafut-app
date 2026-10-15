@@ -988,7 +988,7 @@ export default function App() {
       if (isTrainingResponse && weeklyGoal) {
         // Guardamos el bloque limpio de ejercicios (sin la frase de honestidad ni el saludo)
         // para poder reutilizarlo textual si el jugador dice "Dificil" en la proxima sesion.
-        const nuevoLog = [...(weeklyGoal.sessions_log || []), coachData.sessionBlock || response.slice(0, 800)];
+        const nuevoLog = [...(weeklyGoal.sessions_log || []), coachData.sessionBlock || response];
         try {
           await supabase.from('weekly_goals').update({ sessions_log: nuevoLog }).eq('id', weeklyGoal.id);
         } catch (e) {
