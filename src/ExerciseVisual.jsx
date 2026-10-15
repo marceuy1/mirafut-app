@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { VISUAL_CATALOG } from './exerciseVisualCatalog';
+import { translations } from './translations';
 
 // ============================================================
 // ExerciseVisual — componente reutilizable de demostraciones
@@ -67,7 +69,12 @@ function toDashPath(pts) {
 }
 
 // ---------------- CASO 1: dribbling_path ----------------
-function DribblingPath({ playing, elapsed, W = 480, H = 640 }) {
+const C1_TEXT = {
+  es: { start: 'INICIO', finish: 'FINAL', title: 'Conducción con cambio de dirección', desc: 'Cuatro conos en línea vertical; el jugador y el balón cruzan entre ellos alternando de lado' },
+  en: { start: 'START', finish: 'FINISH', title: 'Dribbling with change of direction', desc: 'Four cones in a vertical line; the player and the ball cross between them, alternating sides' },
+};
+function DribblingPath({ playing, elapsed, W = 480, H = 640, lang = 'es' }) {
+  const L = C1_TEXT[lang] || C1_TEXT.es;
   const coneX = 270;
   const cones = [[coneX, 170], [coneX, 280], [coneX, 390], [coneX, 500]];
   const startMarker = [170, 130];
@@ -89,16 +96,16 @@ function DribblingPath({ playing, elapsed, W = 480, H = 640 }) {
 
   return (
     <svg width="100%" viewBox={`0 0 ${W} ${H}`} role="img">
-      <title>Conducción con cambio de dirección</title>
-      <desc>Cuatro conos en línea vertical; el jugador y el balón cruzan entre ellos alternando de lado</desc>
+      <title>{L.title}</title>
+      <desc>{L.desc}</desc>
       <Pitch w={W} h={H} />
       <path d={toDashPath(guidePts)} fill="none" stroke={GREEN} strokeWidth="4" strokeDasharray="16 10" strokeLinecap="round" opacity="0.85" />
       {cones.map((c, i) => <Cone key={i} x={c[0]} y={c[1]} size={30} />)}
       <circle cx={startMarker[0]} cy={startMarker[1]} r="13" fill="none" stroke={DIM_GREEN} strokeWidth="3" />
-      <text x={startMarker[0]} y={startMarker[1] - 22} textAnchor="middle" fontSize="16" fontWeight="700" fill={LABEL}>INICIO</text>
+      <text x={startMarker[0]} y={startMarker[1] - 22} textAnchor="middle" fontSize="16" fontWeight="700" fill={LABEL}>{L.start}</text>
       <line x1={fx} y1={fy + 14} x2={fx} y2={fy + 34} stroke={GREEN} strokeWidth="4" />
       <polygon points={`${fx},${fy + 44} ${fx - 8},${fy + 30} ${fx + 8},${fy + 30}`} fill={GREEN} />
-      <text x={fx + 40} y={fy + 44} textAnchor="middle" fontSize="16" fontWeight="700" fill={LABEL}>FINAL</text>
+      <text x={fx + 40} y={fy + 44} textAnchor="middle" fontSize="16" fontWeight="700" fill={LABEL}>{L.finish}</text>
       <circle cx={bx} cy={by} r="7" fill={WHITE} stroke={BG} strokeWidth="2" />
       <circle cx={px} cy={py} r="15" fill={GREEN} stroke="#083018" strokeWidth="3" />
     </svg>
@@ -131,17 +138,34 @@ function ballAheadOnRoute(rt, lead = 0.1) {
   return [base[0] + C2_END_DIR[0] * extra, base[1] + C2_END_DIR[1] * extra];
 }
 
-function ScanReceiveTurn({ playing, elapsed, W = 720, H = 440 }) {
+const C2_TEXT = {
+  es: {
+    title: 'Escaneo, recepción y giro',
+    desc: 'Conos en diamante; el jugador mira izquierda, mira derecha, recibe el pase, gira y sale siguiendo la ruta con el balón siempre delante',
+    passer: 'PASADOR',
+    left: 'Mira a la izquierda', right: 'Mira a la derecha', incoming: 'Llega el pase',
+    receive: 'Recepción orientada', turn: 'Gira y sale de la presión',
+  },
+  en: {
+    title: 'Scan, receive and turn',
+    desc: 'Cones in a diamond; the player looks left, looks right, receives the pass, turns and moves out along the route with the ball always in front',
+    passer: 'PASSER',
+    left: 'Look left', right: 'Look right', incoming: 'The pass arrives',
+    receive: 'Open-body reception', turn: 'Turn and escape pressure',
+  },
+};
+function ScanReceiveTurn({ playing, elapsed, W = 720, H = 440, lang = 'es' }) {
+  const L = C2_TEXT[lang] || C2_TEXT.es;
   const t = elapsed;
   const routeStart = C2_STAGES.route[0], routeEnd = C2_STAGES.route[1];
   const repoStart = C2_STAGES.pass[1], repoEnd = C2_STAGES.route[0];
 
-  let label = 'Mira a la izquierda';
-  if (t < C2_STAGES.lookRight[0] + 0.5) label = 'Mira a la izquierda';
-  else if (t < C2_STAGES.pass[0]) label = 'Mira a la derecha';
-  else if (t < C2_STAGES.receivePulse[0]) label = 'Llega el pase';
-  else if (t < routeStart) label = 'Recepción orientada';
-  else label = 'Gira y sale de la presión';
+  let label = L.left;
+  if (t < C2_STAGES.lookRight[0] + 0.5) label = L.left;
+  else if (t < C2_STAGES.pass[0]) label = L.right;
+  else if (t < C2_STAGES.receivePulse[0]) label = L.incoming;
+  else if (t < routeStart) label = L.receive;
+  else label = L.turn;
 
   let ballPos = null;
   if (t >= C2_STAGES.pass[0] && t <= C2_STAGES.pass[1]) {
@@ -181,15 +205,15 @@ function ScanReceiveTurn({ playing, elapsed, W = 720, H = 440 }) {
 
   return (
     <svg width="100%" viewBox={`0 0 ${W} ${H}`} role="img">
-      <title>Escaneo, recepción y giro</title>
-      <desc>Conos en diamante; el jugador mira izquierda, mira derecha, recibe el pase, gira y sale siguiendo la ruta con el balón siempre delante</desc>
+      <title>{L.title}</title>
+      <desc>{L.desc}</desc>
       <Pitch w={W} h={H} />
       {Object.values(C2_CONES).map((c, i) => <Cone key={i} x={c[0]} y={c[1]} size={28} />)}
       {showRoute && <path d={toDashPath(routeGuidePts)} fill="none" stroke={GREEN} strokeWidth="4" strokeDasharray="16 10" strokeLinecap="round" opacity="0.85" />}
       {pulse && <circle cx={C2_PLAYER_START[0]} cy={C2_PLAYER_START[1]} r={pulse.r} fill="none" stroke={GREEN} strokeOpacity={pulse.opacity} strokeWidth="3" />}
       <line x1={C2_PASS.p0[0]} y1={C2_PASS.p0[1]} x2={C2_PASS.p1[0]} y2={C2_PASS.p1[1]} stroke={WHITE} strokeOpacity="0.6" strokeWidth="3" strokeDasharray="4 4" />
       <circle cx={C2_FEEDER[0]} cy={C2_FEEDER[1]} r="14" fill="#c9a98f" stroke={BG} strokeWidth="3" />
-      <text x={C2_FEEDER[0]} y={C2_FEEDER[1] + 34} textAnchor="middle" fontSize="14" fontWeight="700" fill={LABEL}>PASADOR</text>
+      <text x={C2_FEEDER[0]} y={C2_FEEDER[1] + 34} textAnchor="middle" fontSize="14" fontWeight="700" fill={LABEL}>{L.passer}</text>
       {showLookLeft && (
         <g>
           <line x1={C2_LOOK_LEFT.p0[0]} y1={C2_LOOK_LEFT.p0[1]} x2={C2_LOOK_LEFT.p1[0]} y2={C2_LOOK_LEFT.p1[1]} stroke={GREEN} strokeWidth="5" strokeLinecap="round" />
@@ -237,11 +261,14 @@ export const EXERCISE_REQUIREMENTS = Object.fromEntries(
   Object.entries(REGISTRY).map(([key, v]) => [key, { requiresPartner: v.requiresPartner }])
 );
 
-export default function ExerciseVisual({ type, onClose, onReplay }) {
+export { DribblingPath, ScanReceiveTurn };
+
+export default function ExerciseVisual({ type, onClose, onReplay, lang = 'es', v2 = false }) {
   const entry = REGISTRY[type];
   const [elapsed, setElapsed] = useState(0);
   const rafRef = useRef(null);
   const startRef = useRef(null);
+  const [stepIdx, setStepIdx] = useState(0);
 
   const tick = useCallback((ts) => {
     if (startRef.current === null) startRef.current = ts;
@@ -255,6 +282,7 @@ export default function ExerciseVisual({ type, onClose, onReplay }) {
   useEffect(() => {
     startRef.current = null;
     setElapsed(0);
+    setStepIdx(0);
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -270,27 +298,44 @@ export default function ExerciseVisual({ type, onClose, onReplay }) {
 
   if (!entry) return null;
   const { Component } = entry;
+  const ui = (translations[lang] || translations.es).exerciseVisual;
+  const cat = VISUAL_CATALOG[type];
+  const txt = (cat && (cat.text[lang] || cat.text.es)) || { title: entry.title, meta: entry.meta, tag: entry.tag };
+  const steps = (cat && (cat.steps[lang] || cat.steps.es)) || [];
   const timerLabel = `0:${String(Math.floor(elapsed)).padStart(2, '0')}`;
 
   return (
     <div className="modal-bg show" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420, padding: 16 }}>
-        <div style={{ color: '#8899A6', fontSize: 13, marginBottom: 4, cursor: 'pointer' }} onClick={onClose}>&larr; Ver ejercicio</div>
-        <div style={{ color: '#ECEFF4', fontSize: 19, fontWeight: 700, marginBottom: 8 }}>{entry.title}</div>
+      <div className="modal" onClick={e => e.stopPropagation()} style={v2 ? { maxWidth: 420, padding: 16, maxHeight: '92vh', overflowY: 'auto' } : { maxWidth: 420, padding: 16 }}>
+        <div style={{ color: '#8899A6', fontSize: 13, marginBottom: 4, cursor: 'pointer' }} onClick={onClose}>&larr; {ui.back}</div>
+        <div style={{ color: '#ECEFF4', fontSize: 19, fontWeight: 700, marginBottom: 8 }}>{txt.title}</div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-          <span style={{ background: 'rgba(0,230,118,0.1)', color: '#00E676', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>{entry.meta}</span>
-          <span style={{ background: 'rgba(0,230,118,0.1)', color: '#00E676', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>{entry.tag}</span>
+          <span style={{ background: 'rgba(0,230,118,0.1)', color: '#00E676', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>{txt.meta}</span>
+          <span style={{ background: 'rgba(0,230,118,0.1)', color: '#00E676', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>{txt.tag}</span>
         </div>
         <div style={{ background: '#121820', borderRadius: 14, padding: 12, border: '0.5px solid rgba(255,255,255,0.06)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ color: '#ECEFF4', fontSize: 13, fontWeight: 600 }}>Demostración aérea</span>
+            <span style={{ color: '#ECEFF4', fontSize: 13, fontWeight: 600 }}>{ui.aerial}</span>
             <span style={{ color: '#556677', fontSize: 12 }}>{timerLabel}</span>
           </div>
-          <Component playing elapsed={elapsed} />
+          <Component playing elapsed={elapsed} lang={lang} />
         </div>
+        {v2 && steps.length > 0 && (
+          <div data-testid="steps-panel" style={{ background: '#121820', borderRadius: 14, padding: 12, marginTop: 10, border: '0.5px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ color: '#ECEFF4', fontSize: 13, fontWeight: 600 }}>{ui.steps}</span>
+              <span data-testid="step-counter" style={{ color: '#00E676', fontSize: 12, fontWeight: 700 }}>{ui.stepOf(stepIdx + 1, steps.length)}</span>
+            </div>
+            <div data-testid="step-text" style={{ color: '#ECEFF4', fontSize: 14, lineHeight: 1.5, minHeight: 63 }}>{steps[stepIdx]}</div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <button data-testid="step-prev" disabled={stepIdx === 0} onClick={() => setStepIdx(i => Math.max(0, i - 1))} style={{ flex: 1, padding: 10, background: 'transparent', color: stepIdx === 0 ? '#556677' : '#ECEFF4', border: '0.5px solid rgba(255,255,255,0.15)', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: stepIdx === 0 ? 'default' : 'pointer' }}>{ui.prev}</button>
+              <button data-testid="step-next" disabled={stepIdx === steps.length - 1} onClick={() => setStepIdx(i => Math.min(steps.length - 1, i + 1))} style={{ flex: 1, padding: 10, background: stepIdx === steps.length - 1 ? 'transparent' : 'rgba(0,230,118,0.12)', color: stepIdx === steps.length - 1 ? '#556677' : '#00E676', border: '0.5px solid rgba(0,230,118,0.25)', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: stepIdx === steps.length - 1 ? 'default' : 'pointer' }}>{ui.next}</button>
+            </div>
+          </div>
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 14 }}>
-          <button onClick={onClose} style={{ width: '100%', padding: 12, background: '#00E676', color: '#0a0e14', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Entendido · Empezar</button>
-          <button onClick={replay} style={{ width: '100%', padding: 12, background: 'transparent', color: '#ECEFF4', border: '0.5px solid rgba(255,255,255,0.15)', borderRadius: 12, fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Volver a ver</button>
+          <button onClick={onClose} style={{ width: '100%', padding: 12, background: '#00E676', color: '#0a0e14', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>{ui.done}</button>
+          <button onClick={replay} style={{ width: '100%', padding: 12, background: 'transparent', color: '#ECEFF4', border: '0.5px solid rgba(255,255,255,0.15)', borderRadius: 12, fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>{ui.replay}</button>
         </div>
       </div>
     </div>

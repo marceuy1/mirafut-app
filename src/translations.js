@@ -1,5 +1,16 @@
 export const translations = {
   es: {
+    exerciseVisual: {
+      seeHowTo: 'Ver cómo hacerlo',
+      back: 'Ver ejercicio',
+      aerial: 'Demostración aérea',
+      steps: 'Paso a paso',
+      stepOf: (i, n) => `Paso ${i} de ${n}`,
+      prev: 'Anterior',
+      next: 'Siguiente',
+      done: 'Entendido · Empezar',
+      replay: 'Volver a ver',
+    },
     tagline: 'TALENTO SIN FRONTERAS',
     heroTitle: 'Tu juego. Tu crecimiento. Tu futuro.',
     heroSubtitle: 'Entrenamiento de fútbol personalizado para ayudarte a mejorar, ser constante y alcanzar tus metas, sin importar tu nivel.',
@@ -214,6 +225,17 @@ export const translations = {
     writeToPrefix: 'Escríbele a',
   },
   en: {
+    exerciseVisual: {
+      seeHowTo: 'See how to do it',
+      back: 'See exercise',
+      aerial: 'Aerial demonstration',
+      steps: 'Step by step',
+      stepOf: (i, n) => `Step ${i} of ${n}`,
+      prev: 'Previous',
+      next: 'Next',
+      done: 'Got it · Start',
+      replay: 'Watch again',
+    },
     tagline: 'TALENT WITHOUT BORDERS',
     heroTitle: 'Your Game. Your Growth. Your Future.',
     heroSubtitle: 'Personalized soccer training to help you improve, build consistency, and reach your goals — whatever your level.',
