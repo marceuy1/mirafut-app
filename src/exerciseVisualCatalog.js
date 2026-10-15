@@ -46,13 +46,13 @@ export const VISUAL_CATALOG = {
         'Coloca 4 conos en línea recta, a la misma distancia entre sí. Ponte en INICIO, un poco antes del cono 1 y a la derecha de la línea, con el balón controlado.',
         'Conduce en diagonal hacia tu izquierda y cruza la línea entre el cono 1 y el cono 2. El cono 1 queda a tu izquierda.',
         'Cambia de dirección hacia tu derecha y cruza entre el cono 2 y el cono 3. El cono 2 queda a tu derecha y el cono 3 a tu izquierda.',
-        'Cambia otra vez hacia tu izquierda y cruza entre el cono 3 y el cono 4; el cono 4 queda a tu derecha. Después sigue hasta el FINAL con toques más largos.',
+        'Cambia otra vez hacia tu izquierda y cruza entre el cono 3 y el cono 4; el cono 4 queda a tu derecha. Después sigue conduciendo el balón hasta el FINAL con toques más largos.',
       ],
       en: [
         'Set up 4 cones in a straight line, evenly spaced. Stand at START, slightly before cone 1 and to the right of the line, with the ball under control.',
         'Dribble diagonally to your left and cross the line between cone 1 and cone 2. Cone 1 stays on your left.',
         'Change direction to your right and cross between cone 2 and cone 3. Cone 2 stays on your right and cone 3 on your left.',
-        'Change direction to your left again and cross between cone 3 and cone 4; cone 4 stays on your right. Then carry on to the FINISH with longer touches.',
+        'Change direction to your left again and cross between cone 3 and cone 4; cone 4 stays on your right. Then keep dribbling the ball to the FINISH with longer touches.',
       ],
     },
     // Izquierda/derecha: desde el punto de vista del jugador (avanza del cono 1 al cono 4).
