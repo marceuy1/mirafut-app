@@ -43,17 +43,26 @@ export const VISUAL_CATALOG = {
     },
     steps: {
       es: [
-        'Coloca 4 conos en línea, a la misma distancia entre sí. Empieza junto al punto de INICIO con el balón controlado.',
-        'Conduce en diagonal hacia el espacio entre el primer y el segundo cono.',
-        'Cambia de dirección en cada cono: pasa alternando de lado, con toques cortos y el balón cerca del pie.',
-        'Tras el último cono sigue hacia el FINAL con una conducción más larga y levanta la cabeza.',
+        'Coloca 4 conos en línea recta, a la misma distancia entre sí. Ponte en INICIO, un poco antes del cono 1 y a la derecha de la línea, con el balón controlado.',
+        'Conduce en diagonal hacia tu izquierda y cruza la línea entre el cono 1 y el cono 2. El cono 1 queda a tu izquierda.',
+        'Cambia de dirección hacia tu derecha y cruza entre el cono 2 y el cono 3. El cono 2 queda a tu derecha y el cono 3 a tu izquierda.',
+        'Cambia otra vez hacia tu izquierda y cruza entre el cono 3 y el cono 4; el cono 4 queda a tu derecha. Después sigue hasta el FINAL con toques más largos.',
       ],
       en: [
-        'Set up 4 cones in a line, evenly spaced. Start next to the START mark with the ball under control.',
-        'Dribble diagonally toward the gap between the first and second cone.',
-        'Change direction at every cone: pass them alternating sides, with short touches and the ball close to your foot.',
-        'After the last cone, carry on to the FINISH with a longer dribble and lift your head.',
+        'Set up 4 cones in a straight line, evenly spaced. Stand at START, slightly before cone 1 and to the right of the line, with the ball under control.',
+        'Dribble diagonally to your left and cross the line between cone 1 and cone 2. Cone 1 stays on your left.',
+        'Change direction to your right and cross between cone 2 and cone 3. Cone 2 stays on your right and cone 3 on your left.',
+        'Change direction to your left again and cross between cone 3 and cone 4; cone 4 stays on your right. Then carry on to the FINISH with longer touches.',
       ],
+    },
+    // Izquierda/derecha: desde el punto de vista del jugador (avanza del cono 1 al cono 4).
+    note: {
+      es: 'Izquierda y derecha se cuentan desde tu posición, mirando del cono 1 hacia el cono 4.',
+      en: 'Left and right are from your own point of view, facing from cone 1 toward cone 4.',
+    },
+    tip: {
+      es: 'Consejo técnico: levanta la cabeza al salir del último cono.',
+      en: 'Technical tip: lift your head as you leave the last cone.',
     },
     match: {
       // El titulo debe tener AMBAS ideas: conduccion y cambio de direccion.
@@ -92,16 +101,16 @@ export const VISUAL_CATALOG = {
     },
     steps: {
       es: [
-        'Colócate en el centro de los 4 conos; un compañero (PASADOR) queda a un lado con el balón.',
-        'Antes de que llegue el pase, mira a la izquierda y luego a la derecha para escanear.',
-        'Recibe el pase con el cuerpo orientado hacia el espacio libre.',
-        'Gira con el balón siempre delante y sal de la presión siguiendo la ruta.',
+        'Colócate en el centro de los 4 conos, mirando al cono de arriba. Un compañero (PASADOR) se pone a tu izquierda, fuera de los conos, con el balón.',
+        'Antes de recibir el pase, observa a ambos lados para identificar el espacio disponible.',
+        'Recibe el pase con el cuerpo orientado hacia el espacio libre señalado en el diagrama.',
+        'Controla el balón, gira y sal siguiendo la ruta indicada, como si estuvieras evitando la presión de un rival.',
       ],
       en: [
-        'Stand in the middle of the 4 cones; a partner (PASSER) stays to one side with the ball.',
-        'Before the pass arrives, look left and then right to scan.',
-        'Receive the pass with your body open toward the free space.',
-        'Turn with the ball always in front of you and move out of pressure along the route.',
+        'Stand in the middle of the 4 cones, facing the top cone. A partner (PASSER) stands to your left, outside the cones, with the ball.',
+        'Before receiving the pass, look to both sides to identify the available space.',
+        'Receive the pass with your body open toward the free space shown in the diagram.',
+        'Control the ball, turn and move out along the indicated route, as if you were avoiding a rival\'s pressure.',
       ],
     },
     match: {

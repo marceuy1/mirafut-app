@@ -10,63 +10,8 @@ import { translations } from './translations';
 // de estos dos casos sin re-validar contra los videos v3.
 // ============================================================
 
-const GREEN = '#00E676';
-const ORANGE = '#FF8A00';
-const WHITE = '#FFFFFF';
-const BG = '#0c2416';
-const STRIPE = '#0f2a1a';
-const LABEL = '#8899A6';
-const DIM_GREEN = '#3c826d';
-
-function lerp(p0, p1, t) {
-  return [p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t];
-}
-function quad(p0, pc, p1, t) {
-  const x = (1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * pc[0] + t ** 2 * p1[0];
-  const y = (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * pc[1] + t ** 2 * p1[1];
-  return [x, y];
-}
-function pointOnPolyline(pts, tGlobal) {
-  const n = pts.length - 1;
-  const segLen = 1 / n;
-  const idx = Math.min(Math.floor(tGlobal / segLen), n - 1);
-  const localT = (tGlobal - idx * segLen) / segLen;
-  return lerp(pts[idx], pts[idx + 1], localT);
-}
-function pointOnSegments(segs, tGlobal) {
-  const n = segs.length;
-  const segLen = 1 / n;
-  const idx = Math.min(Math.floor(tGlobal / segLen), n - 1);
-  const localT = (tGlobal - idx * segLen) / segLen;
-  const seg = segs[idx];
-  if (seg[0] === 'L') return lerp(seg[1], seg[2], localT);
-  return quad(seg[1], seg[2], seg[3], localT);
-}
-function unit(v) {
-  const m = Math.hypot(v[0], v[1]);
-  return m ? [v[0] / m, v[1] / m] : [0, 0];
-}
-
-function Pitch({ w, h }) {
-  const stripeW = Math.max(40, Math.floor(w / 9));
-  const stripes = [];
-  for (let x = 0, i = 0; x < w; x += stripeW, i++) {
-    if (i % 2 === 1) stripes.push(<rect key={x} x={x} y={0} width={stripeW} height={h} fill={STRIPE} />);
-  }
-  return (
-    <>
-      <rect x={0} y={0} width={w} height={h} fill={BG} />
-      {stripes}
-      <rect x={8} y={8} width={w - 16} height={h - 16} fill="none" stroke="#ffffff" strokeOpacity="0.18" strokeWidth="3" />
-    </>
-  );
-}
-function Cone({ x, y, size = 28 }) {
-  return <polygon points={`${x},${y} ${x - size / 2},${y + size / 2} ${x + size / 2},${y + size / 2}`} fill={ORANGE} />;
-}
-function toDashPath(pts) {
-  return 'M' + pts.map(p => p.join(',')).join(' L');
-}
+import { StepDiagram, Legend } from './ExerciseStepDiagrams';
+import { GREEN, ORANGE, WHITE, BG, STRIPE, LABEL, DIM_GREEN, lerp, quad, pointOnPolyline, pointOnSegments, unit, Pitch, Cone, toDashPath } from './exerciseVisualKit';
 
 // ---------------- CASO 1: dribbling_path ----------------
 const C1_TEXT = {
@@ -319,6 +264,7 @@ export default function ExerciseVisual({ type, onClose, onReplay, lang = 'es', v
             <span style={{ color: '#556677', fontSize: 12 }}>{timerLabel}</span>
           </div>
           <Component playing elapsed={elapsed} lang={lang} />
+          {v2 && <Legend type={type} lang={lang} />}
         </div>
         {v2 && steps.length > 0 && (
           <div data-testid="steps-panel" style={{ background: '#121820', borderRadius: 14, padding: 12, marginTop: 10, border: '0.5px solid rgba(255,255,255,0.06)' }}>
@@ -326,7 +272,10 @@ export default function ExerciseVisual({ type, onClose, onReplay, lang = 'es', v
               <span style={{ color: '#ECEFF4', fontSize: 13, fontWeight: 600 }}>{ui.steps}</span>
               <span data-testid="step-counter" style={{ color: '#00E676', fontSize: 12, fontWeight: 700 }}>{ui.stepOf(stepIdx + 1, steps.length)}</span>
             </div>
+            <div style={{ marginBottom: 10 }}><StepDiagram type={type} step={stepIdx} lang={lang} /></div>
             <div data-testid="step-text" style={{ color: '#ECEFF4', fontSize: 14, lineHeight: 1.5, minHeight: 63 }}>{steps[stepIdx]}</div>
+            {cat && cat.note && <div data-testid="step-note" style={{ color: '#8899A6', fontSize: 12, lineHeight: 1.4, marginTop: 8 }}>{cat.note[lang] || cat.note.es}</div>}
+            {cat && cat.tip && <div data-testid="step-tip" style={{ color: '#00E676', fontSize: 12.5, fontWeight: 600, lineHeight: 1.4, marginTop: 8, padding: '8px 10px', background: 'rgba(0,230,118,0.08)', borderRadius: 10 }}>{cat.tip[lang] || cat.tip.es}</div>}
             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
               <button data-testid="step-prev" disabled={stepIdx === 0} onClick={() => setStepIdx(i => Math.max(0, i - 1))} style={{ flex: 1, padding: 10, background: 'transparent', color: stepIdx === 0 ? '#556677' : '#ECEFF4', border: '0.5px solid rgba(255,255,255,0.15)', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: stepIdx === 0 ? 'default' : 'pointer' }}>{ui.prev}</button>
               <button data-testid="step-next" disabled={stepIdx === steps.length - 1} onClick={() => setStepIdx(i => Math.min(steps.length - 1, i + 1))} style={{ flex: 1, padding: 10, background: stepIdx === steps.length - 1 ? 'transparent' : 'rgba(0,230,118,0.12)', color: stepIdx === steps.length - 1 ? '#556677' : '#00E676', border: '0.5px solid rgba(0,230,118,0.25)', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: stepIdx === steps.length - 1 ? 'default' : 'pointer' }}>{ui.next}</button>
