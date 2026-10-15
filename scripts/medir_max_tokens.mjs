@@ -17,8 +17,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const args = process.argv.slice(2);
 const flag = (k) => args.includes('--' + k);
 const val = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 && args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : d; };
-const N = Math.min(60, Math.max(1, parseInt(val('n', '3'), 10) || 3));
+const casoSolicitado = parseInt(val('caso', '0'), 10);
+const N = casoSolicitado >= 1 && casoSolicitado <= 60
+  ? 60
+  : Math.min(60, Math.max(1, parseInt(val('n', '3'), 10) || 3));
 const SIMULAR = flag('simular');
+const DETENER_INCOMPLETA = flag('detener-incompleta');
 const GUARDAR_TEXTO = flag('texto');   // opcional: guarda las respuestas en un archivo APARTE para revisarlas a mano
 const PAUSA_MS = parseInt(val('pausa', '600'), 10);
 const OUT = val('out', path.join(os.tmpdir(), 'medicion_tokens.csv'));
@@ -99,7 +103,10 @@ if (SIMULAR) {
 }
 
 // ---------- 4. Ejecución ----------
-const casos = construirCasos();
+const casoElegido = parseInt(val('caso', '0'), 10);
+const casos = casoElegido >= 1 && casoElegido <= 60
+  ? construirCasos.call(null, 60).slice(casoElegido - 1, casoElegido)
+  : construirCasos();
 console.log(`Casos: ${casos.length} · modo: ${SIMULAR ? 'SIMULADO (sin OpenAI)' : 'REAL (gpt-4o-mini)'} · CSV: ${OUT}`);
 const filas = [];
 let erroresSeguidos = 0;
@@ -114,7 +121,9 @@ for (let i = 0; i < casos.length; i++) {
   const res = { code: 200, payload: null, status(x) { this.code = x; return this; }, json(p) { this.payload = p; return this; } };
   const t0 = performance.now();
   try {
-    await handler({ method: 'POST', body: { message: c.lang === 'en' ? "Yes, let's go" : 'Sí, vamos', agentType: 'coach', userProfile: perfilDe(c), feedbackOnly: false, lang: c.lang } }, res);
+    await handler({ method: 'POST', body: { message: c.lang === 'en'
+  ? "Coach: Your training context is confirmed. Are you ready to start your next weekly-goal session? | Player: Yes, let's go"
+  : "Coach: Ya tengo confirmado cómo entrenas y qué material tienes. ¿Estás listo para comenzar tu próxima sesión del objetivo semanal? | Jugador: Sí, vamos" , agentType: 'coach', userProfile: perfilDe(c), feedbackOnly: false, lang: c.lang } }, res);
   } catch (e) { res.code = 500; }
   finally { console.log = logOrig; }
   const ms = Math.round(performance.now() - t0);
@@ -135,6 +144,10 @@ for (let i = 0; i < casos.length; i++) {
     console.error('  La llamada falló (estado ' + res.code + '). El servidor oculta el detalle: revisa que la clave sea válida y que la cuenta de OpenAI tenga saldo.');
     if (erroresSeguidos >= 2) { console.error('Demasiados errores seguidos: me detengo.'); break; }
   } else erroresSeguidos = 0;
+  if (DETENER_INCOMPLETA && e && !e.completa) {
+    console.log('Sesión incompleta detectada. Deteniendo pruebas.');
+    break;
+  }
   if (i < casos.length - 1) await new Promise(r => setTimeout(r, PAUSA_MS));
 }
 
