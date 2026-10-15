@@ -46,5 +46,19 @@ test('Caso 2: elementos por paso', () => {
   assert.ok(f(2).includes('ESPACIO LIBRE') && f(2).includes('stroke-dasharray="4 4"'));
   assert.ok(f(3).includes('stroke-width="6"') && !f(3).includes('ESPACIO LIBRE'));
 });
+test('Caso 2: balon claro en el paso 3 y pegado al jugador en el paso 4', () => {
+  const center = (m, re) => { const x = m.match(re); return x ? [Number(x[1]), Number(x[2])] : null; };
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  for (const s of [2, 3]) {
+    const m = renderToStaticMarkup(<Case2Frame step={s} />);
+    const ball = center(m, /<circle cx="([\d.]+)" cy="([\d.]+)" r="12" fill="#FFFFFF"/);
+    const pl = center(m, /<circle cx="([\d.]+)" cy="([\d.]+)" r="16" fill="#00E676"/);
+    assert.ok(ball && pl, 'balon o jugador no encontrado');
+    const d = dist(ball, pl);
+    assert.ok(d >= 25 && d <= 50, `distancia balon-jugador ${d.toFixed(1)}`);
+    if (s === 3) assert.ok(d <= 30, 'en el paso 4 el balon debe ir pegado al jugador: ' + d.toFixed(1));
+    if (s === 2) assert.ok(d > 27 + 12, 'en el paso 3 el balon debe quedar fuera del anillo: ' + d.toFixed(1));
+  }
+});
 console.log(`\n${passed} ok, ${failed} fallos`);
 process.exit(failed ? 1 : 0);

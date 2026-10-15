@@ -101,13 +101,13 @@ export const VISUAL_CATALOG = {
     },
     steps: {
       es: [
-        'Colócate en el centro de los 4 conos, mirando al cono de arriba. Un compañero (PASADOR) se pone a tu izquierda, fuera de los conos, con el balón.',
+        'Colócate en el centro de los 4 conos. Un compañero (PASADOR) se pone a tu izquierda, fuera de los conos, con el balón.',
         'Antes de recibir el pase, observa a ambos lados para identificar el espacio disponible.',
         'Recibe el pase con el cuerpo orientado hacia el espacio libre señalado en el diagrama.',
         'Controla el balón, gira y sal siguiendo la ruta indicada, como si estuvieras evitando la presión de un rival.',
       ],
       en: [
-        'Stand in the middle of the 4 cones, facing the top cone. A partner (PASSER) stands to your left, outside the cones, with the ball.',
+        'Stand in the middle of the 4 cones. A partner (PASSER) stands to your left, outside the cones, with the ball.',
         'Before receiving the pass, look to both sides to identify the available space.',
         'Receive the pass with your body open toward the free space shown in the diagram.',
         'Control the ball, turn and move out along the indicated route, as if you were avoiding a rival\'s pressure.',

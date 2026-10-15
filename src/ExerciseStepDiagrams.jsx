@@ -65,8 +65,8 @@ function Num({ x, y, n, active, r = 12, fs = 14 }) {
 function Player({ x, y, r = 15 }) {
   return <circle cx={x} cy={y} r={r} fill={GREEN} stroke="#083018" strokeWidth="3" />;
 }
-function Ball({ x, y }) {
-  return <circle cx={x} cy={y} r="7" fill={WHITE} stroke={BG} strokeWidth="2" />;
+function Ball({ x, y, r = 9 }) {
+  return <circle cx={x} cy={y} r={r} fill={WHITE} stroke="#0a0e14" strokeWidth="3" data-ball="1" />;
 }
 function segPath(a, b, n = 20) {
   const pts = [];
@@ -90,7 +90,7 @@ export function Case1Frame({ step = 0, lang = 'es' }) {
   for (let i = 0; i <= 60; i++) guidePts.push(pointOnPolyline(path, i / 60));
   const firstSeg = segs.length ? segs[0] : 0;
   const playerPos = segs.length ? path[firstSeg] : path[0];
-  const ballPos = segs.length ? lerp(path[firstSeg], path[firstSeg + 1], 0.12) : pointOnPolyline(path, 0.05);
+  const ballPos = segs.length ? lerp(path[firstSeg], path[firstSeg + 1], 0.14) : pointOnPolyline(path, 0.05);
   const [fx, fy] = path[path.length - 1];
   const labelSide = [1, -1, 1, -1]; // 1 = derecha del cono, -1 = izquierda
   return (
@@ -142,8 +142,8 @@ export function Case2Frame({ step = 0, lang = 'es' }) {
   for (let i = 0; i <= 40; i++) routePts.push(pointOnSegments(g.route, i / 40));
   const routeEnd = pointOnSegments(g.route, 1);
   const routePrev = pointOnSegments(g.route, 0.97);
-  const ballAhead = [routeEnd[0] + C2_END_DIR[0] * 40, routeEnd[1] + C2_END_DIR[1] * 40];
-  const ballAtFeet = [pl[0] + C2_INIT_DIR[0] * 26, pl[1] + C2_INIT_DIR[1] * 26];
+  const ballAhead = [routeEnd[0] + C2_END_DIR[0] * 28, routeEnd[1] + C2_END_DIR[1] * 28]; // pegado al jugador, delante
+  const ballAtFeet = [pl[0] + C2_INIT_DIR[0] * 47, pl[1] + C2_INIT_DIR[1] * 47]; // fuera del anillo, hacia el espacio libre
   const freeC = [pl[0] + C2_INIT_DIR[0] * 105, pl[1] + C2_INIT_DIR[1] * 105];
   const lookArrow = (la, key) => (
     <g key={key}>
@@ -180,7 +180,7 @@ export function Case2Frame({ step = 0, lang = 'es' }) {
         <g>
           <circle cx={freeC[0]} cy={freeC[1]} r="42" fill={GREEN} fillOpacity="0.14" stroke={GREEN} strokeOpacity="0.8" strokeWidth="3" strokeDasharray="8 8" />
           <text x={freeC[0] + 30} y={freeC[1] + 82} textAnchor="middle" fontSize="25" fontWeight="700" fill={GREEN}>{L.free}</text>
-          <circle cx={pl[0]} cy={pl[1]} r="30" fill="none" stroke={GREEN} strokeOpacity="0.7" strokeWidth="3" />
+          <circle cx={pl[0]} cy={pl[1]} r="27" fill="none" stroke={GREEN} strokeOpacity="0.7" strokeWidth="3" />
         </g>
       )}
       {s >= 2 && (
@@ -198,9 +198,11 @@ export function Case2Frame({ step = 0, lang = 'es' }) {
         </g>
       )}
       {/* balon y jugador segun el paso */}
-      {s <= 1 && <Ball x={g.pass.p0[0]} y={g.pass.p0[1]} />}
-      {s === 2 && <Ball x={ballAtFeet[0]} y={ballAtFeet[1]} />}
-      {s === 3 && <Ball x={ballAhead[0]} y={ballAhead[1]} />}
+      {s <= 1 && <Ball r={12} x={g.pass.p0[0]} y={g.pass.p0[1]} />}
+      {s === 2 && <line x1={pl[0]} y1={pl[1]} x2={ballAtFeet[0]} y2={ballAtFeet[1]} stroke={WHITE} strokeOpacity="0.45" strokeWidth="2" />}
+      {s === 3 && <line x1={routeEnd[0]} y1={routeEnd[1]} x2={ballAhead[0]} y2={ballAhead[1]} stroke={WHITE} strokeOpacity="0.45" strokeWidth="2" />}
+      {s === 2 && <Ball r={12} x={ballAtFeet[0]} y={ballAtFeet[1]} />}
+      {s === 3 && <Ball r={12} x={ballAhead[0]} y={ballAhead[1]} />}
       {s === 3 ? <Player x={routeEnd[0]} y={routeEnd[1]} r={16} /> : <Player x={pl[0]} y={pl[1]} r={16} />}
     </svg>
   );
