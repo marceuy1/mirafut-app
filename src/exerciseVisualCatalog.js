@@ -60,7 +60,9 @@ export const VISUAL_CATALOG = {
       es: 'Izquierda y derecha se cuentan desde tu posición, mirando del cono 1 hacia el cono 4.',
       en: 'Left and right are from your own point of view, facing from cone 1 toward cone 4.',
     },
+    // El consejo se muestra solo en el paso indicado (indice base 0: 3 = paso 4).
     tip: {
+      step: 3,
       es: 'Consejo técnico: levanta la cabeza al salir del último cono.',
       en: 'Technical tip: lift your head as you leave the last cone.',
     },
