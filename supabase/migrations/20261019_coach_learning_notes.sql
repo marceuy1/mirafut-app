@@ -13,7 +13,7 @@ create table if not exists public.coach_learning_notes (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
 last_follow_up_at timestamptz,
-last_follow_up_goal_id uuid
+last_follow_up_goal_id uuid references public.weekly_goals(id) on delete set null
 );
 
 create index if not exists coach_learning_notes_user_created_idx
@@ -64,6 +64,9 @@ $$;
 
 revoke all on function public.coach_note_goal_owner_valid(uuid, uuid)
   from public, anon, authenticated;
+
+grant execute on function public.coach_note_goal_owner_valid(uuid, uuid)
+  to authenticated;
 
 alter table public.coach_learning_notes
   add constraint coach_learning_notes_goal_owner_check
