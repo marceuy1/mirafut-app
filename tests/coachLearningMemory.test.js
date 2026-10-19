@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { prepararObservacionTecnica } from '../src/coachLearningMemory.js';
+import { prepararObservacionTecnica, actualizarEstadoObservacionTecnica, registrarSeguimientoDificultad } from '../src/coachLearningMemory.js';
 
 test('Guarda una dificultad técnica reportada', () => {
   const nota = prepararObservacionTecnica(
@@ -205,4 +205,213 @@ test('No crea recuerdos cuando no hay observaciones', async () => {
 
   assert.equal(prepararContextoMemoria([]), '');
   assert.equal(prepararContextoMemoria(null), '');
+});
+
+test('rechaza estados de seguimiento no permitidos', async () => {
+  const resultado = await actualizarEstadoObservacionTecnica(
+    {},
+    'jugador-1',
+    'observacion-1',
+    'inventado'
+  );
+
+  assert.equal(resultado.data, null);
+  assert.ok(resultado.error);
+});
+
+test('exige identificar al jugador y la observación', async () => {
+  const resultado = await actualizarEstadoObservacionTecnica(
+    {},
+    '',
+    'observacion-1',
+    'resolved'
+  );
+
+  assert.equal(resultado.data, null);
+  assert.ok(resultado.error);
+});
+
+test('actualiza una dificultad con filtros de jugador y observación', async () => {
+  const filtros = [];
+  let cambios = null;
+
+  const consulta = {
+    update(valores) {
+      cambios = valores;
+      return this;
+    },
+    eq(campo, valor) {
+      filtros.push([campo, valor]);
+      return this;
+    },
+    select() {
+      return this;
+    },
+    async single() {
+      return { data: { id: 'observacion-1', ...cambios }, error: null };
+    }
+  };
+
+  const supabase = {
+    from(tabla) {
+      assert.equal(tabla, 'coach_learning_notes');
+      return consulta;
+    }
+  };
+
+  const resultado = await actualizarEstadoObservacionTecnica(
+    supabase,
+    'jugador-1',
+    'observacion-1',
+    'improving'
+  );
+
+  assert.equal(resultado.error, null);
+  assert.equal(resultado.data.status, 'improving');
+  assert.ok(cambios.updated_at);
+  assert.deepEqual(filtros, [
+    ['id', 'observacion-1'],
+    ['user_id', 'jugador-1'],
+    ['note_type', 'difficulty']
+  ]);
+});
+
+test('maneja errores de Supabase al actualizar una dificultad', async () => {
+  const consulta = {
+    update() { return this; },
+    eq() { return this; },
+    select() { return this; },
+    async single() {
+      return { data: null, error: { message: 'Acceso denegado' } };
+    }
+  };
+
+  const supabase = {
+    from() { return consulta; }
+  };
+
+  const resultado = await actualizarEstadoObservacionTecnica(
+    supabase,
+    'jugador-1',
+    'observacion-1',
+    'resolved'
+  );
+
+  assert.equal(resultado.data, null);
+  assert.equal(resultado.error, 'Acceso denegado');
+});
+
+test('No confirma la actualización si la observación no existe', async () => {
+  const consulta = {
+    update() { return this; },
+    eq() { return this; },
+    select() { return this; },
+    async single() {
+      return {
+        data: null,
+        error: { message: 'No se encontró la observación' }
+      };
+    }
+  };
+
+  const supabase = {
+    from(tabla) {
+      assert.equal(tabla, 'coach_learning_notes');
+      return consulta;
+    }
+  };
+
+  const resultado = await actualizarEstadoObservacionTecnica(
+    supabase,
+    'jugador-1',
+    'observacion-inexistente',
+    'resolved'
+  );
+
+  assert.equal(resultado.data, null);
+  assert.equal(resultado.error, 'No se encontró la observación');
+});
+test('Registra seguimiento sin cambiar el estado de la dificultad', async () => {
+  const filtros = [];
+  let cambios = null;
+
+  const consulta = {
+    update(valores) {
+      cambios = valores;
+      return this;
+    },
+    eq(campo, valor) {
+      filtros.push([campo, valor]);
+      return this;
+    },
+    neq(campo, valor) {
+      filtros.push([campo, '!=', valor]);
+      return this;
+    },
+    select() {
+      return this;
+    },
+    async single() {
+      return {
+        data: { id: 'observacion-1' },
+        error: null
+      };
+    }
+  };
+
+  const supabase = {
+    from(tabla) {
+      assert.equal(tabla, 'coach_learning_notes');
+      return consulta;
+    }
+  };
+
+  const resultado = await registrarSeguimientoDificultad(
+    supabase,
+    'jugador-1',
+    'observacion-1',
+    'objetivo-2'
+  );
+
+  assert.equal(resultado.error, null);
+  assert.equal(resultado.data.id, 'observacion-1');
+
+  assert.equal(cambios.last_follow_up_goal_id, 'objetivo-2');
+  assert.ok(!Number.isNaN(Date.parse(cambios.last_follow_up_at)));
+  assert.equal(Object.hasOwn(cambios, 'status'), false);
+
+  assert.deepEqual(filtros, [
+    ['id', 'observacion-1'],
+    ['user_id', 'jugador-1'],
+    ['note_type', 'difficulty'],
+    ['status', '!=', 'resolved']
+  ]);
+});
+test('No confirma seguimiento cuando Supabase devuelve un error', async () => {
+  const consulta = {
+    update() { return this; },
+    eq() { return this; },
+    neq() { return this; },
+    select() { return this; },
+    async single() {
+      return {
+        data: null,
+        error: { message: 'Acceso denegado' }
+      };
+    }
+  };
+
+  const supabase = {
+    from() { return consulta; }
+  };
+
+  const resultado = await registrarSeguimientoDificultad(
+    supabase,
+    'jugador-1',
+    'observacion-1',
+    'objetivo-2'
+  );
+
+  assert.equal(resultado.data, null);
+  assert.equal(resultado.error, 'Acceso denegado');
 });

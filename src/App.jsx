@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { recuperarMemoriaTecnica, prepararContextoMemoria, prepararObservacionTecnica, guardarObservacionTecnica } from './coachLearningMemory';
+import { recuperarMemoriaTecnica, prepararContextoMemoria, prepararObservacionTecnica, guardarObservacionTecnica, actualizarEstadoObservacionTecnica , registrarSeguimientoDificultad} from './coachLearningMemory';
 
 import { solicitaEntrenamiento as detectarSolicitud } from './solicitaEntrenamiento';
 
@@ -191,6 +191,7 @@ export default function App() {
   const [awaitingTrainingContext, setAwaitingTrainingContext] = useState(false);
   const [awaitingSessionFeedback, setAwaitingSessionFeedback] = useState(false);
   const [awaitingTechnicalObservation, setAwaitingTechnicalObservation] = useState(false);
+  const [pendingDifficultyFollowUp, setPendingDifficultyFollowUp] = useState(null);
   const [awaitingFinalReflection, setAwaitingFinalReflection] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -904,6 +905,51 @@ export default function App() {
       return;
     }
 
+    // Confirmacion explicita sobre una dificultad anterior.
+    if (pendingDifficultyFollowUp && !detectarSolicitud(displayText, !!weeklyGoal)) {
+      const respuesta = displayText.trim().toLowerCase();
+      const estados = {
+        "sigo igual": "active",
+        "igual": "active",
+        "same": "active",
+        "estoy mejorando": "improving",
+        "mejorando": "improving",
+        "improving": "improving",
+        "ya lo supere": "resolved",
+        "ya lo superé": "resolved",
+        "superada": "resolved",
+        "resolved": "resolved"
+      };
+      const omitir = /^(omitir|skip)$/i.test(respuesta);
+      const nuevoEstado = estados[respuesta];
+
+      if (omitir || nuevoEstado) {
+        if (omitir) {
+          setPendingDifficultyFollowUp(null);
+        } else {
+          const resultado = await actualizarEstadoObservacionTecnica(
+            supabase,
+            session?.user?.id,
+            pendingDifficultyFollowUp.id,
+            nuevoEstado
+          );
+          if (!resultado.error) {
+            setPendingDifficultyFollowUp(null);
+          }
+          setAiMessages(m => [...m, {
+            id: Date.now(),
+            from: "coach",
+            type: "text",
+            text: resultado.error
+              ? (lang === "en" ? "I could not save your update. Please try again." : "No pude guardar tu actualización. Inténtalo nuevamente.")
+              : (lang === "en" ? "Thanks. I have updated your progress." : "Gracias. He actualizado tu progreso."),
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          }]);
+        }
+        return;
+      }
+    }
+
     // Respuesta opcional sobre una dificultad tecnica.
     if (awaitingTechnicalObservation && !detectarSolicitud(displayText, !!weeklyGoal)) {
       setAwaitingTechnicalObservation(false);
@@ -981,8 +1027,52 @@ export default function App() {
             : '¿Qué fue lo que más te costó en esta sesión? Puedes contármelo brevemente o escribir Omitir.',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }]);
+      } else if (session?.user?.id) {
+        const memoria = await recuperarMemoriaTecnica(
+          supabase, session.user.id
+        );
+
+        if (!memoria.error) {
+          const anterior = (memoria.data || []).find(n =>
+            n.id &&
+            n.note_type === 'difficulty' &&
+            n.status !== 'resolved' &&
+n.last_follow_up_goal_id !== weeklyGoal.id &&
+            (n.weekly_goal_id !== weeklyGoal.id || (n.session_number != null && Number(n.session_number) < Number(weeklyGoal.sessions_done)))
+          );
+
+          if (anterior) {
+const registro = await registrarSeguimientoDificultad(
+  supabase,
+  session.user.id,
+  anterior.id,
+  weeklyGoal.id
+);
+
+if (registro.error) {
+  console.warn('No se pudo registrar el seguimiento:', registro.error);
+} else {
+            setPendingDifficultyFollowUp({
+              id: anterior.id,
+              observation: anterior.observation
+            });
+
+            setAiMessages(m => [...m, {
+              id: Date.now(),
+              from: 'coach',
+              type: 'text',
+              text: lang === 'en'
+                ? `Previously you mentioned: "${anterior.observation}". How is it going now? Reply: Same, Improving, Resolved, or Skip.`
+                : `Anteriormente mencionaste: «${anterior.observation}». ¿Cómo te va ahora? Responde: Sigo igual, Estoy mejorando, Ya lo superé u Omitir.`,
+              time: new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            }]);
+          }
+        }
       }
-      return;
+     } return;
     }
 
     // El jugador esta respondiendo si entrena solo/acompañado y que material tiene.
@@ -1007,6 +1097,7 @@ let promptText;
 const solicitaEntrenamiento = detectarSolicitud(displayText, !!weeklyGoal);
 
 if (solicitaEntrenamiento) {
+setPendingDifficultyFollowUp(null);
       setAwaitingTechnicalObservation(false);
       const yaConoceContexto = !!weeklyGoal.training_context;
       promptText = yaConoceContexto

@@ -54,6 +54,50 @@ export async function guardarObservacionTecnica(supabase, userId, nota) {
   }
 }
 
+// Actualiza el estado de una dificultad confirmada por el jugador.
+// No modifica la observacion original ni inventa progresos.
+export async function actualizarEstadoObservacionTecnica(
+  supabase,
+  userId,
+  observacionId,
+  nuevoEstado
+) {
+  const estadosPermitidos = ['active', 'improving', 'resolved'];
+
+  if (!userId || !observacionId || !estadosPermitidos.includes(nuevoEstado)) {
+    return { data: null, error: 'Datos de actualización inválidos' };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('coach_learning_notes')
+      .update({
+        status: nuevoEstado,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', observacionId)
+      .eq('user_id', userId)
+      .eq('note_type', 'difficulty')
+      .select()
+      .single();
+
+    if (error) {
+      return { data: null, error: error.message || 'Error de Supabase' };
+    }
+
+    if (!data) {
+      return { data: null, error: 'No se confirmó la actualización' };
+    }
+
+    return { data, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error.message || 'No se pudo actualizar la observación'
+    };
+  }
+}
+
 // Recupera las observaciones recientes de un jugador.
 // El límite evita cargar un historial excesivo en el Coach.
 export async function recuperarMemoriaTecnica(supabase, userId) {
@@ -64,7 +108,7 @@ export async function recuperarMemoriaTecnica(supabase, userId) {
   try {
     const { data, error } = await supabase
       .from('coach_learning_notes')
-      .select('id, observation, note_type, status, goal, weekly_goal_id, session_number, created_at')
+      .select('id, observation, note_type, status, goal, weekly_goal_id, session_number, created_at, last_follow_up_at, last_follow_up_goal_id')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(20);
@@ -99,7 +143,7 @@ export function prepararContextoMemoria(notas) {
     resolved: 'resuelta'
   };
 
-  const lineas = notas
+  return notas
     .filter(n => n && typeof n.observation === 'string'
       && n.observation.trim()
       && tipos[n.note_type])
@@ -107,8 +151,52 @@ export function prepararContextoMemoria(notas) {
     .map(n => {
       const texto = n.observation.trim().slice(0, 300);
       const estado = estados[n.status] || 'sin estado';
-      return `${tipos[n.note_type]} (${estado}): ${texto}`;
-    });
+      const referencia = typeof n.id === 'string' && n.id
+        ? ` [referencia: ${n.id}]`
+        : '';
+      return `${tipos[n.note_type]} (${estado})${referencia}: ${texto}`;
+    })
+    .join('\n');
+}
+// Registra cuándo el Coach pregunta por una dificultad anterior.
+// No cambia el progreso ni marca la dificultad como resuelta.
+export async function registrarSeguimientoDificultad(
+  supabase,
+  userId,
+  observacionId,
+  weeklyGoalId
+) {
+  if (!userId || !observacionId || !weeklyGoalId) {
+    return { data: null, error: 'Faltan datos del seguimiento' };
+  }
 
-  return lineas.join('\n');
+  try {
+    const { data, error } = await supabase
+      .from('coach_learning_notes')
+      .update({
+        last_follow_up_at: new Date().toISOString(),
+        last_follow_up_goal_id: weeklyGoalId
+      })
+      .eq('id', observacionId)
+      .eq('user_id', userId)
+      .eq('note_type', 'difficulty')
+      .neq('status', 'resolved')
+      .select()
+      .single();
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    if (!data) {
+      return { data: null, error: 'No se registró el seguimiento' };
+    }
+
+    return { data, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error.message || 'No se pudo registrar el seguimiento'
+    };
+  }
 }

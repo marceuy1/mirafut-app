@@ -11,7 +11,9 @@ create table if not exists public.coach_learning_notes (
   note_type text not null check (note_type in ('difficulty', 'improvement', 'other')),
   status text not null default 'active' check (status in ('active', 'improving', 'resolved')),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+last_follow_up_at timestamptz,
+last_follow_up_goal_id uuid
 );
 
 create index if not exists coach_learning_notes_user_created_idx
