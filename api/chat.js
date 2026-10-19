@@ -233,7 +233,7 @@ export function extraerBloqueReutilizable(texto) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   
-  const { message, agentType, userProfile: perfil, feedbackOnly, lang } = req.body;
+  const { message, agentType, userProfile: perfil, feedbackOnly, lang, solicitaEntrenamiento = false } = req.body;
   if (!message) return res.status(400).json({ error: 'Missing message' });
 
   const edad = perfil?.age ? parseInt(perfil.age) : 16;
@@ -273,7 +273,7 @@ export default async function handler(req, res) {
   // (ya probamos que no lo cumple con precision). En su lugar, reutilizamos LITERALMENTE
   // los mismos ejercicios de la sesion anterior: es matematicamente imposible que suba
   // la dificultad si es el mismo texto.
-  if (!feedbackOnly && esDificil && !dosDificilesSeguidos && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado) {
+  if (solicitaEntrenamiento && !feedbackOnly && esDificil && !dosDificilesSeguidos && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado) {
     const bloqueAnterior = extraerBloqueReutilizable(sessionsLog[sessionsLog.length - 1]);
     if (bloqueAnterior) {
       // Renumera conservando el idioma/ortografia del encabezado (Sesion / Sesión / Session).
@@ -290,7 +290,7 @@ export default async function handler(req, res) {
   }
 
   let goalStr = '';
-  if (feedbackOnly && perfil?.weekly_goal && !objetivoCompletado) {
+  if ((feedbackOnly || !solicitaEntrenamiento) && perfil?.weekly_goal && !objetivoCompletado) {
     goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0} de ${perfil.sessions_target || 3}.
 
 Respondele al jugador de forma breve (2-3 lineas maximo) y especifica a lo que te acaba de decir o preguntar, como un entrenador real. No inventes contexto que no tenes.

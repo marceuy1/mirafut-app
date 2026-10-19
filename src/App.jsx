@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { solicitaEntrenamiento as detectarSolicitud } from './solicitaEntrenamiento';
 
 // Analytics minimos para Beta 1: un evento = una fila en la tabla `events`.
 // Nunca pasar contenido de usuario (texto de posts, mensajes, objetivo escrito,
@@ -932,12 +933,13 @@ export default function App() {
         console.error('Error guardando training_context:', e);
       }
       setWeeklyGoal(g => g ? { ...g, training_context: contextText } : g);
-      await enviarMensajeCoach(contextText, contextText);
+      await enviarMensajeCoach(contextText, contextText, false, true);
       return;
     }
+let promptText;
+const solicitaEntrenamiento = detectarSolicitud(displayText, !!weeklyGoal);
 
-    let promptText;
-    if (displayText === 'Sí, vamos' && weeklyGoal) {
+if (solicitaEntrenamiento) {
       const yaConoceContexto = !!weeklyGoal.training_context;
       promptText = yaConoceContexto
         ? 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Genera la sesion directamente con progresion respecto a las sesiones anteriores, no preguntes por material ni si entreno solo, ya lo sabes.'
@@ -949,10 +951,10 @@ export default function App() {
       promptText = displayText;
     }
 
-    await enviarMensajeCoach(displayText, promptText);
+    await enviarMensajeCoach(displayText, promptText, false, solicitaEntrenamiento);
   };
 
-  const enviarMensajeCoach = async (textoVisible, promptText, feedbackOnly = false) => {
+  const enviarMensajeCoach = async (textoVisible, promptText, feedbackOnly = false, solicitaEntrenamiento = false) => {
     if (requireAuth()) return;
     if (!textoVisible.trim()) return;
 
@@ -981,7 +983,7 @@ export default function App() {
       } : userProfile;
       const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
-      const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo, feedbackOnly, lang);
+      const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo, feedbackOnly, lang, solicitaEntrenamiento);
       const response = coachData.reply;
       const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && response.length > 150 && (response.includes('Series:') || response.includes('Reps:') || response.includes('min'));
 
