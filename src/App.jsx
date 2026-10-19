@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { solicitaEntrenamiento as detectarSolicitud } from './solicitaEntrenamiento';
 
 // Analytics minimos para Beta 1: un evento = una fila en la tabla `events`.
 // Nunca pasar contenido de usuario (texto de posts, mensajes, objetivo escrito,
@@ -936,10 +937,7 @@ export default function App() {
       return;
     }
 let promptText;
-const solicitaEntrenamiento = !!weeklyGoal && (
-  displayText === 'Sí, vamos' ||
-  /^(quiero entrenar|quiero empezar a entrenar|quiero hacer mi sesi[oó]n|quiero comenzar mi entrenamiento|i want to train|i'm ready to train)[.!]?\s*$/i.test(displayText.trim())
-);
+const solicitaEntrenamiento = detectarSolicitud(displayText, !!weeklyGoal);
 
 if (solicitaEntrenamiento) {
       const yaConoceContexto = !!weeklyGoal.training_context;
