@@ -1,4 +1,6 @@
 import { supabase } from './supabaseClient';
+import { recuperarMemoriaTecnica, prepararContextoMemoria, prepararObservacionTecnica, guardarObservacionTecnica } from './coachLearningMemory';
+
 import { solicitaEntrenamiento as detectarSolicitud } from './solicitaEntrenamiento';
 
 // Analytics minimos para Beta 1: un evento = una fila en la tabla `events`.
@@ -188,6 +190,7 @@ export default function App() {
   const [sessionInProgress, setSessionInProgress] = useState(false);
   const [awaitingTrainingContext, setAwaitingTrainingContext] = useState(false);
   const [awaitingSessionFeedback, setAwaitingSessionFeedback] = useState(false);
+  const [awaitingTechnicalObservation, setAwaitingTechnicalObservation] = useState(false);
   const [awaitingFinalReflection, setAwaitingFinalReflection] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -901,6 +904,57 @@ export default function App() {
       return;
     }
 
+    // Respuesta opcional sobre una dificultad tecnica.
+    if (awaitingTechnicalObservation && !detectarSolicitud(displayText, !!weeklyGoal)) {
+      setAwaitingTechnicalObservation(false);
+
+      const observacion = displayText.trim();
+      const omitir = /^(omitir|skip)$/i.test(observacion);
+
+      if (!omitir) {
+        const nota = prepararObservacionTecnica(
+          observacion,
+          'difficulty',
+          {
+            goal: weeklyGoal?.goal,
+            weekly_goal_id: weeklyGoal?.id,
+            session_number: weeklyGoal?.sessions_done
+          }
+        );
+
+        if (nota) {
+          const resultado = await guardarObservacionTecnica(
+            supabase,
+            session.user.id,
+            nota
+          );
+
+          if (resultado.error) {
+            console.warn('No se pudo guardar la observacion:', resultado.error);
+          }
+        }
+      }
+
+      setAiMessages(m => [...m, {
+        id: Date.now(),
+        from: 'coach',
+        type: 'text',
+        text: omitir
+          ? (lang === 'en'
+              ? 'No problem. We can continue whenever you are ready.'
+              : 'Sin problema. Podemos continuar cuando quieras.')
+          : (lang === 'en'
+              ? 'Thanks for sharing. We will keep working on your development.'
+              : 'Gracias por contármelo. Seguiremos trabajando en tu desarrollo.'),
+        time: new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      }]);
+
+      return;
+    }
+
     // Respuesta de "como te fue" tras completar una sesion intermedia
     if (awaitingSessionFeedback && weeklyGoal) {
       setAwaitingSessionFeedback(false);
@@ -915,6 +969,19 @@ export default function App() {
       // feedbackOnly=true: que el Coach SOLO reconozca la respuesta, sin generar
       // la proxima sesion todavia. El jugador tiene que tocar "Iniciar" a proposito.
       await enviarMensajeCoach(feedbackText, feedbackText, true);
+
+      if (/dif[ií]cil|me cost[oó]/i.test(feedbackText)) {
+        setAwaitingTechnicalObservation(true);
+        setAiMessages(m => [...m, {
+          id: Date.now(),
+          from: 'coach',
+          type: 'text',
+          text: lang === 'en'
+            ? 'What was the hardest part of this session? You can tell me briefly or type Skip.'
+            : '¿Qué fue lo que más te costó en esta sesión? Puedes contármelo brevemente o escribir Omitir.',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+      }
       return;
     }
 
@@ -940,6 +1007,7 @@ let promptText;
 const solicitaEntrenamiento = detectarSolicitud(displayText, !!weeklyGoal);
 
 if (solicitaEntrenamiento) {
+      setAwaitingTechnicalObservation(false);
       const yaConoceContexto = !!weeklyGoal.training_context;
       promptText = yaConoceContexto
         ? 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Genera la sesion directamente con progresion respecto a las sesiones anteriores, no preguntes por material ni si entreno solo, ya lo sabes.'
@@ -981,9 +1049,25 @@ if (solicitaEntrenamiento) {
         last_session_feedback: feedbackArr.length > 0 ? feedbackArr[feedbackArr.length - 1] : '',
         dos_dificiles_seguidos: feedbackArr.slice(-2).length === 2 && feedbackArr.slice(-2).every(f => /dif[ií]cil/i.test(f))
       } : userProfile;
+      // Recuperar observaciones anteriores sin interrumpir el Coach.
+      let contextoMemoria = '';
+      try {
+        const resultadoMemoria = await recuperarMemoriaTecnica(supabase, session.user.id);
+        if (!resultadoMemoria.error) {
+          contextoMemoria = prepararContextoMemoria(resultadoMemoria.data);
+        }
+      } catch (errorMemoria) {
+        console.warn('Memoria del Coach no disponible:', errorMemoria);
+      }
+
+      const perfilConMemoria = {
+        ...(perfilConObjetivo || {}),
+        coach_learning_memory: contextoMemoria
+      };
+
       const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
-      const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo, feedbackOnly, lang, solicitaEntrenamiento);
+      const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConMemoria, feedbackOnly, lang, solicitaEntrenamiento);
       const response = coachData.reply;
       const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && response.length > 150 && (response.includes('Series:') || response.includes('Reps:') || response.includes('min'));
 
