@@ -67,7 +67,7 @@ const perfilBase = (o = {}) => ({
   sessions_done: 0, sessions_target: 3, training_context: 'Entreno solo, tengo una pelota y 6 conos',
   sessions_log: '[]', last_session_feedback: '', dos_dificiles_seguidos: false, ...o,
 });
-const body = (o = {}) => ({ message: 'MENSAJE_PRIVADO_XYZ Sí, vamos', agentType: 'coach', userProfile: perfilBase(o.perfil), feedbackOnly: false, lang: o.lang || 'es', ...(o.extra || {}) });
+const body = (o = {}) => ({ message: 'MENSAJE_PRIVADO_XYZ Sí, vamos', agentType: 'coach', userProfile: perfilBase(o.perfil), feedbackOnly: false, solicitaEntrenamiento: true, lang: o.lang || 'es', ...(o.extra || {}) });
 
 // =====================================================================================
 // 1. Reconocimiento del encabezado
@@ -292,7 +292,33 @@ test('Difícil con frase de honestidad: orden honestidad + reconocimiento + bloq
   assert.ok(rep.startsWith('Como hoy entrenas solo, no podemos reproducir'));
   assert.ok(rep.indexOf('Entiendo.') > 0 && rep.indexOf('Entiendo.') < rep.indexOf('Sesion 2'));
 });
+test('Pregunta técnica después de Difícil: no repite la sesión', async () => {
+  const previa = sesionEN(1);
+  const solicitud = dificil([previa], {}, 'en');
+  solicitud.solicitaEntrenamiento = false;
 
+
+  solicitud.message =
+    'Player: The change of direction drill was difficult. | ' +
+    'Coach: What was hardest? | ' +
+    'Player: Can you explain exactly how I should position ' +
+    'my feet and body during the turn?';
+
+  const explicacion =
+    'Keep your knees slightly bent, plant your outside foot, ' +
+    'lower your center of gravity and turn with controlled steps.';
+
+  const r = await llamar(solicitud, openaiOK(explicacion));
+
+  assert.equal(r.llamadas.length, 1,
+    'La pregunta técnica debe llegar a OpenAI');
+
+  assert.equal(r.res.payload.reply, explicacion,
+    'El Coach debe responder la pregunta técnica');
+
+  assert.equal(r.res.payload.sessionBlock, null,
+    'Una explicación técnica no debe convertirse en sesión');
+});
 // ---------- ejecutor ----------
 (async () => {
   for (const { name, fn } of pendientes) {
