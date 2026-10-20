@@ -53,12 +53,16 @@ stable
 security definer
 set search_path = ''
 as $$
-  select p_weekly_goal_id is null
-    or exists (
-      select 1
-      from public.weekly_goals wg
-      where wg.id = p_weekly_goal_id
-        and wg.user_id = p_user_id
+  select
+    (select auth.uid()) = p_user_id
+    and (
+      p_weekly_goal_id is null
+      or exists (
+        select 1
+        from public.weekly_goals wg
+        where wg.id = p_weekly_goal_id
+          and wg.user_id = p_user_id
+      )
     );
 $$;
 
