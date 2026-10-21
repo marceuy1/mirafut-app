@@ -1041,7 +1041,7 @@ export default function App() {
       setWeeklyGoal(g => g ? { ...g, session_feedback: nuevoFeedback } : g);
       // feedbackOnly=true: que el Coach SOLO reconozca la respuesta, sin generar
       // la proxima sesion todavia. El jugador tiene que tocar "Iniciar" a proposito.
-      await enviarMensajeCoach(feedbackText, feedbackText, true);
+      await enviarMensajeCoach(feedbackText, feedbackText, true, false, nuevoFeedback);
 
       const esFeedbackDificil = (valor) => /dif[ií]cil|me cost[oó]/i.test(String(valor));
 const dosDificilesSeguidos =
@@ -1144,7 +1144,7 @@ setPendingDifficultyFollowUp(null);
     await enviarMensajeCoach(displayText, promptText, false, solicitaEntrenamiento);
   };
 
-  const enviarMensajeCoach = async (textoVisible, promptText, feedbackOnly = false, solicitaEntrenamiento = false) => {
+  const enviarMensajeCoach = async (textoVisible, promptText, feedbackOnly = false, solicitaEntrenamiento = false, feedbackActualizado = null) => {
     if (requireAuth()) return;
     if (!textoVisible.trim()) return;
 
@@ -1160,7 +1160,7 @@ setPendingDifficultyFollowUp(null);
     setThinking(true);
 
     try {
-      const feedbackArr = weeklyGoal?.session_feedback || [];
+      const feedbackArr = feedbackActualizado ?? weeklyGoal?.session_feedback ?? [];
       const perfilConObjetivo = weeklyGoal ? {
         ...(userProfile||{}),
         weekly_goal: weeklyGoal.goal,
