@@ -1,4 +1,6 @@
-// ============ CEREBRO METODOLOGICO DE MIRAFUT ============
+// ============ CEREBRO METODOLOGICO DE MIRAFUT ==========
+import { observarProgresion } from '../scripts/observar_progresion_coach.mjs';
+import { adaptarSesionCoach } from '../scripts/adaptar_sesion_coach.mjs';
 const METODOLOGIA = {
   // ---- PORTERO ----
   'Mejorar mis reflejos': {
@@ -254,7 +256,7 @@ export default async function handler(req, res) {
     sessionsLog = [];
   }
   const sessionsLogStr = sessionsLog.length > 0
-    ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para dar progresion real, no repetir exactamente lo mismo):\n' + sessionsLog.map((s, i) => `Sesion ${i + 1}: ${s}`).join('\n')
+    ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para aplicar la regla de progresion correspondiente al feedback del jugador):\n' + sessionsLog.map((s, i) => `Sesion ${i + 1}: ${s}`).join('\n')
     : '';
 
   const lastFeedback = (perfil?.last_session_feedback || '').toLowerCase();
@@ -295,7 +297,15 @@ export default async function handler(req, res) {
 
 Respondele al jugador de forma breve (2-3 lineas maximo) y especifica a lo que te acaba de decir o preguntar, como un entrenador real. No inventes contexto que no tenes.
 PROHIBIDO en esta respuesta: generar una sesion de entrenamiento, usar el formato "Sesion N", "Series:", "Reps:", o listar ejercicios.
-Si corresponde, termina con la pregunta o el siguiente paso natural segun lo que el jugador dijo (no des instrucciones tecnicas de botones salvo que ya haya terminado toda la conversacion de contexto).`;
+Si corresponde, termina con la pregunta o el siguiente paso natural segun lo que el jugador dijo (no des instrucciones tecnicas de botones salvo que ya haya terminado toda la conversacion de contexto).
+
+${feedbackOnly && dosDificilesSeguidos
+  ? `REGLA PRIORITARIA PARA DOS EVALUACIONES DIFICILES CONSECUTIVAS:
+- Reconoce brevemente el esfuerzo del jugador y que las ultimas dos sesiones le resultaron dificiles.
+- Explica que el proximo entrenamiento se ajustara para reducir la exigencia.
+- NO preguntes otra vez que fue dificil ni hagas ninguna otra pregunta.
+- NO generes una sesion ahora.`
+  : ''}`;
   } else if (perfil?.weekly_goal && objetivoCompletado) {
     goalStr = `OBJETIVO SEMANAL COMPLETADO: "${perfil.weekly_goal}" — ${perfil.sessions_target} de ${perfil.sessions_target} sesiones hechas esta semana.
 
@@ -316,11 +326,11 @@ Usa esta informacion directamente. NO preguntes de nuevo si entrena solo o que m
 
     const instruccionProgresion = sessionsLog.length > 0
       ? (lastFeedback.includes('muy bien')
-          ? `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. El jugador dijo que la sesion anterior le fue MUY BIEN. Subi la dificultad MAS de lo normal (mas repeticiones, mas velocidad, mayor amplitud, o el siguiente paso tecnico claro). Elegi variantes distintas a las ya usadas.`
+          ? `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. El jugador dijo que la sesion anterior le fue MUY BIEN. Permite una progresion tecnica gradual y controlada. Aumenta como maximo una variable de exigencia, con un cambio pequeño y apropiado al nivel del jugador. No asumas que domina la habilidad solo porque dijo que le fue muy bien.`
           : dosDificilesSeguidos
-            ? `IMPORTANTE - SIMPLIFICAR (dos "Dificil" seguidas): El jugador dijo DIFICIL dos veces consecutivas. Esto indica que el nivel actual todavia no es el correcto, no que haya que repetir exactamente lo mismo otra vez. NO repitas la sesion anterior identica. Reduce la dificultad POR DEBAJO del nivel de la sesion anterior: menos repeticiones, menor distancia, o un ejercicio mas simple dentro del mismo objetivo. Al inicio de tu respuesta, antes de la explicacion pedagogica, reconocelo explicitamente (ejemplo de tono: "Veo que esta parte todavia te esta costando. En vez de repetirla igual, vamos a simplificar el ejercicio.").`
-            : `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. El jugador dijo que la sesion anterior le costo un poco. Subi la dificultad de forma MODERADA (cambios pequeños respecto a la sesion anterior, sin saltos grandes). Elegi variantes distintas a las ya usadas pero de nivel similar o levemente superior.`)
-      : `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. Debe avanzar tecnicamente sobre las sesiones anteriores (mas repeticiones, mas velocidad, mayor dificultad tecnica, o el siguiente paso logico). Elegi variantes distintas a las ya usadas.`;
+            ? `IMPORTANTE - SIMPLIFICAR (dos "Dificil" seguidas): El jugador dijo DIFICIL dos veces consecutivas. Esto indica que el nivel actual todavia no es el correcto, no que haya que repetir exactamente lo mismo otra vez. NO repitas la sesion anterior identica. Reduce claramente la exigencia respecto a la sesion anterior, conservando el mismo objetivo tecnico. Disminuye una o mas variables apropiadas al ejercicio y no aumentes otras que compensen esa reduccion. No afirmes que se simplifico si no puedes justificarlo con parametros concretos. REGLA PRIORITARIA PARA ESTA RESPUESTA: Comienza reconociendo que el jugador tuvo dificultades en dos sesiones consecutivas; no vuelvas a preguntarle como le fue. Compara la nueva sesion con la anterior y reduce la carga total de forma comprobable. No aumentes la duracion total, las repeticiones ni otras exigencias para compensar una reduccion. Conserva el objetivo tecnico y utiliza solamente los recursos confirmados. Al inicio de tu respuesta, antes de la explicacion pedagogica, reconocelo explicitamente (ejemplo de tono: "Veo que esta parte todavia te esta costando. En vez de repetirla igual, vamos a simplificar el ejercicio.").`
+            : `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. El jugador dijo que la sesion anterior le costo un poco. Consolida la habilidad trabajada sin aumentar la dificultad. Mantiene o reduce ligeramente la exigencia y refuerza la ejecucion tecnica. No introduzcas nuevas restricciones ni variantes mas dificiles.`)
+      : `IMPORTANTE - PROGRESION: Esta es la sesion ${numeroSesionCorrecta}. Mantiene continuidad con el objetivo y las sesiones anteriores. Si no existe feedback confiable, no asumas dominio ni aumentes automaticamente la dificultad. Prioriza consolidacion y ejercicios apropiados al nivel y recursos confirmados.`;
 
     goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0} de ${perfil.sessions_target || 3}.
 LA PROXIMA SESION A GENERAR ES EXACTAMENTE LA NUMERO ${numeroSesionCorrecta}. Usa ese numero exacto en el encabezado "${lang === 'en' ? 'Session' : 'Sesion'} ${numeroSesionCorrecta}", nunca otro numero. NO escribas ninguna frase sobre entrenar solo/companeros al inicio, eso lo agregamos nosotros por separado.
@@ -437,9 +447,21 @@ No uses asteriscos ni markdown. Texto plano.`;
       })
     });
 
-    const data = await response.json();
-    const finishReason = data.choices[0].finish_reason || null;
-    let reply = data.choices[0].message.content.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1');
+    // Diagnostico seguro: nunca registrar claves, prompts ni el cuerpo de la respuesta.
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      const errorCode = typeof data?.error?.code === 'string' ? data.error.code : 'unknown';
+      const errorType = typeof data?.error?.type === 'string' ? data.error.type : 'unknown';
+      console.error('openai_request_failed', { status: response.status, errorCode, errorType });
+      return res.status(502).json({ error: 'Error al conectar con OpenAI', status: response.status, errorCode, errorType });
+    }
+    const choice = data?.choices?.[0];
+    if (typeof choice?.message?.content !== 'string') {
+      console.error('openai_invalid_response', { status: response.status });
+      return res.status(502).json({ error: 'Respuesta inesperada de OpenAI' });
+    }
+    const finishReason = choice.finish_reason || null;
+    let reply = choice.message.content.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1');
 
     if (perfil?.weekly_goal && !objetivoCompletado) {
       reply = reply.replace(/Sesion\s*\d+/gi, 'Sesion ' + numeroSesionCorrecta);
@@ -454,6 +476,98 @@ No uses asteriscos ni markdown. Texto plano.`;
     // Bloque limpio de la sesion (sin la frase de honestidad ni la introduccion), SIN exigir "Coach Tip":
     // el cliente guarda el texto completo en sessions_log y lo reutilizamos literal solo si esta completo.
     const analisis = analizarBloqueSesion(reply);
+
+    // Observacion local: nunca modifica la respuesta ni bloquea al jugador.
+    let progresionObservada = 'no_verificable';
+    let progresionMotivo = 'observacion_no_ejecutada';
+    if (
+      analisis.completa &&
+      finishReason !== 'length' &&
+      sessionsLog.length > 0 &&
+      perfil?.weekly_goal &&
+      !feedbackOnly &&
+      !objetivoCompletado
+    ) {
+      try {
+        const observacion = observarProgresion(
+          sessionsLog[sessionsLog.length - 1],
+          analisis.bloque
+        );
+        progresionObservada = observacion.estado;
+        progresionMotivo = observacion.motivo || 'sin_motivo_especifico';
+      } catch {
+        progresionObservada = 'no_verificable';
+      }
+    }
+    // Protección tras dos sesiones difíciles consecutivas.
+    // No entregar una sesión cuya reducción no esté verificada.
+    if (
+      dosDificilesSeguidos &&
+      solicitaEntrenamiento &&
+      !feedbackOnly &&
+      !objetivoCompletado &&
+      perfil?.weekly_goal &&
+      sessionsLog.length > 0 &&
+      progresionObservada !== 'reduccion_numerica_verificada'
+    ) {
+
+      // Intentar una adaptación local antes de bloquear la sesión.
+      const sesionAnterior = sessionsLog[sessionsLog.length - 1];
+      const sesionAdaptada = adaptarSesionCoach(
+        sesionAnterior,
+        numeroSesionCorrecta
+      );
+
+      if (sesionAdaptada) {
+        const verificacion = observarProgresion(
+          sesionAnterior,
+          sesionAdaptada
+        );
+        const analisisAdaptado = analizarBloqueSesion(sesionAdaptada);
+
+        if (
+          verificacion.estado === 'reduccion_numerica_verificada' &&
+          analisisAdaptado.completa
+        ) {
+          const reconocimiento = lang === 'en'
+            ? 'Since the previous sessions felt difficult, I reduced the repetitions while keeping the same exercises.\n\n'
+            : 'Como las sesiones anteriores te resultaron difíciles, reduje las repeticiones manteniendo los mismos ejercicios.\n\n';
+
+          const replyAdaptada =
+            fraseHonestidad + reconocimiento + sesionAdaptada;
+
+          console.info(JSON.stringify({
+            evt: 'coach_session_adapted_locally',
+            estado: verificacion.estado
+          }));
+
+          return res.status(200).json({
+            reply: replyAdaptada,
+            sessionBlock: sesionAdaptada,
+            meta: {
+              completa: true,
+              faltantes: [],
+              finishReason: null
+            }
+          });
+        }
+      }
+
+console.warn(JSON.stringify({
+        evt: 'coach_progression_blocked',
+        estado: progresionObservada,
+        motivo: progresionMotivo
+      }));
+      const mensaje = lang === 'en'
+        ? "I couldn't verify that the new session is easier than the previous one. I won't give you an unverified training plan. Please try requesting your session again."
+        : "No pude verificar que la nueva sesión sea más sencilla que la anterior. Prefiero no darte un entrenamiento sin comprobar su exigencia. Por favor, vuelve a solicitar tu sesión.";
+      return res.status(200).json({
+        reply: mensaje,
+        sessionBlock: '',
+        meta: { completa: false, faltantes: ['progresion_no_verificada'], finishReason }
+      });
+    }
+
     const faltantes = [...analisis.faltantes];
     if (finishReason === 'length') faltantes.push('cortado_por_tokens');
     const completa = faltantes.length === 0;
@@ -468,12 +582,15 @@ No uses asteriscos ni markdown. Texto plano.`;
         prompt_tokens: data.usage?.prompt_tokens ?? null,
         chars: reply.length,
         completa,
-        faltantes
+        faltantes,
+        progresion_observation: progresionObservada,
+        progresion_motivo: progresionMotivo
       }));
     }
 
     return res.status(200).json({ reply, sessionBlock: analisis.bloque, meta: { completa, faltantes, finishReason } });
   } catch (error) {
+    console.error('openai_handler_exception', { name: error?.name || 'UnknownError' });
     return res.status(500).json({ error: 'Error al conectar con OpenAI' });
   }
 }

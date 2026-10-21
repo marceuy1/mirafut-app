@@ -258,6 +258,7 @@ export default function App() {
   });
   const didMountTabRef = useRef(false);
   const isPoppingRef = useRef(false);
+  const feedbackSavingRef = useRef(false);
 
   // Boton atras del celular: navega entre Inicio/Coach/Chat/Perfil en vez de salir de la app
   useEffect(() => {
@@ -1003,20 +1004,50 @@ export default function App() {
 
     // Respuesta de "como te fue" tras completar una sesion intermedia
     if (awaitingSessionFeedback && weeklyGoal) {
-      setAwaitingSessionFeedback(false);
+      if (feedbackSavingRef.current) return;
+      feedbackSavingRef.current = true;
+
       const feedbackText = displayText;
       const nuevoFeedback = [...(weeklyGoal.session_feedback || []), feedbackText];
+
       try {
-        await supabase.from('weekly_goals').update({ session_feedback: nuevoFeedback }).eq('id', weeklyGoal.id);
+        const { error } = await supabase
+          .from('weekly_goals')
+          .update({ session_feedback: nuevoFeedback })
+          .eq('id', weeklyGoal.id);
+
+        if (error) throw error;
       } catch (e) {
+        ;
         console.error('Error guardando session_feedback:', e);
+        setAiMessages(m => [...m, {
+          id: Date.now(),
+          from: 'coach',
+          type: 'text',
+          text: lang === 'en'
+            ? 'I could not save your feedback. Please try sending it again.'
+            : 'No pude guardar tu respuesta. Por favor, intenta enviarla nuevamente.',
+          time: new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        }]);
+        feedbackSavingRef.current = false;
+        return;
       }
+
+      feedbackSavingRef.current = false;
+      setAwaitingSessionFeedback(false);
       setWeeklyGoal(g => g ? { ...g, session_feedback: nuevoFeedback } : g);
       // feedbackOnly=true: que el Coach SOLO reconozca la respuesta, sin generar
       // la proxima sesion todavia. El jugador tiene que tocar "Iniciar" a proposito.
       await enviarMensajeCoach(feedbackText, feedbackText, true);
 
-      if (/dif[ií]cil|me cost[oó]/i.test(feedbackText)) {
+      const esFeedbackDificil = (valor) => /dif[ií]cil|me cost[oó]/i.test(String(valor));
+const dosDificilesSeguidos =
+  nuevoFeedback.length >= 2 &&
+  nuevoFeedback.slice(-2).every(esFeedbackDificil);
+if (esFeedbackDificil(feedbackText) && !dosDificilesSeguidos) {
         setAwaitingTechnicalObservation(true);
         setAiMessages(m => [...m, {
           id: Date.now(),
@@ -1138,7 +1169,7 @@ setPendingDifficultyFollowUp(null);
         training_context: weeklyGoal.training_context || '',
         sessions_log: JSON.stringify(weeklyGoal.sessions_log || []),
         last_session_feedback: feedbackArr.length > 0 ? feedbackArr[feedbackArr.length - 1] : '',
-        dos_dificiles_seguidos: feedbackArr.slice(-2).length === 2 && feedbackArr.slice(-2).every(f => /dif[ií]cil/i.test(f))
+        dos_dificiles_seguidos: feedbackArr.slice(-2).length === 2 && feedbackArr.slice(-2).every(f => /dif[ií]cil|me cost[oó]/i.test(String(f)))
       } : userProfile;
       // Recuperar observaciones anteriores sin interrumpir el Coach.
       let contextoMemoria = '';
