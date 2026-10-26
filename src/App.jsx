@@ -524,10 +524,13 @@ export default function App() {
     const analysisEn = adminDebate.analysisEn.trim();
     const hasEnglish = questionEn || optionsEn.length > 0 || analysisEn;
     if (hasEnglish) {
-      if (!questionEn) { alert('Falta la pregunta en ingles (o deja vacia toda la version en ingles)'); return; }
-      if (optionsEn.length !== options.length) { alert('Las opciones en ingles deben ser ' + options.length + ', en el mismo orden que en espanol'); return; }
+      if (!questionEn) { alert('Falta la pregunta en inglés (o deja vacía toda la versión en inglés)'); return; }
+      if (optionsEn.length !== options.length) { alert('Las opciones en inglés deben ser ' + options.length + ', en el mismo orden que en español'); return; }
     }
-    await supabase.from('debates').update({ends_at: new Date(0).toISOString()}).gte('ends_at', new Date().toISOString());
+    // Solo un debate abierto a la vez: se consulta la base (no la pantalla, que puede estar desactualizada).
+    const { data: abiertos, error: abiertosError } = await supabase.from('debates').select('id').eq('closed', false).or('ends_at.is.null,ends_at.gt.' + new Date().toISOString()).limit(1);
+    if (abiertosError) { alert('No se pudo verificar si hay un debate abierto: ' + abiertosError.message); return; }
+    if (abiertos && abiertos.length > 0) { alert('Ya hay un debate abierto. Ciérralo con "Cerrar debate actual ahora" antes de publicar uno nuevo.'); return; }
     const { error: debateInsertError } = await supabase.from('debates').insert([{question: adminDebate.question, options, ends_at: adminDebate.noExpiration ? null : new Date(Date.now() + adminDebate.days * 86400000).toISOString(), analysis_text: adminDebate.analysis.trim() || null, question_en: hasEnglish ? questionEn : null, options_en: hasEnglish ? optionsEn : null, analysis_text_en: (hasEnglish && analysisEn) ? analysisEn : null}]);
     if (debateInsertError) { alert('Error al publicar el debate: ' + debateInsertError.message); return; }
     setAdminDebate({question:'', options:'', days:7, analysis:'', noExpiration:false, questionEn:'', optionsEn:'', analysisEn:''});
@@ -2728,9 +2731,9 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {adminTab === 'debate' && (
                 <div>
                   <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'12px'}}>
-                    <div style={{fontSize:'11px',color:'#556677',marginBottom:'4px'}}>Debate activo</div>
+                    <div style={{fontSize:'11px',color:'#556677',marginBottom:'4px'}}>{debate && (debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date())) ? 'Último debate (cerrado)' : 'Debate activo'}</div>
                     <div style={{fontSize:'13px',color:'#ECEFF4'}}>{debate?.question || 'Ninguno'}</div>
-                    <div style={{fontSize:'11px',color:'#556677',marginTop:'4px'}}>{debate ? Math.max(0, Math.ceil((new Date(debate.ends_at) - new Date()) / (1000*60*60*24))) + ' días restantes' : ''}</div>
+                    <div style={{fontSize:'11px',color:'#556677',marginTop:'4px'}}>{!debate ? '' : (debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date())) ? 'Cerrado' : !debate.ends_at ? 'Sin fecha de cierre · se cierra manualmente' : Math.max(0, Math.ceil((new Date(debate.ends_at) - new Date()) / (1000*60*60*24))) + ' días restantes'}</div>
                   </div>
                   <div style={{fontSize:'11px',color:'#556677',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Nuevo debate</div>
                   <textarea value={adminDebate.question} onChange={e=>setAdminDebate(p=>({...p,question:e.target.value}))} placeholder="Pregunta del debate..." rows={2} style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none',marginBottom:'8px'}}/>
