@@ -325,7 +325,12 @@ export default function App() {
   const t = useMemo(() => translations[lang], [lang]);
   // Solo cambia el texto visible; el valor guardado (POR/DEF/MED/DEL) no se toca
   const posLabel = (p) => (p && t['pos' + p]) || p;
-  const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
+  // Unico punto para cambiar el idioma: actualiza la UI y lo guarda para la proxima visita.
+  const changeLang = (nl) => {
+    setLang(nl);
+    try { localStorage.setItem('mirafut_lang', nl); } catch (e) { /* navegador sin almacenamiento: solo se pierde la preferencia */ }
+  };
+  const toggleLang = () => changeLang(lang === 'es' ? 'en' : 'es');
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [newPost, setNewPost] = useState("");
@@ -2958,8 +2963,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div style={{marginBottom:'20px'}}>
                 <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>{t.language}</div>
                 <div style={{display:'flex',gap:'8px'}}>
-                  <button onClick={() => { setLang('es'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='es'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='es'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇪🇸 Español</button>
-                  <button onClick={() => { setLang('en'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='en'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='en'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇺🇸 English</button>
+                  <button onClick={() => { changeLang('es'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='es'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='es'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇪🇸 Español</button>
+                  <button onClick={() => { changeLang('en'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='en'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='en'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇺🇸 English</button>
                 </div>
               </div>
 
