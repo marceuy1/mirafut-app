@@ -51,7 +51,7 @@ async function llamar(body, openai) {
   const fetchOrig = globalThis.fetch, logOrig = console.log;
   globalThis.fetch = async (url, opts) => {
     llamadas.push({ url, body: JSON.parse(opts.body) });
-    return { json: async () => openai };
+    return { ok: true, status: 200, json: async () => openai };
   };
   console.log = (...a) => logs.push(a.join(' '));
   const res = { code: 200, payload: null, status(c) { this.code = c; return this; }, json(p) { this.payload = p; return this; } };
@@ -189,7 +189,7 @@ test('handler ES completo: sessionBlock, meta y log', async () => {
   assert.deepEqual(r.res.payload.meta, { completa: true, faltantes: [], finishReason: 'stop' });
   assert.equal(r.eventos.length, 1);
   const e = r.eventos[0];
-  assert.deepEqual(Object.keys(e).sort(), ['chars', 'completa', 'completion_tokens', 'evt', 'faltantes', 'finish_reason', 'lang', 'prompt_tokens'].sort());
+  assert.deepEqual(Object.keys(e).sort(), ['chars', 'completa', 'completion_tokens', 'evt', 'faltantes', 'finish_reason', 'lang', 'progresion_motivo', 'progresion_observation', 'prompt_tokens'].sort());
   assert.equal(e.evt, 'coach_session_gen'); assert.equal(e.lang, 'es'); assert.equal(e.finish_reason, 'stop');
   assert.equal(e.completion_tokens, 540); assert.equal(e.prompt_tokens, 2400); assert.equal(e.completa, true);
 });
