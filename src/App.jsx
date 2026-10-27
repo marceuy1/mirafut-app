@@ -6,6 +6,28 @@ import { solicitaEntrenamiento as detectarSolicitud } from './solicitaEntrenamie
 // Analytics minimos para Beta 1: un evento = una fila en la tabla `events`.
 // Nunca pasar contenido de usuario (texto de posts, mensajes, objetivo escrito,
 // etc.) en metadata; solo valores tecnicos controlados (ej. session_number).
+// Debates bilingues: el contenido original (es) nunca se modifica.
+// Los campos *_en son opcionales y, si faltan, se muestra el espanol.
+function parseDebateOptions(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    try { const v = JSON.parse(raw); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+  }
+  return [];
+}
+
+function localizeDebate(debate, lang) {
+  const options = parseDebateOptions(debate.options);
+  if (lang !== 'en') return { question: debate.question, options, analysis: debate.analysis_text };
+  const optionsEn = parseDebateOptions(debate.options_en);
+  return {
+    question: (debate.question_en && debate.question_en.trim()) ? debate.question_en : debate.question,
+    // Los votos se guardan por indice: solo se usa la version en ingles si coincide en cantidad.
+    options: optionsEn.length === options.length ? optionsEn : options,
+    analysis: (debate.analysis_text_en && debate.analysis_text_en.trim()) ? debate.analysis_text_en : debate.analysis_text,
+  };
+}
+
 async function trackEvent(userId, eventName, metadata = null) {
   if (!userId) return;
   try {
@@ -210,7 +232,7 @@ export default function App() {
   const [adminReportsLoading, setAdminReportsLoading] = useState(false);
   const [sorteo, setSorteo] = useState(null);
   const [adminTab, setAdminTab] = useState('debate');
-  const [adminDebate, setAdminDebate] = useState({question:'', options:'', days:7, analysis:'', noExpiration:false});
+  const [adminDebate, setAdminDebate] = useState({question:'', options:'', days:7, analysis:'', noExpiration:false, questionEn:'', optionsEn:'', analysisEn:''});
   const [adminSorteo, setAdminSorteo] = useState({premio:'', descripcion:'', days:30, imagen_url:''});
   const [sorteoImageFile, setSorteoImageFile] = useState(null);
   const [sorteoImagePreview, setSorteoImagePreview] = useState(null);
@@ -308,7 +330,12 @@ export default function App() {
   const t = useMemo(() => translations[lang], [lang]);
   // Solo cambia el texto visible; el valor guardado (POR/DEF/MED/DEL) no se toca
   const posLabel = (p) => (p && t['pos' + p]) || p;
-  const toggleLang = () => { const nl = lang === 'es' ? 'en' : 'es'; setLang(nl); localStorage.setItem('mirafut_lang', nl); };
+  // Unico punto para cambiar el idioma: actualiza la UI y lo guarda para la proxima visita.
+  const changeLang = (nl) => {
+    setLang(nl);
+    try { localStorage.setItem('mirafut_lang', nl); } catch (e) { /* navegador sin almacenamiento: solo se pierde la preferencia */ }
+  };
+  const toggleLang = () => changeLang(lang === 'es' ? 'en' : 'es');
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [newPost, setNewPost] = useState("");
@@ -495,10 +522,23 @@ export default function App() {
     if (!adminDebate.question.trim()) return;
     const options = adminDebate.options.split(',').map(o => o.trim()).filter(Boolean);
     if (options.length < 2) { alert('Necesitas al menos 2 opciones separadas por coma'); return; }
-    await supabase.from('debates').update({ends_at: new Date(0).toISOString()}).gte('ends_at', new Date().toISOString());
-    const { error: debateInsertError } = await supabase.from('debates').insert([{question: adminDebate.question, options: JSON.stringify(options), ends_at: adminDebate.noExpiration ? null : new Date(Date.now() + adminDebate.days * 86400000).toISOString(), analysis_text: adminDebate.analysis.trim() || null}]);
+    // Version en ingles (opcional). Si se completa algo, pregunta y opciones son obligatorias
+    // y las opciones deben coincidir en cantidad y orden con las de espanol.
+    const questionEn = adminDebate.questionEn.trim();
+    const optionsEn = adminDebate.optionsEn.split(',').map(o => o.trim()).filter(Boolean);
+    const analysisEn = adminDebate.analysisEn.trim();
+    const hasEnglish = questionEn || optionsEn.length > 0 || analysisEn;
+    if (hasEnglish) {
+      if (!questionEn) { alert('Falta la pregunta en inglés (o deja vacía toda la versión en inglés)'); return; }
+      if (optionsEn.length !== options.length) { alert('Las opciones en inglés deben ser ' + options.length + ', en el mismo orden que en español'); return; }
+    }
+    // Solo un debate abierto a la vez: se consulta la base (no la pantalla, que puede estar desactualizada).
+    const { data: abiertos, error: abiertosError } = await supabase.from('debates').select('id').eq('closed', false).or('ends_at.is.null,ends_at.gt.' + new Date().toISOString()).limit(1);
+    if (abiertosError) { alert('No se pudo verificar si hay un debate abierto: ' + abiertosError.message); return; }
+    if (abiertos && abiertos.length > 0) { alert('Ya hay un debate abierto. Ciérralo con "Cerrar debate actual ahora" antes de publicar uno nuevo.'); return; }
+    const { error: debateInsertError } = await supabase.from('debates').insert([{question: adminDebate.question, options, ends_at: adminDebate.noExpiration ? null : new Date(Date.now() + adminDebate.days * 86400000).toISOString(), analysis_text: adminDebate.analysis.trim() || null, question_en: hasEnglish ? questionEn : null, options_en: hasEnglish ? optionsEn : null, analysis_text_en: (hasEnglish && analysisEn) ? analysisEn : null}]);
     if (debateInsertError) { alert('Error al publicar el debate: ' + debateInsertError.message); return; }
-    setAdminDebate({question:'', options:'', days:7, analysis:'', noExpiration:false});
+    setAdminDebate({question:'', options:'', days:7, analysis:'', noExpiration:false, questionEn:'', optionsEn:'', analysisEn:''});
     loadDebate();
     alert('Debate actualizado');
   };
@@ -2051,11 +2091,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <button onClick={() => setShowSorteo(true)} style={{background:'rgba(0,0,0,0.15)',border:'none',borderRadius:'20px',padding:'4px 10px',fontSize:'11px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{t.giveaway}</button>
               </div>
               <div style={{padding:'16px 16px 12px'}}>
-                <div style={{fontSize:'17px',fontWeight:'800',color:'#ECEFF4',lineHeight:'1.4',marginBottom:'4px',whiteSpace:'pre-wrap'}}>{debate.question}</div>
+                <div style={{fontSize:'17px',fontWeight:'800',color:'#ECEFF4',lineHeight:'1.4',marginBottom:'4px',whiteSpace:'pre-wrap'}}>{localizeDebate(debate, lang).question}</div>
                 <div style={{fontSize:'12px',color:'#556677'}}>{t.voteAndOpine}</div>
               </div>
               <div style={{padding:'0 16px 16px',display:'flex',flexDirection:'column',gap:'10px'}}>
-                {(Array.isArray(debate.options) ? debate.options : JSON.parse(debate.options)).map((opt, i) => {
+                {localizeDebate(debate, lang).options.map((opt, i) => {
                   const count = debateVotes.filter(v => v.option_index === i).length;
                   const pct = debateVotes.length > 0 ? Math.round(count / debateVotes.length * 100) : 0;
                   const voted = userVote === i;
@@ -2072,10 +2112,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   );
                 })}
               </div>
-              {(debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date())) && debate.analysis_text && (
+              {(debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date())) && localizeDebate(debate, lang).analysis && (
                 <div style={{margin:'0 16px 16px',padding:'14px',background:'rgba(0,230,118,0.06)',border:'1px solid rgba(0,230,118,0.18)',borderRadius:'12px'}}>
                   <div style={{fontSize:'11px',fontWeight:'800',color:'#00E676',letterSpacing:'1px',marginBottom:'6px'}}>🏆 {t.mirafutAnalysis}</div>
-                  <div style={{fontSize:'13px',color:'#ECEFF4',lineHeight:'1.5',whiteSpace:'pre-wrap'}}>{debate.analysis_text}</div>
+                  <div style={{fontSize:'13px',color:'#ECEFF4',lineHeight:'1.5',whiteSpace:'pre-wrap'}}>{localizeDebate(debate, lang).analysis}</div>
                 </div>
               )}
 
@@ -2897,14 +2937,18 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {adminTab === 'debate' && (
                 <div>
                   <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'12px'}}>
-                    <div style={{fontSize:'11px',color:'#556677',marginBottom:'4px'}}>Debate activo</div>
+                    <div style={{fontSize:'11px',color:'#556677',marginBottom:'4px'}}>{debate && (debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date())) ? 'Último debate (cerrado)' : 'Debate activo'}</div>
                     <div style={{fontSize:'13px',color:'#ECEFF4'}}>{debate?.question || 'Ninguno'}</div>
-                    <div style={{fontSize:'11px',color:'#556677',marginTop:'4px'}}>{debate ? Math.max(0, Math.ceil((new Date(debate.ends_at) - new Date()) / (1000*60*60*24))) + ' días restantes' : ''}</div>
+                    <div style={{fontSize:'11px',color:'#556677',marginTop:'4px'}}>{!debate ? '' : (debate.closed || (debate.ends_at && new Date(debate.ends_at) < new Date())) ? 'Cerrado' : !debate.ends_at ? 'Sin fecha de cierre · se cierra manualmente' : Math.max(0, Math.ceil((new Date(debate.ends_at) - new Date()) / (1000*60*60*24))) + ' días restantes'}</div>
                   </div>
                   <div style={{fontSize:'11px',color:'#556677',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'1px'}}>Nuevo debate</div>
                   <textarea value={adminDebate.question} onChange={e=>setAdminDebate(p=>({...p,question:e.target.value}))} placeholder="Pregunta del debate..." rows={2} style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none',marginBottom:'8px'}}/>
                   <input value={adminDebate.options} onChange={e=>setAdminDebate(p=>({...p,options:e.target.value}))} placeholder="Opciones separadas por coma: Portero, Defensa, Mediocampista" style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',marginBottom:'8px'}}/>
                   <textarea value={adminDebate.analysis} onChange={e=>setAdminDebate(p=>({...p,analysis:e.target.value}))} placeholder="Análisis MiraFut (se muestra cuando el debate cierre)..." rows={3} style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none',marginBottom:'8px'}}/>
+                  <div style={{fontSize:'11px',color:'#556677',margin:'6px 0',textTransform:'uppercase',letterSpacing:'1px'}}>🇺🇸 Versión en inglés (opcional)</div>
+                  <textarea value={adminDebate.questionEn} onChange={e=>setAdminDebate(p=>({...p,questionEn:e.target.value}))} placeholder="Debate question in English..." rows={2} style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none',marginBottom:'8px'}}/>
+                  <input value={adminDebate.optionsEn} onChange={e=>setAdminDebate(p=>({...p,optionsEn:e.target.value}))} placeholder="Options in the SAME order, comma-separated" style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',marginBottom:'8px'}}/>
+                  <textarea value={adminDebate.analysisEn} onChange={e=>setAdminDebate(p=>({...p,analysisEn:e.target.value}))} placeholder="MiraFut Analysis in English (optional)..." rows={3} style={{width:'100%',padding:'10px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'13px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none',marginBottom:'8px'}}/>
                   <label style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px',cursor:'pointer'}}>
                     <input type="checkbox" checked={adminDebate.noExpiration} onChange={e=>setAdminDebate(p=>({...p,noExpiration:e.target.checked}))} />
                     <span style={{fontSize:'13px',color:'#556677'}}>Sin fecha de cierre (lo cierro manualmente desde acá)</span>
@@ -3128,8 +3172,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div style={{marginBottom:'20px'}}>
                 <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'12px'}}>{t.language}</div>
                 <div style={{display:'flex',gap:'8px'}}>
-                  <button onClick={() => { setLang('es'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='es'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='es'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇪🇸 Español</button>
-                  <button onClick={() => { setLang('en'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='en'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='en'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇺🇸 English</button>
+                  <button onClick={() => { changeLang('es'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='es'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='es'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇪🇸 Español</button>
+                  <button onClick={() => { changeLang('en'); setShowSettings(false); }} style={{flex:1,padding:'10px',background:lang==='en'?'#00E676':'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:lang==='en'?'#0a0e14':'#8899A6',fontWeight:'700',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🇺🇸 English</button>
                 </div>
               </div>
 
