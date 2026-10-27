@@ -924,6 +924,13 @@ export default function App() {
     // will be handled in nav click
   }
 
+  // Respuestas que procesa la memoria del Coach sin pasar por la IA:
+  // se muestran en el chat como cualquier mensaje y se vacia el cuadro de texto.
+  const mostrarRespuestaJugador = (texto) => {
+    setAiMessages(m => [...m, { id: Date.now(), from: 'me', type: 'text', text: t.suggestionLabels?.[texto] || texto, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+    setAiInput('');
+  };
+
   const sendAI = async (displayText) => {
     if (displayText === '✓ Terminé mi sesión' && weeklyGoal) {
       completeSession();
@@ -965,6 +972,7 @@ export default function App() {
       const nuevoEstado = estados[respuesta];
 
       if (omitir || nuevoEstado) {
+        mostrarRespuestaJugador(displayText);
         if (omitir) {
           setPendingDifficultyFollowUp(null);
         } else {
@@ -994,6 +1002,7 @@ export default function App() {
     // Respuesta opcional sobre una dificultad tecnica.
     if (awaitingTechnicalObservation && !detectarSolicitud(displayText, !!weeklyGoal)) {
       setAwaitingTechnicalObservation(false);
+      mostrarRespuestaJugador(displayText);
 
       const observacion = displayText.trim();
       const omitir = /^(omitir|skip)$/i.test(observacion);
@@ -1094,8 +1103,14 @@ if (esFeedbackDificil(feedbackText) && !dosDificilesSeguidos) {
           from: 'coach',
           type: 'text',
           text: lang === 'en'
-            ? 'What was the hardest part of this session? You can tell me briefly or type Skip.'
-            : '¿Qué fue lo que más te costó en esta sesión? Puedes contármelo brevemente o escribir Omitir.',
+            ? 'What was the hardest part of this session? You can tell me briefly or tap Skip.'
+            : '¿Qué fue lo que más te costó en esta sesión? Puedes contármelo brevemente o tocar Omitir.',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }, {
+          id: Date.now() + 1,
+          from: 'coach',
+          type: 'suggestions',
+          options: ['Omitir'],
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }]);
       } else if (session?.user?.id) {
@@ -1133,8 +1148,17 @@ if (registro.error) {
               from: 'coach',
               type: 'text',
               text: lang === 'en'
-                ? `Previously you mentioned: "${anterior.observation}". How is it going now? Reply: Same, Improving, Resolved, or Skip.`
-                : `Anteriormente mencionaste: «${anterior.observation}». ¿Cómo te va ahora? Responde: Sigo igual, Estoy mejorando, Ya lo superé u Omitir.`,
+                ? `Previously you mentioned: "${anterior.observation}". How is it going now?`
+                : `Anteriormente mencionaste: «${anterior.observation}». ¿Cómo te va ahora?`,
+              time: new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            }, {
+              id: Date.now() + 1,
+              from: 'coach',
+              type: 'suggestions',
+              options: ['Sigo igual', 'Estoy mejorando', 'Ya lo superé', 'Omitir'],
               time: new Date().toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit'

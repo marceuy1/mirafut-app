@@ -461,6 +461,10 @@ export const translations = {
       'Sí, mejoré mucho': 'Yes, I improved a lot',
       'Algo, sigo trabajando': "Somewhat, I'm still working on it",
       'Todavía no lo noto': "I don't notice it yet",
+      'Sigo igual': 'Same',
+      'Estoy mejorando': 'Improving',
+      'Ya lo superé': 'Resolved',
+      'Omitir': 'Skip',
     },
     goalLabels: {
       'Mejorar mis reflejos': 'Improve my reflexes',
