@@ -28,6 +28,15 @@ function localizeDebate(debate, lang) {
   };
 }
 
+// Una respuesta del Coach es una sesion de entrenamiento solo si el servidor
+// (api/chat.js) detecto un bloque con encabezado "Sesion N"/"Session N" y no era
+// un acuse de feedback. Antes se adivinaba por el texto ('min' en "timing").
+export function esRespuestaDeSesion(coachData, feedbackOnly) {
+  if (feedbackOnly) return false;
+  const bloque = coachData && coachData.sessionBlock;
+  return typeof bloque === 'string' && bloque.trim().length > 0;
+}
+
 async function trackEvent(userId, eventName, metadata = null) {
   if (!userId) return;
   try {
@@ -1255,12 +1264,12 @@ setPendingDifficultyFollowUp(null);
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
       const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConMemoria, feedbackOnly, lang, solicitaEntrenamiento);
       const response = coachData.reply;
-      const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && response.length > 150 && (response.includes('Series:') || response.includes('Reps:') || response.includes('min'));
+      const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && esRespuestaDeSesion(coachData, feedbackOnly);
 
       if (isTrainingResponse && weeklyGoal) {
         // Guardamos el bloque limpio de ejercicios (sin la frase de honestidad ni el saludo)
         // para poder reutilizarlo textual si el jugador dice "Dificil" en la proxima sesion.
-        const nuevoLog = [...(weeklyGoal.sessions_log || []), coachData.sessionBlock || response];
+        const nuevoLog = [...(weeklyGoal.sessions_log || []), coachData.sessionBlock];
         try {
           await supabase.from('weekly_goals').update({ sessions_log: nuevoLog }).eq('id', weeklyGoal.id);
         } catch (e) {
