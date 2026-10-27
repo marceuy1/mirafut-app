@@ -3,6 +3,7 @@ import { recuperarMemoriaTecnica, prepararContextoMemoria, prepararObservacionTe
 
 import { solicitaEntrenamiento as detectarSolicitud } from './solicitaEntrenamiento';
 import { actualizarHistorialSesiones } from './historialSesiones';
+import { pideObservacion, dosDificilesSeguidos as sonDosDificilesSeguidos } from './feedbackSesion';
 
 // Analytics minimos para Beta 1: un evento = una fila en la tabla `events`.
 // Nunca pasar contenido de usuario (texto de posts, mensajes, objetivo escrito,
@@ -1104,11 +1105,9 @@ export default function App() {
       // la proxima sesion todavia. El jugador tiene que tocar "Iniciar" a proposito.
       await enviarMensajeCoach(feedbackText, feedbackText, true, false, nuevoFeedback);
 
-      const esFeedbackDificil = (valor) => /dif[ií]cil|me cost[oó]/i.test(String(valor));
-const dosDificilesSeguidos =
-  nuevoFeedback.length >= 2 &&
-  nuevoFeedback.slice(-2).every(esFeedbackDificil);
-if (esFeedbackDificil(feedbackText) && !dosDificilesSeguidos) {
+      // "Difícil" y "Bien, pero me costó" piden la observacion; solo dos "Difícil" bajan la carga.
+      const dosDificilesSeguidos = sonDosDificilesSeguidos(nuevoFeedback);
+      if (pideObservacion(feedbackText) && !dosDificilesSeguidos) {
         setAwaitingTechnicalObservation(true);
         setAiMessages(m => [...m, {
           id: Date.now(),
@@ -1245,7 +1244,7 @@ setPendingDifficultyFollowUp(null);
         training_context: weeklyGoal.training_context || '',
         sessions_log: JSON.stringify(weeklyGoal.sessions_log || []),
         last_session_feedback: feedbackArr.length > 0 ? feedbackArr[feedbackArr.length - 1] : '',
-        dos_dificiles_seguidos: feedbackArr.slice(-2).length === 2 && feedbackArr.slice(-2).every(f => /dif[ií]cil|me cost[oó]/i.test(String(f)))
+        dos_dificiles_seguidos: sonDosDificilesSeguidos(feedbackArr)
       } : userProfile;
       // Recuperar observaciones anteriores sin interrumpir el Coach.
       let contextoMemoria = '';

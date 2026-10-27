@@ -4,6 +4,7 @@ import { adaptarSesionCoach } from '../scripts/adaptar_sesion_coach.mjs';
 import { leerCarga } from '../scripts/verificar_progresion_coach.mjs';
 import { hayRiesgoMalestar } from '../scripts/senalesMalestar.mjs';
 import { sesionesCompletadas } from '../src/historialSesiones.js';
+import { esDificil as esFeedbackDificil, esBienPeroCosto } from '../src/feedbackSesion.js';
 import { RECUPERACION_HABILITADA, construirSesionRecuperacion, cumpleTopes } from '../scripts/sesionRecuperacion.mjs';
 const METODOLOGIA = {
   // ---- PORTERO ----
@@ -223,10 +224,10 @@ export function mensajeSeguro(lang, conMalestar) {
 // Reconocimiento fijo despues de "como te fue" (sin IA y sin preguntas): las unicas preguntas
 // que siguen son las de la app, que tienen sus botones (por ejemplo, "Omitir").
 export function categoriaFeedback(feedback, dosDificilesSeguidos) {
-  const f = String(feedback || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  if (/\bmuy bien\b/.test(f)) return 'muy_bien';
-  if (/\bdificil\b/.test(f)) return dosDificilesSeguidos ? 'dos_dificiles' : 'dificil';
-  if (/\bme costo\b/.test(f)) return 'bien_costo';
+  const f = String(feedback || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (esFeedbackDificil(feedback)) return dosDificilesSeguidos ? 'dos_dificiles' : 'dificil';
+  if (esBienPeroCosto(feedback)) return 'bien_costo';
+  if (/\b(muy bien|very good)\b/.test(f)) return 'muy_bien';
   return 'otro';
 }
 const MENSAJES_TRAS_FEEDBACK = {
@@ -314,8 +315,10 @@ export default async function handler(req, res) {
     : '';
 
   const lastFeedback = (perfil?.last_session_feedback || '').toLowerCase();
-  const esDificil = lastFeedback.includes('dificil') || lastFeedback.includes('difícil');
-  const dosDificilesSeguidos = !!perfil?.dos_dificiles_seguidos;
+  const esDificil = esFeedbackDificil(perfil?.last_session_feedback);
+  // Defensa ante versiones viejas de la app (que contaban "me costó" como difícil):
+  // dos seguidas solo si la ultima respuesta tambien es "Difícil".
+  const dosDificilesSeguidos = !!perfil?.dos_dificiles_seguidos && esDificil;
 
   const objetivoCompletado = perfil?.weekly_goal && perfil?.sessions_target > 0 && (perfil?.sessions_done || 0) >= perfil.sessions_target;
   const numeroSesionCorrecta = (perfil?.sessions_done || 0) + 1;

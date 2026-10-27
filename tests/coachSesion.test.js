@@ -525,6 +525,15 @@ test('Mensajes tras feedback: idioma correcto y el de un "Difícil" no manda a I
   assert.ok(!/Iniciar|Start/.test(mensajeTrasFeedback('es', 'Bien, pero me costó', false)));
   assert.ok(!/[áéíóúñ¡¿]/.test(mensajeTrasFeedback('en', 'Muy bien', false)));
 });
+
+test('API: una app vieja que marca dos difíciles con "Bien, pero me costó" al final no baja la carga', async () => {
+  const log = [sesionES(1), sesionES(2)];
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Bien, pero me costó', dos_dificiles_seguidos: true } }), openaiOK(sesionES(3)));
+  assert.equal(r.llamadas.length, 1); // sigue el camino normal (progresion moderada por la IA)
+  assert.ok(!/SIMPLIFICAR/.test(promptDe(r)));
+  const fb = await llamar(tras('Bien, pero me costó', 'es', true), openaiOK('NO DEBE USARSE'));
+  assert.equal(fb.res.payload.reply, mensajeTrasFeedback('es', 'Bien, pero me costó', false));
+});
 // ---------- ejecutor ----------
 (async () => {
   for (const { name, fn } of pendientes) {
