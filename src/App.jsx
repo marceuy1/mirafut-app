@@ -337,6 +337,8 @@ export default function App() {
   const pendingTabRef = useRef('home');
   const agent = SPECIALISTS.find(s => s.id === currentAgent);
   const t = useMemo(() => translations[lang], [lang]);
+  // Texto de un especialista en el idioma actual (nombre, descripcion o saludo).
+  const textoEspecialista = (s, campo) => t.specialists?.[s?.id]?.[campo] || s?.[campo] || '';
   // Solo cambia el texto visible; el valor guardado (POR/DEF/MED/DEL) no se toca
   const posLabel = (p) => (p && t['pos' + p]) || p;
   // Unico punto para cambiar el idioma: actualiza la UI y lo guarda para la proxima visita.
@@ -1307,7 +1309,7 @@ setPendingDifficultyFollowUp(null);
     setCurrentAgent(id);
     setShowSpecialists(false);
     const a = SPECIALISTS.find(s => s.id === id);
-    setAiMessages(m => [...m, { id:Date.now(), from:id, type:"handoff", text:a.intro, time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
+    setAiMessages(m => [...m, { id:Date.now(), from:id, type:"handoff", text:textoEspecialista(a, 'intro'), time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
   };
 
   const uploadAvatar = async (file) => {
@@ -1935,8 +1937,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="ch-info" onClick={() => setShowSpecialists(true)}>
               <div className="ch-av" style={{ background:`${agent.color}20`, color:agent.color, display:"flex", alignItems:"center", justifyContent:"center" }}>{agent.Icon && <agent.Icon size={18} />}</div>
               <div style={{flex:1}}>
-                <div className="ch-name">{agent.name} <span style={{fontSize:11,color:'#556677'}}>▾</span></div>
-                <div className="ch-role">{agent.desc} · En línea</div>
+                <div className="ch-name">{textoEspecialista(agent, 'name')} <span style={{fontSize:11,color:'#556677'}}>▾</span></div>
+                <div className="ch-role">{textoEspecialista(agent, 'desc')} · {t.coachOnline}</div>
               </div>
             </div>
             <button className="hb">⋯</button>
@@ -2423,18 +2425,18 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {tab === "coach" && (
             <div className="coach-screen">
               {currentAgent === "psicologia" && (
-                <div className="safety-banner"><span><Lock size={16} /></span><div><strong>Espacio seguro.</strong> Lo que hablemos es confidencial.</div></div>
+                <div className="safety-banner"><span><Lock size={16} /></span><div><strong>{t.psychologyBannerTitle}</strong> {t.psychologyBannerText}</div></div>
               )}
               
               {currentAgent === "nutricion" && (
-                <div className="safety-banner" style={{background:'rgba(255,183,77,0.08)',borderColor:'rgba(255,183,77,0.2)'}}><span><AlertTriangle size={16} /></span><div><strong>Consejo nutricional general.</strong> Para planes personalizados o condiciones médicas específicas, consulta un nutricionista certificado.</div></div>
+                <div className="safety-banner" style={{background:'rgba(255,183,77,0.08)',borderColor:'rgba(255,183,77,0.2)'}}><span><AlertTriangle size={16} /></span><div><strong>{t.nutritionBannerTitle}</strong> {t.nutritionBannerText}</div></div>
               )}
 
               <div className="ai-msgs">
                 {aiMessages.map(m => {
                   const ma = SPECIALISTS.find(s => s.id === m.from);
                   if (m.type === "handoff") {
-                    return <div key={m.id} className="handoff"><div className="handoff-lbl"><div className="handoff-line"/><span>{ma.name} se unió</span><div className="handoff-line"/></div><div className="handoff-intro">"{m.text}"</div></div>;
+                    return <div key={m.id} className="handoff"><div className="handoff-lbl"><div className="handoff-line"/><span>{textoEspecialista(ma, 'name')} {t.specialistJoined}</span><div className="handoff-line"/></div><div className="handoff-intro">"{m.text}"</div></div>;
                   }
                   if (m.type === "suggestions") {
                     const esUltimoMensaje = aiMessages.length > 0 && m.id === aiMessages[aiMessages.length - 1].id;
@@ -2442,7 +2444,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   }
                   if (m.type === "specialist-card") {
                     const sp = SPECIALISTS.find(s => s.id === m.specialist);
-                    return <div key={m.id} className="spec-sug"><div className="spec-sug-h"><div className="spec-sug-i" style={{background:`${sp.color}20`,color:sp.color,display:"flex",alignItems:"center",justifyContent:"center"}}>{sp.Icon && <sp.Icon size={16} />}</div><div><div className="spec-sug-n">{sp.name}</div><div className="spec-sug-r">{sp.desc}</div></div></div><button className="spec-sug-b" style={{background:sp.color,color:'#0a0e14'}} onClick={()=>switchAgent(m.specialist)}>Conectar con {sp.name} →</button></div>;
+                    return <div key={m.id} className="spec-sug"><div className="spec-sug-h"><div className="spec-sug-i" style={{background:`${sp.color}20`,color:sp.color,display:"flex",alignItems:"center",justifyContent:"center"}}>{sp.Icon && <sp.Icon size={16} />}</div><div><div className="spec-sug-n">{textoEspecialista(sp, 'name')}</div><div className="spec-sug-r">{textoEspecialista(sp, 'desc')}</div></div></div><button className="spec-sug-b" style={{background:sp.color,color:'#0a0e14'}} onClick={()=>switchAgent(m.specialist)}>{t.connectWith} {textoEspecialista(sp, 'name')} →</button></div>;
                   }
                   const exVisual = (m.from !== 'me' && !visualsV2) ? detectExerciseVisual(m.text) : null;
                   return (
@@ -2494,19 +2496,19 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {sessionInProgress ? (
                         <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>✓ {lang === 'en' ? 'Finished my session' : 'Terminé mi sesión'}</button>
                       ) : (
-                        <button onClick={() => { if (!awaitingSessionFeedback) sendAI('Sí, vamos'); }} disabled={awaitingSessionFeedback} title={awaitingSessionFeedback ? 'Responde arriba como te fue para continuar' : ''} style={{background:awaitingSessionFeedback ? 'rgba(0,230,118,0.3)' : '#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:awaitingSessionFeedback ? 'not-allowed' : 'pointer',fontFamily:'Outfit,sans-serif',opacity:awaitingSessionFeedback ? 0.6 : 1}}>▶ {lang === 'en' ? 'Start' : 'Iniciar'} {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
+                        <button onClick={() => { if (!awaitingSessionFeedback) sendAI('Sí, vamos'); }} disabled={awaitingSessionFeedback} title={awaitingSessionFeedback ? t.answerAboveToContinue : ''} style={{background:awaitingSessionFeedback ? 'rgba(0,230,118,0.3)' : '#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:awaitingSessionFeedback ? 'not-allowed' : 'pointer',fontFamily:'Outfit,sans-serif',opacity:awaitingSessionFeedback ? 0.6 : 1}}>▶ {lang === 'en' ? 'Start' : 'Iniciar'} {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
                       )}
                     </div>
                   ) : (
                     <button onClick={() => setShowWeeklyGoal(true)} style={{width:'100%',padding:'8px',background:'transparent',border:'1px dashed rgba(0,230,118,0.3)',borderRadius:'12px',color:'#00E676',fontSize:'12px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                      🎯 Establecer objetivo de la semana
+                      {t.setWeeklyGoalButton}
                     </button>
                   )}
                 </div>
               )}
               <div className="ai-input">
                 <div className="ai-ibox">
-                  <textarea className="ai-field" placeholder={`${t.writeToPrefix} ${agent.name}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
+                  <textarea className="ai-field" placeholder={`${t.writeToPrefix} ${textoEspecialista(agent, 'name')}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
                 </div>
                 {aiInput.trim() && (
                   <button className="ai-send" style={{background:'#00E676',color:'#0a0e14'}} onClick={()=>sendAI(aiInput)}>→</button>
@@ -2516,14 +2518,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div className="drawer-bg" style={{display:showSpecialists?"flex":"none"}} onClick={()=>setShowSpecialists(false)}>
                 <div className="drawer" onClick={e=>e.stopPropagation()}>
                   <div className="drawer-handle"/>
-                  <div className="drawer-title">Elige con quién hablar</div>
-                  <div className="drawer-sub">Tu equipo de apoyo</div>
+                  <div className="drawer-title">{t.chooseSpecialistTitle}</div>
+                  <div className="drawer-sub">{t.chooseSpecialistSub}</div>
                   <div className="spec-grid">
                     {SPECIALISTS.map(s=>(
                       <div key={s.id} className={`spec-card ${currentAgent===s.id?'active':''}`} style={{color:s.color}} onClick={()=>switchAgent(s.id)}>
                         <div className="spec-emoji" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>{s.Icon && <s.Icon size={22} style={{color:s.color}} />}</div>
-                        <div className="spec-name">{s.name}</div>
-                        <div className="spec-desc">{s.desc}</div>
+                        <div className="spec-name">{textoEspecialista(s, 'name')}</div>
+                        <div className="spec-desc">{textoEspecialista(s, 'desc')}</div>
                       </div>
                     ))}
                   </div>
