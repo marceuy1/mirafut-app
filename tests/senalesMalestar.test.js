@@ -43,6 +43,19 @@ test('solo analiza lo que escribió el jugador, no los consejos del Coach', () =
   assert.equal(hayRiesgoMalestar({ message: 'Coach: If anything hurts, stop. | Player: Yes, let\'s go' }), null);
   assert.ok(hayRiesgoMalestar({ message: 'Coach: How did it go? | Player: my knee hurts | Player: Yes' }));
 });
+test('el pedido de sesión que arma la app no se confunde con "lesión" (regresión)', () => {
+  const pedido = (n) => 'Quiero hacer la sesion ' + n + ' de mi objetivo: Improve my marking. Genera la sesion directamente con progresion respecto a las sesiones anteriores, no preguntes por material ni si entreno solo, ya lo sabes.';
+  for (const lang of ['en', 'es']) for (const n of [2, 3]) {
+    const saludo = lang === 'en'
+      ? "Coach: Hi qa_b 👋 You have 1 session left for your goal: Improve my marking. Want to do it today? | Jugador: Yes, let's go"
+      : 'Coach: Hola qa_b 👋 Te queda 1 sesión para tu objetivo: Mejorar mi marca. ¿La hacemos hoy? | Jugador: Sí, vamos';
+    for (const feedback of ['Difícil', 'Difficult']) {
+      assert.equal(hayRiesgoMalestar({ message: saludo + ' | Jugador: ' + pedido(n), lastFeedback: feedback }), null, `${lang} sesión ${n} ${feedback}`);
+    }
+  }
+  for (const f of ['sesión', 'sesiones', 'session', 'sessions', 'Sesión 3 completada']) assert.equal(categoriaMalestar(f), null, f);
+  for (const f of ['me lesioné', 'tengo una lesión', 'lesion', 'lesiones en la rodilla', 'me lesione']) assert.ok(categoriaMalestar(f), f);
+});
 test('notas de memoria: activas cuentan, resueltas no', () => {
   assert.ok(hayRiesgoMalestar({ message: 'Sí', memoria: 'Dificultad reportada (activa) [referencia: a]: me duele al girar' }));
   assert.equal(hayRiesgoMalestar({ message: 'Sí', memoria: 'Dificultad reportada (resuelta) [referencia: a]: me dolía al girar' }), null);

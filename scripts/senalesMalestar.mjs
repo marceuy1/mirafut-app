@@ -63,7 +63,9 @@ const VERBOS_LESION = conjunto([
 
 // Palabras parecidas a terminos de malestar que NO lo son (evita falsos positivos de la busqueda aproximada).
 const PERMITIDAS = conjunto(['color', 'calor', 'dolar', 'marco', 'marcos', 'duelo', 'duelos', 'duel', 'duels',
-  'leson', 'lesons', 'spain', 'camps', 'clamps', 'paint', 'paints', 'painted', 'number', 'numbers']);
+  'leson', 'lesons', 'spain',
+  // "sesion" esta a una letra de "lesion": la app la usa en cada pedido de sesion.
+  'sesion', 'sesiones', 'session', 'sessions', 'camps', 'clamps', 'paint', 'paints', 'painted', 'number', 'numbers']);
 // Terminos para tolerar un error de escritura (distancia de edicion 1), ya normalizados.
 const APROXIMADOS = lista(['dolor', 'lesione', 'lesiones', 'duele', 'duelen', 'lesion', 'lesionado', 'lesionada', 'esguince', 'mareo', 'mareado',
   'mareada', 'molestia', 'molestias', 'calambre', 'desgaro', 'contractura', 'hinchado', 'inflamado', 'lastimado',
