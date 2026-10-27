@@ -220,6 +220,36 @@ export function mensajeSeguro(lang, conMalestar) {
     : 'Te entiendo: las dos últimas sesiones fueron exigentes, y eso también es parte de aprender. Hoy no pude ajustar tu sesión anterior de una forma que pueda comprobar que es más suave, y prefiero no darte un entrenamiento sin verificar. Lo mejor hoy es descansar: toma agua, estira suavemente solo si te sienta bien, y la próxima vez seguimos. Si al volver todavía te cuesta, podemos elegir juntos un objetivo más accesible.';
 }
 
+// Reconocimiento fijo despues de "como te fue" (sin IA y sin preguntas): las unicas preguntas
+// que siguen son las de la app, que tienen sus botones (por ejemplo, "Omitir").
+export function categoriaFeedback(feedback, dosDificilesSeguidos) {
+  const f = String(feedback || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  if (/\bmuy bien\b/.test(f)) return 'muy_bien';
+  if (/\bdificil\b/.test(f)) return dosDificilesSeguidos ? 'dos_dificiles' : 'dificil';
+  if (/\bme costo\b/.test(f)) return 'bien_costo';
+  return 'otro';
+}
+const MENSAJES_TRAS_FEEDBACK = {
+  es: {
+    muy_bien: '¡Muy bien! Se nota el trabajo. La próxima sesión va a subir un poco el nivel. Cuando quieras seguir, toca Iniciar.',
+    bien_costo: 'Bien hecho: que cueste un poco es señal de que estás aprendiendo.',
+    dificil: 'Gracias por contármelo. Que una sesión cueste es parte de aprender. La próxima vez repetimos los mismos ejercicios para consolidarlos, sin subir la exigencia.',
+    dos_dificiles: 'Gracias por contármelo. Las dos últimas sesiones fueron exigentes, así que la próxima va a bajar la carga: mismos ejercicios, menos repeticiones. Cuando quieras seguir, toca Iniciar.',
+    otro: 'Gracias por contarme cómo te fue. Cuando quieras seguir, toca Iniciar.',
+  },
+  en: {
+    muy_bien: 'Great job! The work is showing. The next session will raise the level a little. When you want to continue, tap Start.',
+    bien_costo: "Well done: finding it a bit tough means you're learning.",
+    dificil: "Thanks for telling me. A tough session is part of learning. Next time we'll repeat the same exercises to consolidate them, without raising the difficulty.",
+    dos_dificiles: "Thanks for telling me. The last two sessions were demanding, so the next one will lower the load: same exercises, fewer repetitions. When you want to continue, tap Start.",
+    otro: 'Thanks for telling me how it went. When you want to continue, tap Start.',
+  },
+};
+export function mensajeTrasFeedback(lang, feedback, dosDificilesSeguidos) {
+  const textos = MENSAJES_TRAS_FEEDBACK[lang === 'en' ? 'en' : 'es'];
+  return textos[categoriaFeedback(feedback, dosDificilesSeguidos)];
+}
+
 export function analizarBloqueSesion(texto) {
   const vacio = { bloque: null, tieneEncabezado: false, ejercicios: 0, faltantes: ['sin_encabezado'], completa: false };
   if (!texto || typeof texto !== 'string') return vacio;
@@ -354,6 +384,12 @@ export default async function handler(req, res) {
     // con la generacion normal por IA como red de seguridad (mas abajo).
   }
 
+  // Respuesta a "como te fue": mensaje fijo, sin llamar a la IA (la IA cerraba con preguntas
+  // abiertas sin botones, aun cuando la instruccion lo prohibia).
+  if (feedbackOnly && perfil?.weekly_goal && !objetivoCompletado) {
+    return res.status(200).json({ reply: mensajeTrasFeedback(lang, perfil?.last_session_feedback, dosDificilesSeguidos), sessionBlock: '', meta: { completa: false, faltantes: ['respuesta_fija_tras_feedback'], finishReason: null } });
+  }
+
   let goalStr = '';
   if ((feedbackOnly || !solicitaEntrenamiento) && perfil?.weekly_goal && !objetivoCompletado) {
     goalStr = `OBJETIVO SEMANAL ACTIVO: "${perfil.weekly_goal}" — Sesiones completadas: ${perfil.sessions_done || 0} de ${perfil.sessions_target || 3}.
@@ -362,13 +398,7 @@ Respondele al jugador de forma breve (2-3 lineas maximo) y especifica a lo que t
 PROHIBIDO en esta respuesta: generar una sesion de entrenamiento, usar el formato "Sesion N", "Series:", "Reps:", o listar ejercicios.
 Si corresponde, termina con la pregunta o el siguiente paso natural segun lo que el jugador dijo (no des instrucciones tecnicas de botones salvo que ya haya terminado toda la conversacion de contexto).
 
-${feedbackOnly && dosDificilesSeguidos
-  ? `REGLA PRIORITARIA PARA DOS EVALUACIONES DIFICILES CONSECUTIVAS:
-- Reconoce brevemente el esfuerzo del jugador y que las ultimas dos sesiones le resultaron dificiles.
-- Explica que el proximo entrenamiento se ajustara para reducir la exigencia.
-- NO preguntes otra vez que fue dificil ni hagas ninguna otra pregunta.
-- NO generes una sesion ahora.`
-  : ''}`;
+`;
   } else if (perfil?.weekly_goal && objetivoCompletado) {
     goalStr = `OBJETIVO SEMANAL COMPLETADO: "${perfil.weekly_goal}" — ${perfil.sessions_target} de ${perfil.sessions_target} sesiones hechas esta semana.
 

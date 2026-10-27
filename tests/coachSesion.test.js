@@ -2,7 +2,7 @@
 // Ejecutar:  npx esbuild tests/coachSesion.test.js --bundle --platform=node --outfile=/tmp/coachSesion.cjs && node /tmp/coachSesion.cjs
 // No llama a OpenAI: `fetch` está simulado.
 import assert from 'node:assert/strict';
-import handler, { analizarBloqueSesion, extraerBloqueReutilizable, mensajeSeguro } from '../api/chat.js';
+import handler, { analizarBloqueSesion, extraerBloqueReutilizable, mensajeSeguro, mensajeTrasFeedback, categoriaFeedback } from '../api/chat.js';
 import { actualizarHistorialSesiones, sesionesCompletadas, numeroDeSesion } from '../src/historialSesiones.js';
 
 let passed = 0, failed = 0;
@@ -223,7 +223,8 @@ test('handler: el registro no contiene datos personales, mensajes ni contenido d
 });
 test('handler: feedbackOnly no registra evento de sesión', async () => {
   const r = await llamar(body({ extra: { feedbackOnly: true } }), openaiOK('Gracias por contarme. ¿Listo para la próxima?'));
-  assert.equal(r.eventos.length, 0); assert.equal(r.res.payload.sessionBlock, null);
+  assert.equal(r.eventos.length, 0); assert.equal(r.res.payload.sessionBlock, '');
+  assert.equal(r.llamadas.length, 0);
 });
 test('handler: max_tokens sigue en 650 (no se cambia en esta fase) y no hay reintentos', async () => {
   const r = await llamar(body(), openaiOK(sesionES(1), 'length'));
@@ -497,6 +498,32 @@ test('sesionesCompletadas y numeroDeSesion', () => {
   const r = sesionesCompletadas([sesionES(2), sesionES(1), conReps(sesionES(2), 5), sesionES(3)], 2);
   assert.deepEqual(r.map(x => x.numero), [1, 2]);
   assert.deepEqual(repsDe(r[1].bloque), [5, 5, 5]);
+});
+
+// =====================================================================================
+// Reconocimiento fijo tras "como te fue": sin IA y sin preguntas
+// =====================================================================================
+const tras = (feedback, lang, dos = false) => body({ lang, extra: { feedbackOnly: true, solicitaEntrenamiento: false },
+  perfil: { sessions_done: 2, sessions_log: JSON.stringify([sesionES(1), sesionES(2)]), last_session_feedback: feedback, dos_dificiles_seguidos: dos } });
+test('Tras "cómo te fue": mensaje fijo, sin llamar a la IA y sin preguntas (ES y EN)', async () => {
+  const casos = [['Muy bien', false, 'muy_bien'], ['Bien, pero me costó', false, 'bien_costo'], ['Difícil', false, 'dificil'], ['Difícil', true, 'dos_dificiles'], ['me fue normal', false, 'otro']];
+  for (const lang of ['es', 'en']) for (const [fb, dos, cat] of casos) {
+    const r = await llamar(tras(fb, lang, dos), openaiOK('NO DEBE USARSE. ¿Qué parte te costó?'));
+    const etiqueta = `${lang} ${fb} ${dos}`;
+    assert.equal(r.llamadas.length, 0, etiqueta);
+    assert.equal(categoriaFeedback(fb, dos), cat, etiqueta);
+    assert.equal(r.res.payload.reply, mensajeTrasFeedback(lang, fb, dos), etiqueta);
+    assert.ok(!/[?¿]/.test(r.res.payload.reply), 'sin preguntas: ' + etiqueta);
+    assert.equal(r.res.payload.sessionBlock, '', etiqueta);
+  }
+});
+test('Mensajes tras feedback: idioma correcto y el de un "Difícil" no manda a Iniciar (sigue la pregunta con Omitir)', () => {
+  assert.ok(mensajeTrasFeedback('en', 'Difícil', true).includes('tap Start'));
+  assert.ok(mensajeTrasFeedback('es', 'Difícil', true).includes('toca Iniciar'));
+  assert.ok(!/Iniciar|Start/.test(mensajeTrasFeedback('es', 'Difícil', false)));
+  assert.ok(!/Iniciar|Start/.test(mensajeTrasFeedback('en', 'Difícil', false)));
+  assert.ok(!/Iniciar|Start/.test(mensajeTrasFeedback('es', 'Bien, pero me costó', false)));
+  assert.ok(!/[áéíóúñ¡¿]/.test(mensajeTrasFeedback('en', 'Muy bien', false)));
 });
 // ---------- ejecutor ----------
 (async () => {
