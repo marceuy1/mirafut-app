@@ -282,9 +282,114 @@ test('Difícil: sesión anterior EN incompleta -> NO se reutiliza', async () => 
   const r = await llamar(dificil([sesionEN(1, { ejercicios: 2 })], {}, 'en'), openaiOK(sesionEN(2)));
   assert.equal(r.llamadas.length, 1); assert.ok(!r.res.payload.reply.startsWith('Understood.'));
 });
-test('Dos «Difícil» seguidos: simplifica por IA (no reutiliza)', async () => {
-  const r = await llamar(dificil([sesionES(1)], { dos_dificiles_seguidos: true }), openaiOK(sesionES(2)));
-  assert.equal(r.llamadas.length, 1);
+// Dos «Difícil» seguidos: primero adaptación local verificada; si no es posible, mensaje seguro
+// (la sesión de recuperación está desactivada). Nunca se pide la sesión a OpenAI ni se entrega una no verificable.
+// Sesión con el formato nuevo: Reps entero, instrucciones sin cantidades de repeticiones.
+function sesionAdaptable(n, lang = 'es', o = {}) {
+  const r = o.reps || [5, 4, 5];
+  const como = o.como || (lang === 'en' ? 'Move sideways between two markers 3 meters apart, keeping low.' : 'Desplázate de lado entre dos marcas a 3 metros, con el cuerpo bajo.');
+  const ej = (i) => lang === 'en'
+    ? `${i}. Exercise ${i} footwork — ${5 + i} min\n   Sets: 3 | Reps: ${r[i - 1]} | Rest: 30 sec\n   How: ${como}\n   Technical focus: head up.\n`
+    : `${i}. Ejercicio ${i} de pies — ${5 + i} min\n   Series: 3 | Reps: ${r[i - 1]} | Descanso: 30 seg\n   Como: ${como}\n   Foco tecnico: cabeza arriba.\n`;
+  const head = lang === 'en' ? `Session ${n} — Footwork — 20 min\n\n` : `Sesion ${n} — Pies — 20 min\n\n`;
+  return head + [1, 2, 3].map(ej).join('\n') + (lang === 'en' ? '\nCoach Tip: stay low.' : '\nCoach Tip: mantente bajo.');
+}
+const dosDificiles = (log, lang = 'es', extra = {}) => dificil(log, { dos_dificiles_seguidos: true, ...extra }, lang);
+const repsDe = (t) => [...t.matchAll(/Reps:\s*(\d+)/g)].map(m => Number(m[1]));
+
+test('Dos «Difícil» ES: adapta localmente, verifica la reducción y NO llama a OpenAI', async () => {
+  const r = await llamar(dosDificiles([sesionAdaptable(1)]), openaiOK('NO DEBE USARSE'));
+  assert.equal(r.llamadas.length, 0);
+  const b = r.res.payload.sessionBlock;
+  assert.ok(b.startsWith('Sesion 2'));
+  assert.deepEqual(repsDe(b), [3, 3, 3]);
+  assert.ok(r.res.payload.reply.includes('no hace falta compensarlas'));
+});
+test('Dos «Difícil» EN: adapta localmente con etiquetas en inglés', async () => {
+  const r = await llamar(dosDificiles([sesionAdaptable(1, 'en')], 'en'), openaiOK('NO'));
+  assert.equal(r.llamadas.length, 0);
+  assert.ok(r.res.payload.sessionBlock.startsWith('Session 2'));
+  assert.ok(r.res.payload.reply.includes('no need to make up'));
+  assert.ok(!/Descanso|Como:|Foco tecnico/.test(r.res.payload.sessionBlock));
+});
+test('Dos «Difícil»: la adaptación solo cambia Reps (no series, descansos, minutos ni instrucciones)', async () => {
+  const previa = sesionAdaptable(1);
+  const r = await llamar(dosDificiles([previa]), openaiOK('NO'));
+  const a = previa.split('\n'), b = r.res.payload.sessionBlock.split('\n');
+  assert.equal(a.length, b.length);
+  const cambiadas = b.map((l, i) => [a[i], l]).filter(([x, y]) => x !== y);
+  assert.ok(cambiadas.every(([x, y]) => /^Sesion /.test(x) || x.replace(/Reps: \d+/, '') === y.replace(/Reps: \d+/, '')));
+});
+test('Dos «Difícil»: sesión anterior con "Reps: 5 to each side" -> mensaje seguro, sin sesión ni OpenAI', async () => {
+  const previa = sesionAdaptable(1, 'en').replace('Reps: 5 |', 'Reps: 5 to each side |');
+  const r = await llamar(dosDificiles([previa], 'en'), openaiOK(sesionEN(2)));
+  assert.equal(r.llamadas.length, 0);
+  assert.equal(r.res.payload.sessionBlock, '');
+  assert.ok(r.res.payload.reply.includes("won't give you a training plan I can't verify"));
+  assert.ok(!/try requesting your session again/i.test(r.res.payload.reply));
+});
+test('Dos «Difícil»: instrucciones con cantidades ("6 toques") -> no adapta, mensaje seguro', async () => {
+  const r = await llamar(dosDificiles([sesionES(1)]), openaiOK(sesionES(2)));
+  assert.equal(r.llamadas.length, 0);
+  assert.equal(r.res.payload.sessionBlock, '');
+  assert.ok(r.res.payload.reply.includes('prefiero no darte un entrenamiento sin verificar'));
+});
+test('Dos «Difícil»: instrucción que obliga a llenar el tiempo -> no adapta', async () => {
+  const previa = sesionAdaptable(1, 'en', { como: 'Keep moving sideways for the whole time without stopping.' });
+  const r = await llamar(dosDificiles([previa], 'en'), openaiOK('NO'));
+  assert.equal(r.res.payload.sessionBlock, '');
+});
+test('Dos «Difícil»: todo en 1 repetición -> no inventa reducción, mensaje seguro', async () => {
+  const r = await llamar(dosDificiles([sesionAdaptable(1, 'es', { reps: [1, 1, 1] })]), openaiOK('NO'));
+  assert.equal(r.res.payload.sessionBlock, '');
+});
+test('Plan B desactivado: nunca entrega la sesión de recuperación', async () => {
+  const r = await llamar(dosDificiles([sesionES(1)]), openaiOK('NO'));
+  assert.ok(!/Recuperación activa|Active recovery/.test(r.res.payload.reply));
+});
+test('Seguridad: dolor en el mensaje -> no hay sesión (ni adaptada) y no llama a OpenAI', async () => {
+  const s = dosDificiles([sesionAdaptable(1)]);
+  s.message = 'Coach: ¿Cómo te fue? | Jugador: me duele la rodilla | Jugador: Sí, vamos';
+  const r = await llamar(s, openaiOK('NO'));
+  assert.equal(r.llamadas.length, 0);
+  assert.equal(r.res.payload.sessionBlock, '');
+  assert.ok(r.res.payload.reply.includes('hoy no es momento de entrenar'));
+});
+test('Seguridad: un solo «Difícil» con malestar -> tampoco reutiliza la sesión', async () => {
+  const s = dificil([sesionES(1)], {}, 'en');
+  s.message = 'Player: my ankle feels weird | Player: Yes, let\'s go';
+  const r = await llamar(s, openaiOK('NO'));
+  assert.equal(r.res.payload.sessionBlock, '');
+  assert.ok(r.res.payload.reply.includes('today is not a day to train'));
+});
+test('Seguridad: malestar en una nota de memoria activa -> no hay sesión', async () => {
+  const s = dosDificiles([sesionAdaptable(1)], 'es', { coach_learning_memory: 'Dificultad reportada (activa) [referencia: x]: me duele el tobillo al girar' });
+  const r = await llamar(s, openaiOK('NO'));
+  assert.equal(r.res.payload.sessionBlock, '');
+});
+test('Seguridad: una nota resuelta no bloquea', async () => {
+  const s = dosDificiles([sesionAdaptable(1)], 'es', { coach_learning_memory: 'Dificultad reportada (resuelta) [referencia: x]: me dolía el tobillo' });
+  const r = await llamar(s, openaiOK('NO'));
+  assert.ok(r.res.payload.sessionBlock.startsWith('Sesion 2'));
+});
+test('Seguridad: los consejos del Coach ("si te duele, para") no se toman como reporte', async () => {
+  const s = dosDificiles([sesionAdaptable(1)]);
+  s.message = 'Coach: Si algo te duele, detente. | Jugador: Sí, vamos';
+  const r = await llamar(s, openaiOK('NO'));
+  assert.ok(r.res.payload.sessionBlock.startsWith('Sesion 2'));
+});
+test('Prompt: plantilla EN sin etiquetas en español y ES sin etiquetas en inglés', async () => {
+  const en = await llamar(body({ lang: 'en' }), openaiOK(sesionEN(1)));
+  const pe = en.llamadas[0].body.messages[0].content;
+  const plantillaEn = pe.slice(pe.indexOf('FORMATO DE RESPUESTA'), pe.indexOf('Coach Tip:', pe.indexOf('FORMATO DE RESPUESTA')));
+  assert.ok(/Sets: X \| Reps: X \| Rest: X sec/.test(plantillaEn) && /How:/.test(plantillaEn) && /Technical focus:/.test(plantillaEn));
+  assert.ok(!/Descanso|Como:|Foco tecnico:/.test(plantillaEn));
+  const es = await llamar(body(), openaiOK(sesionES(1)));
+  const ps = es.llamadas[0].body.messages[0].content;
+  const plantillaEs = ps.slice(ps.indexOf('FORMATO DE RESPUESTA'), ps.indexOf('Coach Tip:', ps.indexOf('FORMATO DE RESPUESTA')));
+  assert.ok(/Series: X \| Reps: X \| Descanso: X seg/.test(plantillaEs) && /Como:/.test(plantillaEs));
+  assert.ok(!/Sets:|Rest:|How:|Technical focus/.test(plantillaEs));
+  assert.ok(pe.includes('UN SOLO numero entero') && ps.includes('UN SOLO numero entero'));
 });
 test('Difícil con frase de honestidad: orden honestidad + reconocimiento + bloque (sin cambios)', async () => {
   const r = await llamar(dificil([sesionES(1)], { weekly_goal: 'Mejorar mi marcación' }), openaiOK('NO'));

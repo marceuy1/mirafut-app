@@ -52,6 +52,15 @@ export function adaptarSesionCoach(sesionAnterior, numeroSesion) {
     return null;
   }
 
+  // Tampoco adaptar si alguna instruccion obliga a llenar el tiempo o a hacer el maximo
+  // posible: con menos repeticiones, el jugador terminaria compensando la carga.
+  const rellenarTiempo =
+    /\b(?:durante todo|todo el tiempo|hasta completar|sin parar|sin descanso|lo m[aá]s r[aá]pido|tantas (?:veces|como)|m[aá]ximo de|continuamente|for the (?:whole|full|entire)|the whole time|until (?:the )?time|until you complete|non-?stop|without (?:stopping|rest)|as (?:many|fast) as (?:you )?(?:can|possible)|continuously|amrap)\b/i;
+
+  if (instrucciones.some(linea => rellenarTiempo.test(linea))) {
+    return null;
+  }
+
   // Si todas las repeticiones ya están en el mínimo,
   // no inventamos una reducción.
   if (cargas.every(c => c.repeticiones <= 1)) {

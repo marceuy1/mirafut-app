@@ -1,6 +1,9 @@
 // ============ CEREBRO METODOLOGICO DE MIRAFUT ==========
 import { observarProgresion } from '../scripts/observar_progresion_coach.mjs';
 import { adaptarSesionCoach } from '../scripts/adaptar_sesion_coach.mjs';
+import { leerCarga } from '../scripts/verificar_progresion_coach.mjs';
+import { hayRiesgoMalestar } from '../scripts/senalesMalestar.mjs';
+import { RECUPERACION_HABILITADA, construirSesionRecuperacion, cumpleTopes } from '../scripts/sesionRecuperacion.mjs';
 const METODOLOGIA = {
   // ---- PORTERO ----
   'Mejorar mis reflejos': {
@@ -204,6 +207,18 @@ const RE_FINAL_COMPLETO = /(?:[.!?…)»"”'’\]]|\p{Extended_Pictographic})\s
 
 // Analiza un texto (respuesta del Coach o sesion guardada). NO requiere "Coach Tip" para reconocer el bloque:
 // informa de lo que falta. Devuelve { bloque, tieneEncabezado, ejercicios, faltantes[], completa }.
+// Mensaje cuando no se entrega una sesion. Nunca anima a seguir entrenando si hubo senales de malestar.
+export function mensajeSeguro(lang, conMalestar) {
+  if (lang === 'en') {
+    return conMalestar
+      ? "Thanks for telling me. If you feel pain, discomfort or you're not feeling well, today is not a day to train. Rest, and if it continues, gets worse or worries you, tell a trusted adult, your coach or a health professional. When you feel good again, I'll be here to pick up where we left off."
+      : "I hear you: the last two sessions were tough, and that's part of learning. Today I couldn't adjust your previous session in a way I can confirm is easier, and I won't give you a training plan I can't verify. The best choice today is to rest: drink water, stretch gently only if it feels good, and we'll continue next time. If it still feels hard when you come back, we can pick a more accessible goal together.";
+  }
+  return conMalestar
+    ? 'Gracias por contármelo. Si sientes dolor, molestias o no te sientes bien, hoy no es momento de entrenar. Descansa, y si continúa, empeora o te preocupa, cuéntaselo a un adulto de confianza, a tu entrenador o a un profesional de la salud. Cuando te sientas bien, aquí estaré para retomar donde lo dejamos.'
+    : 'Te entiendo: las dos últimas sesiones fueron exigentes, y eso también es parte de aprender. Hoy no pude ajustar tu sesión anterior de una forma que pueda comprobar que es más suave, y prefiero no darte un entrenamiento sin verificar. Lo mejor hoy es descansar: toma agua, estira suavemente solo si te sienta bien, y la próxima vez seguimos. Si al volver todavía te cuesta, podemos elegir juntos un objetivo más accesible.';
+}
+
 export function analizarBloqueSesion(texto) {
   const vacio = { bloque: null, tieneEncabezado: false, ejercicios: 0, faltantes: ['sin_encabezado'], completa: false };
   if (!texto || typeof texto !== 'string') return vacio;
@@ -269,6 +284,45 @@ export default async function handler(req, res) {
   const fraseHonestidad = debeAvisarColectivo
     ? `Como hoy entrenas solo, no podemos reproducir ${tipoColectivo}, pero sí trabajar los hábitos individuales que necesitas para rendir mejor en eso.\n\n`
     : '';
+
+  // ------ SEGURIDAD Y DOS "DIFICIL" SEGUIDOS (sin llamar a OpenAI) ------
+  // Ante una sesion pedida despues de "Dificil": si el jugador escribio algo que sugiere dolor,
+  // lesion o malestar (o hay duda), no se entrega ninguna sesion. Con dos "Dificil" seguidos:
+  // 1) se reduce la carga de la sesion anterior por calculo verificado; 2) si no es posible,
+  // sesion de recuperacion fija (solo si esta habilitada); 3) si no, mensaje seguro.
+  const pideSesionTrasDificil = solicitaEntrenamiento && !feedbackOnly && esDificil && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado;
+  if (pideSesionTrasDificil) {
+    const riesgo = hayRiesgoMalestar({ message, lastFeedback: perfil?.last_session_feedback, memoria: perfil?.coach_learning_memory });
+    if (riesgo) {
+      console.warn(JSON.stringify({ evt: 'coach_session_withheld', motivo: 'senal_de_malestar', categoria: riesgo }));
+      return res.status(200).json({ reply: mensajeSeguro(lang, true), sessionBlock: '', meta: { completa: false, faltantes: ['sesion_retenida_por_seguridad'], finishReason: null } });
+    }
+  }
+  if (pideSesionTrasDificil && dosDificilesSeguidos) {
+    const sesionAnterior = sessionsLog[sessionsLog.length - 1];
+    const sesionAdaptada = adaptarSesionCoach(sesionAnterior, numeroSesionCorrecta);
+    if (sesionAdaptada
+      && observarProgresion(sesionAnterior, sesionAdaptada).estado === 'reduccion_numerica_verificada'
+      && analizarBloqueSesion(sesionAdaptada).completa) {
+      const reconocimiento = lang === 'en'
+        ? 'Since the last two sessions felt difficult, today we keep the same exercises with fewer repetitions. Keep the same time and use the extra minutes to rest between reps: there is no need to make up the repetitions.\n\n'
+        : 'Como las dos últimas sesiones te resultaron difíciles, hoy mantenemos los mismos ejercicios con menos repeticiones. Conserva el mismo tiempo y usa los minutos que sobren para descansar entre repeticiones: no hace falta compensarlas.\n\n';
+      console.info(JSON.stringify({ evt: 'coach_session_adapted_locally', estado: 'reduccion_numerica_verificada' }));
+      return res.status(200).json({ reply: fraseHonestidad + reconocimiento + sesionAdaptada, sessionBlock: sesionAdaptada, meta: { completa: true, faltantes: [], finishReason: null } });
+    }
+    if (RECUPERACION_HABILITADA) {
+      const recuperacion = construirSesionRecuperacion({ lang, edad: perfil?.age ? parseInt(perfil.age) : null, nivel: perfil?.level, numeroSesion: numeroSesionCorrecta });
+      if (analizarBloqueSesion(recuperacion).completa && cumpleTopes(recuperacion, leerCarga)) {
+        const intro = lang === 'en'
+          ? 'Your last two sessions felt difficult, so today is an active recovery day: gentle, low-intensity movements with no equipment. If anything hurts, stop.\n\n'
+          : 'Tus dos últimas sesiones te resultaron difíciles, así que hoy hacemos una recuperación activa: movimientos suaves, de baja intensidad y sin material. Si algo te duele, detente.\n\n';
+        console.info(JSON.stringify({ evt: 'coach_recovery_session' }));
+        return res.status(200).json({ reply: intro + recuperacion, sessionBlock: recuperacion, meta: { completa: true, faltantes: [], finishReason: null } });
+      }
+    }
+    console.warn(JSON.stringify({ evt: 'coach_session_withheld', motivo: 'adaptacion_no_verificable' }));
+    return res.status(200).json({ reply: mensajeSeguro(lang, false), sessionBlock: '', meta: { completa: false, faltantes: ['adaptacion_no_verificable'], finishReason: null } });
+  }
 
   // ------ CONSOLIDACION GARANTIZADA POR CODIGO ------
   // Si el jugador dijo "Dificil", NO le pedimos a la IA que invente numeros mas bajos
@@ -364,9 +418,9 @@ FORMATO DE RESPUESTA (${duracionTotal} min total para ${edad} anos):
 ${lang === 'en' ? 'Session' : 'Sesion'} ${numeroSesionCorrecta} — [Objetivo especifico] — ${duracionTotal} min
 
 1. [Nombre drill especifico] — [X min]
-   Series: X | Reps: X | Descanso: X seg
-   Como: [instruccion concreta, ejecutable en solitario si corresponde, con numeros y direccion exacta]
-   Foco tecnico: [1 punto clave]
+   ${lang === 'en' ? 'Sets: X | Reps: X | Rest: X sec' : 'Series: X | Reps: X | Descanso: X seg'}
+   ${lang === 'en' ? 'How' : 'Como'}: [instruccion concreta, ejecutable en solitario si corresponde, con numeros y direccion exacta]
+   ${lang === 'en' ? 'Technical focus' : 'Foco tecnico'}: [1 punto clave]
 
 2. [Drill diferente] — [X min] [mismo formato]
 3. [Drill diferente] — [X min] [mismo formato]
@@ -374,6 +428,12 @@ ${lang === 'en' ? 'Session' : 'Sesion'} ${numeroSesionCorrecta} — [Objetivo es
 Coach Tip: [consejo tecnico especifico para ${pos} trabajando ${perfil.weekly_goal}. Termina la frase completa.]
 
 IMPORTANTE: termina siempre la respuesta completa, incluyendo el Coach Tip entero y la pregunta final. Nunca cortes una frase a la mitad.
+
+REGLAS DE FORMATO DE CARGA (obligatorias):
+- En la linea de carga, "Reps" lleva UN SOLO numero entero, sin palabras ni parentesis. Correcto: "Reps: 5". PROHIBIDO: "Reps: 5 to each side", "Reps: 6 (3 por lado)", "Reps: 5-8".
+- Si el ejercicio es por lado o por pierna, explicalo en la instruccion (ej. "Cada repeticion es un movimiento a la derecha y uno a la izquierda"), sin escribir ahi una cantidad de repeticiones, toques o veces.
+- La instruccion nunca pide llenar el tiempo, hacer el maximo posible ni trabajar sin parar: la carga es solo la de "Series", "Reps" y ${lang === 'en' ? '"Rest"' : '"Descanso"'}.
+- Escribe TODAS las etiquetas e instrucciones en ${lang === 'en' ? 'ingles (Sets, Reps, Rest, sec, How, Technical focus)' : 'espanol (Series, Reps, Descanso, seg, Como, Foco tecnico)'}. No mezcles idiomas en ninguna linea.
 
 REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.`;
   }
@@ -558,9 +618,7 @@ console.warn(JSON.stringify({
         estado: progresionObservada,
         motivo: progresionMotivo
       }));
-      const mensaje = lang === 'en'
-        ? "I couldn't verify that the new session is easier than the previous one. I won't give you an unverified training plan. Please try requesting your session again."
-        : "No pude verificar que la nueva sesión sea más sencilla que la anterior. Prefiero no darte un entrenamiento sin comprobar su exigencia. Por favor, vuelve a solicitar tu sesión.";
+      const mensaje = mensajeSeguro(lang, false);
       return res.status(200).json({
         reply: mensaje,
         sessionBlock: '',
