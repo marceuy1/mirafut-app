@@ -3,6 +3,7 @@ import { observarProgresion } from '../scripts/observar_progresion_coach.mjs';
 import { adaptarSesionCoach } from '../scripts/adaptar_sesion_coach.mjs';
 import { leerCarga } from '../scripts/verificar_progresion_coach.mjs';
 import { hayRiesgoMalestar } from '../scripts/senalesMalestar.mjs';
+import { sesionesCompletadas } from '../src/historialSesiones.js';
 import { RECUPERACION_HABILITADA, construirSesionRecuperacion, cumpleTopes } from '../scripts/sesionRecuperacion.mjs';
 const METODOLOGIA = {
   // ---- PORTERO ----
@@ -264,14 +265,22 @@ export default async function handler(req, res) {
   const trainingContext = perfil?.training_context || '';
   const entrenaSolo = /\bsolo\b/i.test(trainingContext) && !/acompa|con alguien|con un/i.test(trainingContext);
 
-  let sessionsLog = [];
+  let historialGuardado = [];
   try {
-    sessionsLog = perfil?.sessions_log ? (typeof perfil.sessions_log === 'string' ? JSON.parse(perfil.sessions_log) : perfil.sessions_log) : [];
+    historialGuardado = perfil?.sessions_log ? (typeof perfil.sessions_log === 'string' ? JSON.parse(perfil.sessions_log) : perfil.sessions_log) : [];
   } catch (e) {
-    sessionsLog = [];
+    historialGuardado = [];
   }
+  // Solo sesiones completadas y completas, una por numero: el historial guardado puede traer
+  // sesiones generadas y no terminadas, repetidas, o textos que no son sesiones (datos viejos).
+  const sesionesHechas = Number(perfil?.sessions_done) || 0;
+  const historialSesiones = sesionesCompletadas(historialGuardado, sesionesHechas, (s) => analizarBloqueSesion(s).completa)
+    .map(s => ({ numero: s.numero, bloque: analizarBloqueSesion(s.bloque).bloque }));
+  const sessionsLog = historialSesiones.map(s => s.bloque);
+  // La sesion anterior es la ultima COMPLETADA (numero = sesiones hechas), no la ultima guardada.
+  const sesionAnteriorCompletada = historialSesiones.find(s => s.numero === sesionesHechas)?.bloque || null;
   const sessionsLogStr = sessionsLog.length > 0
-    ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para aplicar la regla de progresion correspondiente al feedback del jugador):\n' + sessionsLog.map((s, i) => `Sesion ${i + 1}: ${s}`).join('\n')
+    ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para aplicar la regla de progresion correspondiente al feedback del jugador):\n' + historialSesiones.map(s => `Sesion ${s.numero}: ${s.bloque}`).join('\n')
     : '';
 
   const lastFeedback = (perfil?.last_session_feedback || '').toLowerCase();
@@ -290,7 +299,7 @@ export default async function handler(req, res) {
   // lesion o malestar (o hay duda), no se entrega ninguna sesion. Con dos "Dificil" seguidos:
   // 1) se reduce la carga de la sesion anterior por calculo verificado; 2) si no es posible,
   // sesion de recuperacion fija (solo si esta habilitada); 3) si no, mensaje seguro.
-  const pideSesionTrasDificil = solicitaEntrenamiento && !feedbackOnly && esDificil && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado;
+  const pideSesionTrasDificil = solicitaEntrenamiento && !feedbackOnly && esDificil && sesionesHechas > 0 && perfil?.weekly_goal && !objetivoCompletado;
   if (pideSesionTrasDificil) {
     const riesgo = hayRiesgoMalestar({ message, lastFeedback: perfil?.last_session_feedback, memoria: perfil?.coach_learning_memory });
     if (riesgo) {
@@ -299,7 +308,7 @@ export default async function handler(req, res) {
     }
   }
   if (pideSesionTrasDificil && dosDificilesSeguidos) {
-    const sesionAnterior = sessionsLog[sessionsLog.length - 1];
+    const sesionAnterior = sesionAnteriorCompletada;
     const sesionAdaptada = adaptarSesionCoach(sesionAnterior, numeroSesionCorrecta);
     if (sesionAdaptada
       && observarProgresion(sesionAnterior, sesionAdaptada).estado === 'reduccion_numerica_verificada'
@@ -329,8 +338,8 @@ export default async function handler(req, res) {
   // (ya probamos que no lo cumple con precision). En su lugar, reutilizamos LITERALMENTE
   // los mismos ejercicios de la sesion anterior: es matematicamente imposible que suba
   // la dificultad si es el mismo texto.
-  if (solicitaEntrenamiento && !feedbackOnly && esDificil && !dosDificilesSeguidos && sessionsLog.length > 0 && perfil?.weekly_goal && !objetivoCompletado) {
-    const bloqueAnterior = extraerBloqueReutilizable(sessionsLog[sessionsLog.length - 1]);
+  if (solicitaEntrenamiento && !feedbackOnly && esDificil && !dosDificilesSeguidos && sesionAnteriorCompletada && perfil?.weekly_goal && !objetivoCompletado) {
+    const bloqueAnterior = extraerBloqueReutilizable(sesionAnteriorCompletada);
     if (bloqueAnterior) {
       // Renumera conservando el idioma/ortografia del encabezado (Sesion / Sesión / Session).
       let bloqueCorregido = bloqueAnterior.replace(/(Sesi[oó]n|Session)\s*\d+/gi, (_, palabra) =>
@@ -543,14 +552,14 @@ No uses asteriscos ni markdown. Texto plano.`;
     if (
       analisis.completa &&
       finishReason !== 'length' &&
-      sessionsLog.length > 0 &&
+      sesionAnteriorCompletada &&
       perfil?.weekly_goal &&
       !feedbackOnly &&
       !objetivoCompletado
     ) {
       try {
         const observacion = observarProgresion(
-          sessionsLog[sessionsLog.length - 1],
+          sesionAnteriorCompletada,
           analisis.bloque
         );
         progresionObservada = observacion.estado;
@@ -567,12 +576,12 @@ No uses asteriscos ni markdown. Texto plano.`;
       !feedbackOnly &&
       !objetivoCompletado &&
       perfil?.weekly_goal &&
-      sessionsLog.length > 0 &&
+      sesionesHechas > 0 &&
       progresionObservada !== 'reduccion_numerica_verificada'
     ) {
 
       // Intentar una adaptación local antes de bloquear la sesión.
-      const sesionAnterior = sessionsLog[sessionsLog.length - 1];
+      const sesionAnterior = sesionAnteriorCompletada;
       const sesionAdaptada = adaptarSesionCoach(
         sesionAnterior,
         numeroSesionCorrecta

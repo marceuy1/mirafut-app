@@ -2,6 +2,7 @@ import { supabase } from './supabaseClient';
 import { recuperarMemoriaTecnica, prepararContextoMemoria, prepararObservacionTecnica, guardarObservacionTecnica, actualizarEstadoObservacionTecnica , registrarSeguimientoDificultad} from './coachLearningMemory';
 
 import { solicitaEntrenamiento as detectarSolicitud } from './solicitaEntrenamiento';
+import { actualizarHistorialSesiones } from './historialSesiones';
 
 // Analytics minimos para Beta 1: un evento = una fila en la tabla `events`.
 // Nunca pasar contenido de usuario (texto de posts, mensajes, objetivo escrito,
@@ -1271,7 +1272,8 @@ setPendingDifficultyFollowUp(null);
       if (isTrainingResponse && weeklyGoal) {
         // Guardamos el bloque limpio de ejercicios (sin la frase de honestidad ni el saludo)
         // para poder reutilizarlo textual si el jugador dice "Dificil" en la proxima sesion.
-        const nuevoLog = [...(weeklyGoal.sessions_log || []), coachData.sessionBlock];
+        // Una entrada por sesion: si se vuelve a pedir la misma sesion, reemplaza la no completada.
+        const nuevoLog = actualizarHistorialSesiones(weeklyGoal.sessions_log, coachData.sessionBlock, weeklyGoal.sessions_done);
         try {
           await supabase.from('weekly_goals').update({ sessions_log: nuevoLog }).eq('id', weeklyGoal.id);
         } catch (e) {

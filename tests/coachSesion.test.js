@@ -2,7 +2,8 @@
 // Ejecutar:  npx esbuild tests/coachSesion.test.js --bundle --platform=node --outfile=/tmp/coachSesion.cjs && node /tmp/coachSesion.cjs
 // No llama a OpenAI: `fetch` está simulado.
 import assert from 'node:assert/strict';
-import handler, { analizarBloqueSesion, extraerBloqueReutilizable } from '../api/chat.js';
+import handler, { analizarBloqueSesion, extraerBloqueReutilizable, mensajeSeguro } from '../api/chat.js';
+import { actualizarHistorialSesiones, sesionesCompletadas, numeroDeSesion } from '../src/historialSesiones.js';
 
 let passed = 0, failed = 0;
 const pendientes = [];
@@ -423,6 +424,79 @@ test('Pregunta técnica después de Difícil: no repite la sesión', async () =>
 
   assert.equal(r.res.payload.sessionBlock, null,
     'Una explicación técnica no debe convertirse en sesión');
+});
+
+// =====================================================================================
+// Historial: sesiones generadas y no completadas, repetidas o que no son sesiones
+// =====================================================================================
+const conReps = (texto, reps) => texto.replace(/Reps: \d+/g, 'Reps: ' + reps);
+// Variante sin cantidades en las instrucciones (condicion para la adaptacion local).
+const adaptable = (texto) => texto.replaceAll(' 6 toques entre ellos', ' entre ellos').replaceAll(' 6 touches between them', ' between them');
+const sES = (n) => adaptable(sesionES(n)), sEN = (n) => adaptable(sesionEN(n)).replaceAll('Key focus:', 'Technical focus:');
+const promptDe = (r) => JSON.stringify(r.llamadas[0]?.body?.messages || []);
+
+test('Dos Difícil: la sesión anterior es la última COMPLETADA, no la última generada', async () => {
+  // La sesión 3 ya se generó una vez (reducida) pero no se completó: no debe volver a reducirse.
+  const log = [sES(1), sES(2), conReps(sES(3), 6)];
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Difícil', dos_dificiles_seguidos: true } }), openaiOK('NO DEBE USARSE'));
+  assert.equal(r.llamadas.length, 0);
+  assert.ok(r.res.payload.sessionBlock.startsWith('Sesion 3'));
+  assert.deepEqual(repsDe(r.res.payload.sessionBlock), [6, 6, 6]); // 8 × 0,75 a partir de la sesión 2
+});
+test('Pedir la misma sesión varias veces no acumula la reducción ni agranda el historial (ES y EN)', async () => {
+  for (const [lang, ses] of [['es', sES], ['en', sEN]]) {
+    let log = [ses(1), ses(2)];
+    const bloques = [];
+    for (let i = 0; i < 3; i++) {
+      const r = await llamar(body({ lang, perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Difícil', dos_dificiles_seguidos: true } }), openaiOK('NO DEBE USARSE'));
+      bloques.push(r.res.payload.sessionBlock);
+      log = actualizarHistorialSesiones(log, r.res.payload.sessionBlock, 2); // lo que guarda la app
+    }
+    assert.equal(bloques[0], bloques[1], lang);
+    assert.equal(bloques[1], bloques[2], lang);
+    assert.deepEqual(repsDe(bloques[2]), [6, 6, 6], lang);
+    assert.equal(log.length, 3, lang);
+  }
+});
+test('Un Difícil: repite la última completada aunque haya una sesión 3 generada y sin terminar', async () => {
+  const log = [sesionES(1), sesionES(2), conReps(sesionES(3), 2)];
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Difícil' } }), openaiOK('NO DEBE USARSE'));
+  assert.equal(r.llamadas.length, 0);
+  assert.equal(r.res.payload.sessionBlock, renumeradaVieja(sesionES(2), 3));
+});
+test('Dos Difícil sin una sesión anterior válida (datos viejos): mensaje seguro, sin IA', async () => {
+  const log = [sesionES(1), 'Buena pregunta sobre el timing: mira al pasador antes de moverte.'];
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Difícil', dos_dificiles_seguidos: true } }), openaiOK('NO DEBE USARSE'));
+  assert.equal(r.llamadas.length, 0);
+  assert.equal(r.res.payload.sessionBlock, '');
+  assert.equal(r.res.payload.reply, mensajeSeguro('es', false));
+});
+test('La IA recibe solo las sesiones completadas, una por número y sin textos que no son sesiones', async () => {
+  const log = [sesionES(1), conReps(sesionES(1), 7), 'Respuesta suelta del Coach sobre el timing.', sesionES(2), conReps(sesionES(3), 9)];
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Muy bien' } }), openaiOK(sesionES(3)));
+  const prompt = promptDe(r);
+  assert.equal((prompt.match(/Sesion 1: /g) || []).length, 1);
+  assert.equal((prompt.match(/Sesion 2: /g) || []).length, 1);
+  assert.ok(!/Sesion 3: /.test(prompt));
+  assert.ok(!prompt.includes('Respuesta suelta del Coach'));
+  assert.ok(prompt.includes('Reps: 7')); // de la sesión 1 se usa la última versión guardada
+});
+test('actualizarHistorialSesiones: reemplaza la sesión no completada y descarta lo que no es sesión', () => {
+  const s1 = sesionES(1), s2 = sesionES(2), s3a = sesionES(3), s3b = conReps(sesionES(3), 4);
+  assert.deepEqual(actualizarHistorialSesiones([s1, s2], s3a, 2), [s1, s2, s3a]);
+  assert.deepEqual(actualizarHistorialSesiones([s1, s2, s3a], s3b, 2), [s1, s2, s3b]);
+  assert.deepEqual(actualizarHistorialSesiones([s1, 'texto suelto', s2, null], s3a, 2), [s1, s2, s3a]);
+  assert.deepEqual(actualizarHistorialSesiones(undefined, s1, 0), [s1]);
+  assert.deepEqual(actualizarHistorialSesiones([s1, s2], s1, 0), [s1]);
+});
+test('sesionesCompletadas y numeroDeSesion', () => {
+  assert.equal(numeroDeSesion(sesionEN(3)), 3);
+  assert.equal(numeroDeSesion('Sesión 12 — x'), 12);
+  assert.equal(numeroDeSesion('sin encabezado'), null);
+  assert.equal(numeroDeSesion(null), null);
+  const r = sesionesCompletadas([sesionES(2), sesionES(1), conReps(sesionES(2), 5), sesionES(3)], 2);
+  assert.deepEqual(r.map(x => x.numero), [1, 2]);
+  assert.deepEqual(repsDe(r[1].bloque), [5, 5, 5]);
 });
 // ---------- ejecutor ----------
 (async () => {
