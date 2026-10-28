@@ -3,6 +3,7 @@ import { recuperarMemoriaTecnica, prepararContextoMemoria, prepararObservacionTe
 
 import { solicitaEntrenamiento as detectarSolicitud } from './solicitaEntrenamiento';
 import { actualizarHistorialSesiones } from './historialSesiones';
+import { pedidoDeSesion, contextoParaEnviar } from './pedidoSesion';
 import { pideObservacion, dosDificilesSeguidos as sonDosDificilesSeguidos } from './feedbackSesion';
 
 // Analytics minimos para Beta 1: un evento = una fila en la tabla `events`.
@@ -1196,7 +1197,10 @@ if (registro.error) {
         console.error('Error guardando training_context:', e);
       }
       setWeeklyGoal(g => g ? { ...g, training_context: contextText } : g);
-      await enviarMensajeCoach(contextText, contextText, false, true);
+      // El jugador ve su respuesta; la API recibe el pedido explicito de la sesion y el
+      // contexto recien guardado (weeklyGoal todavia no lo tiene en esta misma funcion).
+      const pedido = pedidoDeSesion({ numero: weeklyGoal.sessions_done + 1, objetivo: weeklyGoal.goal, conoceContexto: true });
+      await enviarMensajeCoach(contextText, pedido, false, true, null, contextText);
       return;
     }
 let promptText;
@@ -1206,9 +1210,7 @@ if (solicitaEntrenamiento) {
 setPendingDifficultyFollowUp(null);
       setAwaitingTechnicalObservation(false);
       const yaConoceContexto = !!weeklyGoal.training_context;
-      promptText = yaConoceContexto
-        ? 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Genera la sesion directamente con progresion respecto a las sesiones anteriores, no preguntes por material ni si entreno solo, ya lo sabes.'
-        : 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Antes de darme la sesion, preguntame si entreno solo o con alguien y que material tengo disponible.';
+      promptText = pedidoDeSesion({ numero: weeklyGoal.sessions_done + 1, objetivo: weeklyGoal.goal, conoceContexto: yaConoceContexto });
       if (!yaConoceContexto) setAwaitingTrainingContext(true);
     } else if (displayText === 'Hoy no puedo' && weeklyGoal) {
       promptText = 'Hoy no puedo entrenar ' + weeklyGoal.goal + '. Responde con comprension y recuerda cuantas sesiones quedan.';
@@ -1219,7 +1221,7 @@ setPendingDifficultyFollowUp(null);
     await enviarMensajeCoach(displayText, promptText, false, solicitaEntrenamiento);
   };
 
-  const enviarMensajeCoach = async (textoVisible, promptText, feedbackOnly = false, solicitaEntrenamiento = false, feedbackActualizado = null) => {
+  const enviarMensajeCoach = async (textoVisible, promptText, feedbackOnly = false, solicitaEntrenamiento = false, feedbackActualizado = null, contextoActualizado = null) => {
     if (requireAuth()) return;
     if (!textoVisible.trim()) return;
 
@@ -1241,7 +1243,7 @@ setPendingDifficultyFollowUp(null);
         weekly_goal: weeklyGoal.goal,
         sessions_done: weeklyGoal.sessions_done,
         sessions_target: weeklyGoal.sessions_target,
-        training_context: weeklyGoal.training_context || '',
+        training_context: contextoParaEnviar(contextoActualizado, weeklyGoal),
         sessions_log: JSON.stringify(weeklyGoal.sessions_log || []),
         last_session_feedback: feedbackArr.length > 0 ? feedbackArr[feedbackArr.length - 1] : '',
         dos_dificiles_seguidos: sonDosDificilesSeguidos(feedbackArr)
