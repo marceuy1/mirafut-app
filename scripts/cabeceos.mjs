@@ -69,21 +69,39 @@ export function contarCabeceos(bloque) {
   }, 0);
 }
 
-function reemplazo(lineas, idioma) {
+// Ejercicios de reemplazo sin cabeceo. Se alternan para que no queden dos iguales en la misma sesion.
+const REEMPLAZOS = {
+  en: [
+    { nombre: 'Chest and thigh control',
+      como: 'Toss the ball up with your hands, just above head height, and cushion it with your chest or thigh so it drops close to your feet. Alternate chest and thigh.',
+      foco: 'Cushion the ball and leave it ready to play.' },
+    { nombre: 'Control on the bounce',
+      como: 'Toss the ball up with your hands, let it bounce once and control it with the sole or the inside of your foot. Alternate feet.',
+      foco: 'Read the bounce and keep the ball close.' },
+  ],
+  es: [
+    { nombre: 'Control con pecho y muslo',
+      como: 'Lanza la pelota hacia arriba con las manos, apenas por encima de tu cabeza, y amortíguala con el pecho o el muslo para que caiga cerca de tus pies. Alterna pecho y muslo.',
+      foco: 'Amortiguar el balón y dejarlo listo para jugar.' },
+    { nombre: 'Control al bote',
+      como: 'Lanza la pelota hacia arriba con las manos, déjala picar una vez y contrólala con la planta o el interior del pie. Alterna los pies.',
+      foco: 'Leer el bote y mantener el balón cerca.' },
+  ],
+};
+
+function reemplazo(lineas, idioma, indice) {
   const titulo = lineas[0];
   const m = RE_TITULO.exec(titulo);
   const numero = (/^[ \t]*([1-3])[.)]/.exec(titulo) || [])[1] || '1';
   const minutos = m ? m[1] : '5';
-  const sangria = (lineas.find(l => RE_CARGA.test(l)) || '').match(/^\s*/)[0];
   const linCarga = lineas.find(l => RE_CARGA.test(l));
+  const sangria = (linCarga || '').match(/^\s*/)[0];
   const carga = linCarga ? linCarga.trim() : (idioma === 'en' ? 'Sets: 2 | Reps: 5 | Rest: 30 sec' : 'Series: 2 | Reps: 5 | Descanso: 30 seg');
-  return idioma === 'en'
-    ? [`${numero}. Chest and thigh control — ${minutos} min`, `${sangria}${carga}`,
-       `${sangria}How: Toss the ball up with your hands, just above head height, and cushion it with your chest or thigh so it drops close to your feet. Alternate chest and thigh.`,
-       `${sangria}Technical focus: Cushion the ball and leave it ready to play.`]
-    : [`${numero}. Control con pecho y muslo — ${minutos} min`, `${sangria}${carga}`,
-       `${sangria}Como: Lanza la pelota hacia arriba con las manos, apenas por encima de tu cabeza, y amortíguala con el pecho o el muslo para que caiga cerca de tus pies. Alterna pecho y muslo.`,
-       `${sangria}Foco técnico: Amortiguar el balón y dejarlo listo para jugar.`];
+  const opciones = REEMPLAZOS[idioma];
+  const r = opciones[indice % opciones.length];
+  const [etiquetaComo, etiquetaFoco] = idioma === 'en' ? ['How', 'Technical focus'] : ['Como', 'Foco técnico'];
+  return [`${numero}. ${r.nombre} — ${minutos} min`, `${sangria}${carga}`,
+    `${sangria}${etiquetaComo}: ${r.como}`, `${sangria}${etiquetaFoco}: ${r.foco}`];
 }
 
 // Aplica el limite a una sesion. `usadosSemana` = cabeceos de las sesiones ya completadas del objetivo.
@@ -96,6 +114,7 @@ export function limitarCabeceos(bloque, { edad, usadosSemana = 0, lang } = {}) {
   const partes = dividir(bloque);
   let cambiado = false;
   let cabeceos = 0;
+  let reemplazados = 0;
 
   partes.ejercicios = partes.ejercicios.map(ej => {
     if (!esEjercicioDeCabeceo(ej)) return ej;
@@ -106,7 +125,7 @@ export function limitarCabeceos(bloque, { edad, usadosSemana = 0, lang } = {}) {
       cambiado = true;
       const finales = [];
       for (let i = ej.length - 1; i > 0 && !ej[i].trim(); i--) finales.unshift(ej[i]);
-      return [...reemplazo(ej, idioma), ...finales];
+      return [...reemplazo(ej, idioma, reemplazados++), ...finales];
     }
     if (total <= restante) { restante -= total; cabeceos += total; return ej; }
     // Reducir: una sola serie con las repeticiones que quedan en la semana.

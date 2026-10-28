@@ -104,3 +104,13 @@ test('"sin saltar" no cuenta como salto; "salta" sí', () => {
   assert.equal(contarCabeceos(limitarCabeceos(conSalto, { edad: 13 }).bloque), 0);
   assert.equal(contarCabeceos(limitarCabeceos(UN_CABECEO_ES, { edad: 13 }).bloque), 5);
 });
+test('dos reemplazos en la misma sesión son ejercicios distintos (ES y EN)', () => {
+  const r = limitarCabeceos(AEREO_EN, { edad: 25, lang: 'en' });
+  assert.ok(r.bloque.includes('Chest and thigh control') && r.bloque.includes('Control on the bounce'));
+  const r13 = limitarCabeceos(AEREO_EN, { edad: 13, lang: 'en' });
+  const titulos = r13.bloque.split('\n').filter(l => /^[1-3]\. /.test(l));
+  assert.equal(new Set(titulos.map(t => t.replace(/^\d\. /, '').replace(/ — .*/, ''))).size, 2); // 3 reemplazos: 2 nombres alternados
+  assert.notEqual(titulos[0].replace(/^\d\. /, '').replace(/ — .*/, ''), titulos[1].replace(/^\d\. /, '').replace(/ — .*/, ''));
+  const es = limitarCabeceos(UN_CABECEO_ES.replace('sin saltar', 'saltando'), { edad: 13 });
+  assert.ok(es.bloque.includes('Control con pecho y muslo') && es.bloque.includes('Foco técnico'));
+});
