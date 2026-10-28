@@ -4,6 +4,7 @@
 import assert from 'node:assert/strict';
 import handler, { analizarBloqueSesion, extraerBloqueReutilizable, mensajeSeguro, mensajeTrasFeedback, categoriaFeedback } from '../api/chat.js';
 import { actualizarHistorialSesiones, sesionesCompletadas, numeroDeSesion } from '../src/historialSesiones.js';
+import { contarCabeceos, limitarCabeceos, notaCabeceos } from '../scripts/cabeceos.mjs';
 
 let passed = 0, failed = 0;
 const pendientes = [];
@@ -533,6 +534,35 @@ test('API: una app vieja que marca dos difíciles con "Bien, pero me costó" al 
   assert.ok(!/SIMPLIFICAR/.test(promptDe(r)));
   const fb = await llamar(tras('Bien, pero me costó', 'es', true), openaiOK('NO DEBE USARSE'));
   assert.equal(fb.res.payload.reply, mensajeTrasFeedback('es', 'Bien, pero me costó', false));
+});
+
+// =====================================================================================
+// Limite de cabeceos segun la edad (toda sesion entregada pasa por el limite)
+// =====================================================================================
+const conCabeceo = (n, lang = 'es') => (lang === 'en' ? sesionEN(n) : sesionES(n))
+  .replace(lang === 'en' ? 'dribble 6 touches between them.' : 'conduce el balón 6 toques entre ellos.',
+           lang === 'en' ? 'jump to head it back to your hands.' : 'salta y cabecea la pelota de vuelta a tus manos.');
+test('Cabeceos: 13 años, la IA propone cabeceos con salto → se reemplazan y se avisa (ES y EN)', async () => {
+  for (const lang of ['es', 'en']) {
+    const r = await llamar(body({ lang, perfil: { age: '13' } }), openaiOK(conCabeceo(1, lang)));
+    assert.equal(contarCabeceos(r.res.payload.sessionBlock), 0, lang);
+    assert.ok(r.res.payload.reply.includes(notaCabeceos(lang)), lang);
+    assert.ok(r.res.payload.reply.includes(r.res.payload.sessionBlock), lang);
+    assert.ok(JSON.stringify(r.llamadas[0].body.messages).includes('REGLA DE CABECEO'), lang);
+  }
+});
+test('Cabeceos: 16 años, se limita a 10 por semana contando las sesiones ya hechas', async () => {
+  const r = await llamar(body({ perfil: { age: '16' } }), openaiOK(conCabeceo(1)));
+  assert.equal(contarCabeceos(r.res.payload.sessionBlock), 10);
+  // Repetir tras "Difícil" una sesión con 10 cabeceos ya hechos: no queda margen.
+  const previa = limitarCabeceos(conCabeceo(1).slice(conCabeceo(1).indexOf('Sesion')), { edad: 16 }).bloque;
+  const r2 = await llamar(body({ perfil: { age: '16', sessions_done: 1, sessions_log: JSON.stringify([previa]), last_session_feedback: 'Difícil' } }), openaiOK('NO DEBE USARSE'));
+  assert.equal(r2.llamadas.length, 0);
+  assert.equal(contarCabeceos(r2.res.payload.sessionBlock), 0);
+});
+test('Cabeceos: sesión sin cabeceo no cambia', async () => {
+  const r = await llamar(body({ perfil: { age: '13' } }), openaiOK(sesionES(1)));
+  assert.ok(!r.res.payload.reply.includes(notaCabeceos('es')));
 });
 // ---------- ejecutor ----------
 (async () => {

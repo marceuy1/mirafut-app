@@ -5,6 +5,7 @@ import { leerCarga } from '../scripts/verificar_progresion_coach.mjs';
 import { hayRiesgoMalestar } from '../scripts/senalesMalestar.mjs';
 import { sesionesCompletadas } from '../src/historialSesiones.js';
 import { esDificil as esFeedbackDificil, esBienPeroCosto } from '../src/feedbackSesion.js';
+import { contarCabeceos, limitarCabeceos, notaCabeceos, instruccionCabeceo } from '../scripts/cabeceos.mjs';
 import { RECUPERACION_HABILITADA, construirSesionRecuperacion, cumpleTopes } from '../scripts/sesionRecuperacion.mjs';
 const METODOLOGIA = {
   // ---- PORTERO ----
@@ -310,6 +311,18 @@ export default async function handler(req, res) {
   const sessionsLog = historialSesiones.map(s => s.bloque);
   // La sesion anterior es la ultima COMPLETADA (numero = sesiones hechas), no la ultima guardada.
   const sesionAnteriorCompletada = historialSesiones.find(s => s.numero === sesionesHechas)?.bloque || null;
+  // Cabeceos ya hechos esta semana (sesiones completadas del objetivo semanal).
+  const cabeceosSemana = sessionsLog.reduce((total, s) => total + contarCabeceos(s), 0);
+  // Toda sesion que se entrega pasa por el limite de cabeceos segun la edad.
+  const conLimiteCabeceos = (respuesta) => {
+    const bloque = respuesta.sessionBlock;
+    if (!bloque) return respuesta;
+    const r = limitarCabeceos(bloque, { edad: perfil?.age, usadosSemana: cabeceosSemana, lang });
+    if (!r.cambiado) return respuesta;
+    console.info(JSON.stringify({ evt: 'coach_cabeceos_limitados' }));
+    const reply = (respuesta.reply.includes(bloque) ? respuesta.reply.replace(bloque, r.bloque) : respuesta.reply) + '\n\n' + notaCabeceos(lang);
+    return { ...respuesta, reply, sessionBlock: r.bloque };
+  };
   const sessionsLogStr = sessionsLog.length > 0
     ? 'SESIONES ANTERIORES DE ESTE OBJETIVO (para aplicar la regla de progresion correspondiente al feedback del jugador):\n' + historialSesiones.map(s => `Sesion ${s.numero}: ${s.bloque}`).join('\n')
     : '';
@@ -350,7 +363,7 @@ export default async function handler(req, res) {
         ? 'Since the last two sessions felt difficult, today we keep the same exercises with fewer repetitions. Keep the same time and use the extra minutes to rest between reps: there is no need to make up the repetitions.\n\n'
         : 'Como las dos últimas sesiones te resultaron difíciles, hoy mantenemos los mismos ejercicios con menos repeticiones. Conserva el mismo tiempo y usa los minutos que sobren para descansar entre repeticiones: no hace falta compensarlas.\n\n';
       console.info(JSON.stringify({ evt: 'coach_session_adapted_locally', estado: 'reduccion_numerica_verificada' }));
-      return res.status(200).json({ reply: fraseHonestidad + reconocimiento + sesionAdaptada, sessionBlock: sesionAdaptada, meta: { completa: true, faltantes: [], finishReason: null } });
+      return res.status(200).json(conLimiteCabeceos({ reply: fraseHonestidad + reconocimiento + sesionAdaptada, sessionBlock: sesionAdaptada, meta: { completa: true, faltantes: [], finishReason: null } }));
     }
     if (RECUPERACION_HABILITADA) {
       const recuperacion = construirSesionRecuperacion({ lang, edad: perfil?.age ? parseInt(perfil.age) : null, nivel: perfil?.level, numeroSesion: numeroSesionCorrecta });
@@ -381,7 +394,7 @@ export default async function handler(req, res) {
         ? 'Understood. Since the last session felt hard, today we will repeat the same exercises to consolidate what you learned, without raising the difficulty.\n\n'
         : 'Entiendo. Como la sesión anterior te resultó difícil, hoy vamos a repetir los mismos ejercicios para consolidar lo aprendido, sin subir la exigencia.\n\n';
       const replyFinal = fraseHonestidad + reconocimiento + bloqueCorregido;
-      return res.status(200).json({ reply: replyFinal, sessionBlock: bloqueCorregido, meta: { completa: true, faltantes: [], finishReason: null } });
+      return res.status(200).json(conLimiteCabeceos({ reply: replyFinal, sessionBlock: bloqueCorregido, meta: { completa: true, faltantes: [], finishReason: null } }));
     }
     // Si no se pudo extraer un bloque confiable de la sesion anterior, seguimos
     // con la generacion normal por IA como red de seguridad (mas abajo).
@@ -476,6 +489,8 @@ REGLAS DE FORMATO DE CARGA (obligatorias):
 - Si el ejercicio es por lado o por pierna, explicalo en la instruccion (ej. "Cada repeticion es un movimiento a la derecha y uno a la izquierda"), sin escribir ahi una cantidad de repeticiones, toques o veces.
 - La instruccion nunca pide llenar el tiempo, hacer el maximo posible ni trabajar sin parar: la carga es solo la de "Series", "Reps" y ${lang === 'en' ? '"Rest"' : '"Descanso"'}.
 - Escribe TODAS las etiquetas e instrucciones en ${lang === 'en' ? 'ingles (Sets, Reps, Rest, sec, How, Technical focus)' : 'espanol (Series, Reps, Descanso, seg, Como, Foco tecnico)'}. No mezcles idiomas en ninguna linea.
+
+${instruccionCabeceo(perfil?.age, cabeceosSemana)}
 
 REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.`;
   }
@@ -643,7 +658,7 @@ No uses asteriscos ni markdown. Texto plano.`;
             estado: verificacion.estado
           }));
 
-          return res.status(200).json({
+          return res.status(200).json(conLimiteCabeceos({
             reply: replyAdaptada,
             sessionBlock: sesionAdaptada,
             meta: {
@@ -651,7 +666,7 @@ No uses asteriscos ni markdown. Texto plano.`;
               faltantes: [],
               finishReason: null
             }
-          });
+          }));
         }
       }
 
@@ -688,7 +703,7 @@ console.warn(JSON.stringify({
       }));
     }
 
-    return res.status(200).json({ reply, sessionBlock: analisis.bloque, meta: { completa, faltantes, finishReason } });
+    return res.status(200).json(conLimiteCabeceos({ reply, sessionBlock: analisis.bloque, meta: { completa, faltantes, finishReason } }));
   } catch (error) {
     console.error('openai_handler_exception', { name: error?.name || 'UnknownError' });
     return res.status(500).json({ error: 'Error al conectar con OpenAI' });
