@@ -54,7 +54,6 @@ import ExerciseVisual from './ExerciseVisual';
 import { detectExerciseVisual } from './exerciseVisualDetect';
 import CoachMessageWithVisuals from './CoachMessageWithVisuals';
 import { VISUALS_V2_AUDIENCE } from './exerciseVisualCatalog';
-import Auth from './Auth';
 import { sendMessageToCoach } from './openaiClient';
 import { useState, useRef, useEffect, useMemo } from "react";
 import Logo from "./components/Logo";
@@ -926,13 +925,21 @@ export default function App() {
     if (showAdmin && adminTab === 'reports') loadAdminReports();
   }, [showAdmin, adminTab]);
 
+  // Enlaces "/?login=1" (y "&next=pestaña"): abren el MISMO formulario de acceso que el resto de la app,
+  // que en el registro pide la fecha de nacimiento, exige 13 años y guarda el tipo de cuenta.
+  // Antes abrian un formulario viejo (Auth.jsx) que permitia registrarse sin esos controles.
+  useEffect(() => {
+    if (loading || session) return;
+    const p = new URLSearchParams(window.location.search);
+    if (!p.get('login')) return;
+    setPostAuthTab(p.get('next') || 'home');
+    setWantsSignUp(false);
+    setShowAuthPrompt(true);
+    window.history.replaceState({}, '', '/');
+  }, [loading, session]);
+
   if (loading) {
     return <div style={{ background: '#0a0e14', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ECEFF4' }}>Cargando...</div>;
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('login') && !session) {
-    return <Auth onSuccess={(nextTab) => { window.history.replaceState({}, '', '/'); setTab(nextTab || 'home'); }} onExplore={() => window.history.replaceState({}, '', '/')} />;
   }
 
   if (!session && tab === 'chat') {
