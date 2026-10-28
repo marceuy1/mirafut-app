@@ -564,6 +564,23 @@ test('Cabeceos: sesión sin cabeceo no cambia', async () => {
   const r = await llamar(body({ perfil: { age: '13' } }), openaiOK(sesionES(1)));
   assert.ok(!r.res.payload.reply.includes(notaCabeceos('es')));
 });
+
+// =====================================================================================
+// Edad: desde la fecha de nacimiento; si es desconocida, la regla mas prudente
+// =====================================================================================
+test('Edad desconocida: sesión de 15 min, sin edad inventada y límite de cabeceos de menores de 14', async () => {
+  const r = await llamar(body({ perfil: { age: undefined, birth_date: undefined } }), openaiOK(conCabeceo(1)));
+  const prompt = promptDe(r);
+  assert.ok(prompt.includes('FORMATO DE RESPUESTA (15 min total; edad del jugador: edad no confirmada)'));
+  assert.ok(!/\b16 anos\b/.test(prompt));
+  assert.equal(contarCabeceos(r.res.payload.sessionBlock), 0); // con salto: no permitido sin edad confirmada
+});
+test('Edad: la fecha de nacimiento manda sobre el número guardado al registrarse', async () => {
+  const hace20 = new Date(); hace20.setUTCFullYear(hace20.getUTCFullYear() - 20); hace20.setUTCDate(hace20.getUTCDate() - 2);
+  const r = await llamar(body({ perfil: { age: '13', birth_date: hace20.toISOString().slice(0, 10) } }), openaiOK(conCabeceo(1)));
+  assert.ok(promptDe(r).includes('FORMATO DE RESPUESTA (25 min total; edad del jugador: 20 anos)'));
+  assert.equal(contarCabeceos(r.res.payload.sessionBlock), 10); // 20 años: límite de 10
+});
 // ---------- ejecutor ----------
 (async () => {
   for (const { name, fn } of pendientes) {

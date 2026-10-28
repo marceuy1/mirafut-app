@@ -5,6 +5,7 @@ import { leerCarga } from '../scripts/verificar_progresion_coach.mjs';
 import { hayRiesgoMalestar } from '../scripts/senalesMalestar.mjs';
 import { sesionesCompletadas } from '../src/historialSesiones.js';
 import { esDificil as esFeedbackDificil, esBienPeroCosto } from '../src/feedbackSesion.js';
+import { edadDelJugador } from '../src/edadJugador.js';
 import { contarCabeceos, limitarCabeceos, notaCabeceos, instruccionCabeceo } from '../scripts/cabeceos.mjs';
 import { RECUPERACION_HABILITADA, construirSesionRecuperacion, cumpleTopes } from '../scripts/sesionRecuperacion.mjs';
 const METODOLOGIA = {
@@ -286,13 +287,16 @@ export default async function handler(req, res) {
   const { message, agentType, userProfile: perfil, feedbackOnly, lang, solicitaEntrenamiento = false } = req.body;
   if (!message) return res.status(400).json({ error: 'Missing message' });
 
-  const edad = perfil?.age ? parseInt(perfil.age) : 16;
-  const duracionTotal = edad <= 13 ? 15 : edad <= 15 ? 20 : 25;
+  // Edad de hoy, calculada desde la fecha de nacimiento. Si es desconocida (null) se aplica la regla
+  // mas prudente: sesion mas corta, limite de cabeceos mas bajo y sin decirle a la IA una edad inventada.
+  const edad = edadDelJugador(perfil);
+  const duracionTotal = edad === null || edad <= 13 ? 15 : edad <= 15 ? 20 : 25;
+  const edadTexto = edad === null ? 'edad no confirmada' : `${edad} anos`;
   const pos = perfil?.position || '';
 
   const { texto: contextoMetodologico, esColectivo, tipoColectivo } = construirContextoMetodologico(perfil?.weekly_goal);
 
-  const perfilStr = perfil ? `Jugador: ${perfil.full_name || perfil.name || ''}, posicion: ${pos}, edad: ${edad} anos, pie dominante: ${perfil.dominant_foot || ''}, nivel: ${perfil.level || ''}, entrena: ${perfil.training_freq || ''} veces/semana.` : '';
+  const perfilStr = perfil ? `Jugador: ${perfil.full_name || perfil.name || ''}, posicion: ${pos}, edad: ${edadTexto}, pie dominante: ${perfil.dominant_foot || ''}, nivel: ${perfil.level || ''}, entrena: ${perfil.training_freq || ''} veces/semana.` : '';
 
   const trainingContext = perfil?.training_context || '';
   const entrenaSolo = /\bsolo\b/i.test(trainingContext) && !/acompa|con alguien|con un/i.test(trainingContext);
@@ -317,7 +321,7 @@ export default async function handler(req, res) {
   const conLimiteCabeceos = (respuesta) => {
     const bloque = respuesta.sessionBlock;
     if (!bloque) return respuesta;
-    const r = limitarCabeceos(bloque, { edad: perfil?.age, usadosSemana: cabeceosSemana, lang });
+    const r = limitarCabeceos(bloque, { edad, usadosSemana: cabeceosSemana, lang });
     if (!r.cambiado) return respuesta;
     console.info(JSON.stringify({ evt: 'coach_cabeceos_limitados' }));
     const reply = (respuesta.reply.includes(bloque) ? respuesta.reply.replace(bloque, r.bloque) : respuesta.reply) + '\n\n' + notaCabeceos(lang);
@@ -366,7 +370,7 @@ export default async function handler(req, res) {
       return res.status(200).json(conLimiteCabeceos({ reply: fraseHonestidad + reconocimiento + sesionAdaptada, sessionBlock: sesionAdaptada, meta: { completa: true, faltantes: [], finishReason: null } }));
     }
     if (RECUPERACION_HABILITADA) {
-      const recuperacion = construirSesionRecuperacion({ lang, edad: perfil?.age ? parseInt(perfil.age) : null, nivel: perfil?.level, numeroSesion: numeroSesionCorrecta });
+      const recuperacion = construirSesionRecuperacion({ lang, edad, nivel: perfil?.level, numeroSesion: numeroSesionCorrecta });
       if (analizarBloqueSesion(recuperacion).completa && cumpleTopes(recuperacion, leerCarga)) {
         const intro = lang === 'en'
           ? 'Your last two sessions felt difficult, so today is an active recovery day: gentle, low-intensity movements with no equipment. If anything hurts, stop.\n\n'
@@ -467,7 +471,7 @@ Ejemplo CORRECTO (concreto y ejecutable solo): "Lanza el balon 2 metros hacia ar
 
 ENSEÑA, NO SOLO PRESCRIBAS: despues de donde nosotros insertemos la frase de contexto (si aplica), escribi 1-2 lineas explicando que habitos o conceptos se estan entrenando hoy y por que importan. Ejemplo de tono: "Hoy vamos a trabajar tres hábitos clave para [objetivo]: [concepto 1], [concepto 2] y [concepto 3]."
 
-FORMATO DE RESPUESTA (${duracionTotal} min total para ${edad} anos):
+FORMATO DE RESPUESTA (${duracionTotal} min total; edad del jugador: ${edadTexto}):
 [1-2 lineas de explicacion pedagogica del objetivo de hoy — NO menciones aqui si entrena solo o acompañado, eso ya esta resuelto aparte]
 
 ${lang === 'en' ? 'Session' : 'Sesion'} ${numeroSesionCorrecta} — [Objetivo especifico] — ${duracionTotal} min
@@ -490,7 +494,7 @@ REGLAS DE FORMATO DE CARGA (obligatorias):
 - La instruccion nunca pide llenar el tiempo, hacer el maximo posible ni trabajar sin parar: la carga es solo la de "Series", "Reps" y ${lang === 'en' ? '"Rest"' : '"Descanso"'}.
 - Escribe TODAS las etiquetas e instrucciones en ${lang === 'en' ? 'ingles (Sets, Reps, Rest, sec, How, Technical focus)' : 'espanol (Series, Reps, Descanso, seg, Como, Foco tecnico)'}. No mezcles idiomas en ninguna linea.
 
-${instruccionCabeceo(perfil?.age, cabeceosSemana)}
+${instruccionCabeceo(edad, cabeceosSemana)}
 
 REGLAS DE CALIDAD: los 3 drills deben estar DIRECTAMENTE relacionados con el objetivo semanal. Sin calentamiento generico largo. ${duracionTotal} min maximo. Cada drill diferente del anterior.`;
   }
@@ -536,9 +540,9 @@ No uses asteriscos ni markdown. Texto plano.`;
 
   const systemPrompts = {
     coach: coachPrompt,
-    nutricion: `Nutricionista deportivo para jovenes de ${edad} anos. Consejos practicos. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`,
-    psicologia: `Psicologo deportivo empatico para atletas de ${edad} anos. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`,
-    tecnica: `Analista tecnico de futbol para jugador de ${edad} anos posicion ${pos}. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`,
+    nutricion: `Nutricionista deportivo para jovenes (${edadTexto}). Consejos practicos. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`,
+    psicologia: `Psicologo deportivo empatico para atletas jovenes (${edadTexto}). Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`,
+    tecnica: `Analista tecnico de futbol para jugador joven (${edadTexto}), posicion ${pos}. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`,
     carrera: `Asesor de carreras deportivas. Becas y desarrollo profesional. Maximo 80 palabras. Termina con pregunta. Termina siempre la respuesta completa.`
   };
 
