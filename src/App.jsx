@@ -4,6 +4,7 @@ import { recuperarMemoriaTecnica, prepararContextoMemoria, prepararObservacionTe
 import { solicitaEntrenamiento as detectarSolicitud } from './solicitaEntrenamiento';
 import { actualizarHistorialSesiones } from './historialSesiones';
 import { pedidoDeSesion, contextoParaEnviar } from './pedidoSesion';
+import { nuevoIdMensaje } from './idMensaje';
 import { pideObservacion, dosDificilesSeguidos as sonDosDificilesSeguidos } from './feedbackSesion';
 
 // Analytics minimos para Beta 1: un evento = una fila en la tabla `events`.
@@ -451,7 +452,7 @@ export default function App() {
       const targetCerrado = weeklyGoal.sessions_target;
       setTimeout(() => {
         setAiMessages(m => [...m, {
-          id: Date.now(),
+          id: nuevoIdMensaje(),
           from: 'coach',
           type: 'text',
           text: lang === 'en'
@@ -461,7 +462,7 @@ export default function App() {
         }]);
         setTimeout(() => {
           setAiMessages(m => [...m, {
-            id: Date.now() + 1,
+            id: nuevoIdMensaje(),
             from: 'coach',
             type: 'suggestions',
             options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto'],
@@ -477,7 +478,7 @@ export default function App() {
       setTimeout(() => {
         setAiMessages(m => [...m,
           {
-            id: Date.now(),
+            id: nuevoIdMensaje(),
             from: 'coach',
             type: 'text',
             text: lang === 'en'
@@ -486,7 +487,7 @@ export default function App() {
             time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
           },
           {
-            id: Date.now() + 1,
+            id: nuevoIdMensaje(),
             from: 'coach',
             type: 'suggestions',
             options: ['Muy bien', 'Bien, pero me costó', 'Difícil'],
@@ -941,7 +942,7 @@ export default function App() {
   // Respuestas que procesa la memoria del Coach sin pasar por la IA:
   // se muestran en el chat como cualquier mensaje y se vacia el cuadro de texto.
   const mostrarRespuestaJugador = (texto) => {
-    setAiMessages(m => [...m, { id: Date.now(), from: 'me', type: 'text', text: t.suggestionLabels?.[texto] || texto, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+    setAiMessages(m => [...m, { id: nuevoIdMensaje(), from: 'me', type: 'text', text: t.suggestionLabels?.[texto] || texto, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
     setAiInput('');
   };
 
@@ -1000,7 +1001,7 @@ export default function App() {
             setPendingDifficultyFollowUp(null);
           }
           setAiMessages(m => [...m, {
-            id: Date.now(),
+            id: nuevoIdMensaje(),
             from: "coach",
             type: "text",
             text: resultado.error
@@ -1046,7 +1047,7 @@ export default function App() {
       }
 
       setAiMessages(m => [...m, {
-        id: Date.now(),
+        id: nuevoIdMensaje(),
         from: 'coach',
         type: 'text',
         text: omitir
@@ -1084,7 +1085,7 @@ export default function App() {
         ;
         console.error('Error guardando session_feedback:', e);
         setAiMessages(m => [...m, {
-          id: Date.now(),
+          id: nuevoIdMensaje(),
           from: 'coach',
           type: 'text',
           text: lang === 'en'
@@ -1111,7 +1112,7 @@ export default function App() {
       if (pideObservacion(feedbackText) && !dosDificilesSeguidos) {
         setAwaitingTechnicalObservation(true);
         setAiMessages(m => [...m, {
-          id: Date.now(),
+          id: nuevoIdMensaje(),
           from: 'coach',
           type: 'text',
           text: lang === 'en'
@@ -1119,7 +1120,7 @@ export default function App() {
             : '¿Qué fue lo que más te costó en esta sesión? Puedes contármelo brevemente o tocar Omitir.',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }, {
-          id: Date.now() + 1,
+          id: nuevoIdMensaje(),
           from: 'coach',
           type: 'suggestions',
           options: ['Omitir'],
@@ -1156,7 +1157,7 @@ if (registro.error) {
             });
 
             setAiMessages(m => [...m, {
-              id: Date.now(),
+              id: nuevoIdMensaje(),
               from: 'coach',
               type: 'text',
               text: lang === 'en'
@@ -1167,7 +1168,7 @@ if (registro.error) {
                 minute: '2-digit'
               })
             }, {
-              id: Date.now() + 1,
+              id: nuevoIdMensaje(),
               from: 'coach',
               type: 'suggestions',
               options: ['Sigo igual', 'Estoy mejorando', 'Ya lo superé', 'Omitir'],
@@ -1232,7 +1233,7 @@ setPendingDifficultyFollowUp(null);
     }
 
     const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-    setAiMessages(m => [...m, { id:Date.now(), from:"me", type:"text", text: t.suggestionLabels?.[textoVisible] || textoVisible, time:now }]);
+    setAiMessages(m => [...m, { id:nuevoIdMensaje(), from:"me", type:"text", text: t.suggestionLabels?.[textoVisible] || textoVisible, time:now }]);
     setAiInput("");
     setThinking(true);
 
@@ -1288,7 +1289,7 @@ setPendingDifficultyFollowUp(null);
       }
 
       setAiMessages(m => [...m, {
-        id:Date.now()+1,
+        id:nuevoIdMensaje(),
         from:currentAgent,
         type:"text",
         text:response,
@@ -1297,7 +1298,7 @@ setPendingDifficultyFollowUp(null);
     } catch (error) {
       console.error('Error with AI Coach:', error);
       setAiMessages(m => [...m, { 
-        id:Date.now()+1, 
+        id:nuevoIdMensaje(), 
         from:currentAgent, 
         type:"text", 
         text:"Lo siento, hubo un error. Por favor intenta de nuevo.", 
@@ -1312,7 +1313,7 @@ setPendingDifficultyFollowUp(null);
     setCurrentAgent(id);
     setShowSpecialists(false);
     const a = SPECIALISTS.find(s => s.id === id);
-    setAiMessages(m => [...m, { id:Date.now(), from:id, type:"handoff", text:textoEspecialista(a, 'intro'), time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
+    setAiMessages(m => [...m, { id:nuevoIdMensaje(), from:id, type:"handoff", text:textoEspecialista(a, 'intro'), time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
   };
 
   const uploadAvatar = async (file) => {
