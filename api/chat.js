@@ -578,7 +578,8 @@ No uses asteriscos ni markdown. Texto plano.`;
     : '';
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const sistema = (systemPrompts[agentType] || systemPrompts.coach) + languageInstruction;
+    const pedirOpenAI = (extraSistema = '') => fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -587,27 +588,51 @@ No uses asteriscos ni markdown. Texto plano.`;
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: (systemPrompts[agentType] || systemPrompts.coach) + languageInstruction },
+          { role: 'system', content: sistema + extraSistema },
           { role: 'user', content: message }
         ],
         max_tokens: 650,
         temperature: 0.7
       })
     });
+    const leerRespuesta = async (response) => {
+      // Diagnostico seguro: nunca registrar claves, prompts ni el cuerpo de la respuesta.
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        const errorCode = typeof data?.error?.code === 'string' ? data.error.code : 'unknown';
+        const errorType = typeof data?.error?.type === 'string' ? data.error.type : 'unknown';
+        console.error('openai_request_failed', { status: response.status, errorCode, errorType });
+        return { error: { codigo: 502, cuerpo: { error: 'Error al conectar con OpenAI', status: response.status, errorCode, errorType } } };
+      }
+      const choice = data?.choices?.[0];
+      if (typeof choice?.message?.content !== 'string') {
+        console.error('openai_invalid_response', { status: response.status });
+        return { error: { codigo: 502, cuerpo: { error: 'Respuesta inesperada de OpenAI' } } };
+      }
+      return { data, choice };
+    };
 
-    // Diagnostico seguro: nunca registrar claves, prompts ni el cuerpo de la respuesta.
-    const data = await response.json().catch(() => null);
-    if (!response.ok) {
-      const errorCode = typeof data?.error?.code === 'string' ? data.error.code : 'unknown';
-      const errorType = typeof data?.error?.type === 'string' ? data.error.type : 'unknown';
-      console.error('openai_request_failed', { status: response.status, errorCode, errorType });
-      return res.status(502).json({ error: 'Error al conectar con OpenAI', status: response.status, errorCode, errorType });
+    let resultado = await leerRespuesta(await pedirOpenAI());
+    if (resultado.error) return res.status(resultado.error.codigo).json(resultado.error.cuerpo);
+
+    // El jugador pidio una sesion y ya sabemos con que entrena: si la IA respondio con otra cosa
+    // (por ejemplo, una pregunta), se le pide UNA vez mas solo la sesion. Si tampoco llega, mensaje fijo:
+    // el jugador nunca queda con una pregunta suelta que no lleva a ninguna sesion.
+    const esperaSesion = solicitaEntrenamiento && !feedbackOnly && !!perfil?.weekly_goal && !objetivoCompletado && !!trainingContext && (agentType || 'coach') === 'coach';
+    if (esperaSesion && !analizarBloqueSesion(resultado.choice.message.content).tieneEncabezado) {
+      console.warn(JSON.stringify({ evt: 'coach_session_missing', intento: 1 }));
+      const reintento = await leerRespuesta(await pedirOpenAI('\n\nREGLA PRIORITARIA: el jugador pidio la sesion y ya conoces su contexto. Responde UNICAMENTE con la sesion en el formato indicado. No hagas ninguna pregunta antes de la sesion.'));
+      if (!reintento.error && analizarBloqueSesion(reintento.choice.message.content).tieneEncabezado) {
+        resultado = reintento;
+      } else {
+        console.warn(JSON.stringify({ evt: 'coach_session_missing', intento: 2 }));
+        const sinSesion = lang === 'en'
+          ? "I couldn't prepare your session right now. Tap Start to try again."
+          : 'No pude preparar tu sesión ahora. Toca Iniciar para intentarlo de nuevo.';
+        return res.status(200).json({ reply: sinSesion, sessionBlock: '', meta: { completa: false, faltantes: ['sesion_no_generada'], finishReason: null } });
+      }
     }
-    const choice = data?.choices?.[0];
-    if (typeof choice?.message?.content !== 'string') {
-      console.error('openai_invalid_response', { status: response.status });
-      return res.status(502).json({ error: 'Respuesta inesperada de OpenAI' });
-    }
+    const { data, choice } = resultado;
     const finishReason = choice.finish_reason || null;
     let reply = choice.message.content.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1');
 

@@ -55,7 +55,9 @@ async function llamar(body, openai) {
   const fetchOrig = globalThis.fetch, logOrig = console.log;
   globalThis.fetch = async (url, opts) => {
     llamadas.push({ url, body: JSON.parse(opts.body) });
-    return { ok: true, status: 200, json: async () => openai };
+    // `openai` puede ser una lista: una respuesta distinta por llamada (la ultima se repite).
+    const r = Array.isArray(openai) ? openai[Math.min(llamadas.length - 1, openai.length - 1)] : openai;
+    return { ok: true, status: 200, json: async () => r };
   };
   console.log = (...a) => logs.push(a.join(' '));
   const res = { code: 200, payload: null, status(c) { this.code = c; return this; }, json(p) { this.payload = p; return this; } };
@@ -632,6 +634,34 @@ test('Muy bien con cabeceos: el aumento respeta el límite semanal', async () =>
   assert.equal(contarCabeceos(previa), 10);
   assert.equal(contarCabeceos(r.res.payload.sessionBlock), 0); // ya hizo los 10 de la semana
   assert.ok(r.res.payload.reply.includes(notaCabeceos('es')));
+});
+
+// =====================================================================================
+// La IA responde sin sesion cuando se pidio una: un reintento y, si no, mensaje fijo
+// =====================================================================================
+const PREGUNTA_IA = 'Great to hear you have the basics! What specific aspects of reading the game do you want to improve this week?';
+test('Sin sesión en la respuesta: se reintenta una vez y se entrega la sesión del reintento', async () => {
+  const r = await llamar(body({ lang: 'en' }), [openaiOK(PREGUNTA_IA), openaiOK(sesionEN(1))]);
+  assert.equal(r.llamadas.length, 2);
+  assert.ok(r.llamadas[1].body.messages[0].content.includes('REGLA PRIORITARIA'));
+  assert.ok(r.res.payload.sessionBlock.startsWith('Session 1'));
+  assert.ok(!r.res.payload.reply.includes(PREGUNTA_IA));
+});
+test('Sin sesión tampoco en el reintento: mensaje fijo, sin la pregunta de la IA (ES y EN)', async () => {
+  for (const lang of ['es', 'en']) {
+    const r = await llamar(body({ lang }), openaiOK(PREGUNTA_IA));
+    assert.equal(r.llamadas.length, 2, lang);
+    assert.equal(r.res.payload.sessionBlock, '', lang);
+    assert.ok(!r.res.payload.reply.includes(PREGUNTA_IA), lang);
+    assert.ok(r.res.payload.reply.includes(lang === 'en' ? 'Tap Start' : 'Toca Iniciar'), lang);
+  }
+});
+test('Sin contexto confirmado o sin pedido de sesión: la pregunta de la IA se respeta y no hay reintento', async () => {
+  const r1 = await llamar(body({ perfil: { training_context: '' } }), openaiOK('¿Entrenas solo o con alguien?'));
+  assert.equal(r1.llamadas.length, 1);
+  assert.equal(r1.res.payload.reply, '¿Entrenas solo o con alguien?');
+  const r2 = await llamar(body({ extra: { solicitaEntrenamiento: false } }), openaiOK('El timing se mejora mirando al pasador.'));
+  assert.equal(r2.llamadas.length, 1);
 });
 // ---------- ejecutor ----------
 (async () => {
