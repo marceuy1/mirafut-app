@@ -1330,7 +1330,7 @@ setPendingDifficultyFollowUp(null);
     const ext = file.name.split('.').pop();
     const path = session.user.id + '/avatar.' + ext;
     const { error: uploadError } = await supabase.storage.from('Avatars').upload(path, file, { upsert: true });
-    if (uploadError) { alert('Error subiendo foto: ' + uploadError.message); return; }
+    if (uploadError) { console.error('Error subiendo foto:', uploadError); alert(t.ui.photoUploadError); return; }
     const { data: urlData } = supabase.storage.from('Avatars').getPublicUrl(path);
     await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('id', session.user.id);
     setUserProfile(prev => prev ? {...prev, avatar_url: urlData.publicUrl} : prev);
@@ -1487,11 +1487,11 @@ setPendingDifficultyFollowUp(null);
     const yoSoyMenorConfirmado = miTipo === 'teen';
     const elEsMenorConfirmado = suTipo === 'teen';
     if ((yoSoyMenorConfirmado && suTipo !== 'teen') || (elEsMenorConfirmado && miTipo !== 'teen')) {
-      alert('Por seguridad, los mensajes directos entre cuentas de adultos y de menores no estan disponibles todavia.');
+      alert(t.ui.dmAgeBlocked);
       return;
     }
     if (blockedList.includes(partner.id) || blockedByList.includes(partner.id)) {
-      alert('No podés enviar mensajes a este usuario.');
+      alert(t.ui.dmBlocked);
       return;
     }
     setChatPartner(partner);
@@ -1662,7 +1662,7 @@ setPendingDifficultyFollowUp(null);
       } catch (e) {}
     } else {
       await navigator.clipboard.writeText(url);
-      alert('Link copiado al portapapeles!');
+      alert(t.ui.linkCopied);
     }
   };
 
@@ -1941,7 +1941,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
         ) : viewProfile ? (
           <div className="hdr">
             <button className="hb" onClick={() => setViewProfile(null)}><ArrowLeft size={22} /></button>
-            <span style={{fontWeight:600}}>Perfil</span>
+            <span style={{fontWeight:600}}>{t.ui.profileTitle}</span>
             <div style={{width:30}}/>
           </div>
         ) : tab === "coach" ? (
@@ -2281,7 +2281,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
                 <div className="comments">
                   <div className="com-title">{t.comments}</div>
-                  {postComments.length === 0 && viewPost.commentList.length === 0 && <div style={{color:'#556677',fontSize:'13px',padding:'8px 0'}}>No hay comentarios aún. ¡Sé el primero!</div>}
+                  {postComments.length === 0 && viewPost.commentList.length === 0 && <div style={{color:'#556677',fontSize:'13px',padding:'8px 0'}}>{t.ui.noComments}</div>}
                   {postComments.length > 0 ? postComments.map((c,i) => (
                     <div key={i} className="com-item">
                       <div className="com-av">{c.profiles?.full_name ? c.profiles.full_name.substring(0,2).toUpperCase() : 'U'}</div>
@@ -2316,22 +2316,22 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div className="prof-meta" style={{display:'flex',alignItems:'center',gap:'5px'}}><MapPin size={13} /> {viewProfile.account_type === 'teen' ? viewProfile.country : (viewProfile.city ? viewProfile.city + ', ' : '') + viewProfile.country} · {viewProfile.account_type === 'teen' ? t.yearsOldRange : (viewProfile.age ? viewProfile.age + ' ' + t.yearsOldSuffix : '')} · {posLabel(viewProfile.position)}</div>
               <div className="prof-bio">{viewProfile.bio}</div>
               <div className="prof-stats">
-                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.followers||0}</div><div className="prof-stat-l">Seguidores</div></div>
-                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.following||0}</div><div className="prof-stat-l">Siguiendo</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.followers||0}</div><div className="prof-stat-l">{t.followers}</div></div>
+                <div className="prof-stat"><div className="prof-stat-v">{viewProfile.following||0}</div><div className="prof-stat-l">{t.following}</div></div>
                 <div className="prof-stat"><div className="prof-stat-v">{viewProfile.posts||0}</div><div className="prof-stat-l">Posts</div></div>
               </div>
               <button className={`prof-btn ${followingList.includes(viewProfile.id) ? 'sec' : 'pri'}`} onClick={() => toggleFollowUser(viewProfile.id)}>
-                {followingList.includes(viewProfile.id) ? 'Siguiendo ✓' : '+ Seguir'}
+                {followingList.includes(viewProfile.id) ? t.following_btn : t.follow}
               </button>
-              <button className="prof-btn sec" onClick={() => openChat({id: viewProfile.id, name: viewProfile.name, avatar_url: viewProfile.avatar_url, account_type: viewProfile.account_type})}>💬 Mensaje</button>
+              <button className="prof-btn sec" onClick={() => openChat({id: viewProfile.id, name: viewProfile.name, avatar_url: viewProfile.avatar_url, account_type: viewProfile.account_type})}>{t.ui.message}</button>
               <div style={{display:'flex',gap:'8px',marginTop:'8px'}}>
                 <button onClick={() => toggleBlock(viewProfile.id)} style={{flex:1,padding:'8px',background:'transparent',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#8899A6',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{blockedList.includes(viewProfile.id) ? 'Desbloquear' : 'Bloquear'}</button>
                 <button onClick={() => reportUser(viewProfile.id)} style={{flex:1,padding:'8px',background:'transparent',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#8899A6',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Reportar</button>
               </div>
               {!session && (
                 <div style={{marginTop:'12px',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'14px',textAlign:'center'}}>
-                  <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>¿Eres scout o agente?</div>
-                  <div style={{fontSize:'12px',color:'#ECEFF4',marginBottom:'12px',lineHeight:'1.5'}}>Regístrate en MiraFut para conectar con este jugador y acceder a miles de talentos</div>
+                  <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>{t.ui.scoutTitle}</div>
+                  <div style={{fontSize:'12px',color:'#ECEFF4',marginBottom:'12px',lineHeight:'1.5'}}>{t.ui.scoutText}</div>
                   <button onClick={() => setShowAuthPrompt(true)} style={{width:'100%',padding:'11px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>🚀 Únete gratis</button>
                 </div>
               )}
@@ -2339,10 +2339,10 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {(viewProfile.height || viewProfile.weight || viewProfile.dominant_foot) && (
                 <div style={{width:'100%',background:'#0a0e14',borderRadius:'16px',padding:'14px',marginTop:'12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',textAlign:'left'}}>
                   <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>{t.playerData}</div>
-                  {viewProfile.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Altura</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.height} cm</div></div>}
-                  {viewProfile.weight && viewProfile.account_type !== 'teen' && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Peso</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.weight} kg</div></div>}
+                  {viewProfile.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.ui.height}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.height} cm</div></div>}
+                  {viewProfile.weight && viewProfile.account_type !== 'teen' && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.ui.weight}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.weight} kg</div></div>}
                   {viewProfile.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Pie dominante</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.dominant_foot}</div></div>}
-                  {viewProfile.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Posición</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{posLabel(viewProfile.position)}</div></div>}
+                  {viewProfile.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.ui.position}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{posLabel(viewProfile.position)}</div></div>}
                 </div>
               )}
               {viewProfile.goal && (
@@ -2383,8 +2383,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               {chatList.length === 0 && (
                 <div style={{textAlign:'center',color:'#556677',fontSize:'13px',marginTop:'60px',padding:'20px'}}>
                   <div style={{fontSize:'32px',marginBottom:'12px'}}>💬</div>
-                  <div>No tienes conversaciones aún.</div>
-                  <div style={{marginTop:'8px'}}>Busca un jugador y envíale un mensaje.</div>
+                  <div>{t.ui.noChats}</div>
+                  <div style={{marginTop:'8px'}}>{t.ui.noChatsHint}</div>
                 </div>
               )}
               {chatList.map(c => (
@@ -2419,7 +2419,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {chatPartner?.avatar_url ? <img src={chatPartner.avatar_url} style={{width:'64px',height:'64px',borderRadius:'20px',objectFit:'cover'}} /> : <span style={{fontSize:'22px',fontWeight:'800',color:'#00E676'}}>{chatPartner?.name?.substring(0,2).toUpperCase()}</span>}
                     </div>
                     <div style={{fontSize:'16px',fontWeight:'700',color:'#ECEFF4',marginBottom:'6px'}}>{chatPartner?.name}</div>
-                    <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5',maxWidth:'220px'}}>Aún no hay mensajes. ¡Sé el primero en escribir!</div>
+                    <div style={{fontSize:'13px',color:'#556677',lineHeight:'1.5',maxWidth:'220px'}}>{t.ui.noMessages}</div>
                     <div style={{marginTop:'20px',padding:'10px 20px',background:'rgba(0,230,118,0.08)',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'20px',fontSize:'13px',color:'#00E676',cursor:'pointer',fontWeight:'600'}} onClick={() => document.querySelector('.chat-input input')?.focus()}>
                       Enviar un mensaje 💬
                     </div>
@@ -2427,7 +2427,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 )}
               </div>
               <div className="chat-input">
-                <input placeholder="Escribe un mensaje..." value={chatMsg} onChange={e => setChatMsg(e.target.value)} onKeyDown={e => e.key==='Enter' && sendRealMessage(chatPartner.id)}/>
+                <input placeholder={t.ui.writeMessage} value={chatMsg} onChange={e => setChatMsg(e.target.value)} onKeyDown={e => e.key==='Enter' && sendRealMessage(chatPartner.id)}/>
                 <button className="chat-send" onClick={() => sendRealMessage(chatPartner.id)}>→</button>
               </div>
             </div>
@@ -2634,7 +2634,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
 
         {/* SCROLL LOADER */}
         {tab === "home" && !viewPost && !viewProfile && hasMorePosts && (
-          <div ref={loaderRef} style={{height:'40px',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px',margin:'8px 0'}}>Cargando más...</div>
+          <div ref={loaderRef} style={{height:'40px',display:'flex',alignItems:'center',justifyContent:'center',color:'#556677',fontSize:'13px',margin:'8px 0'}}>{t.ui.loadingMore}</div>
         )}
 
         {/* FLOATING ACTION BUTTON */}
@@ -2904,11 +2904,11 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'14px'}}>
                   <div>
-                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Altura ({onboardingForm.units==='imperial'?'ft':'cm'})</div>
+                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{t.ui.height} ({onboardingForm.units==='imperial'?'ft':'cm'})</div>
                     <input type="number" value={onboardingForm.height} onChange={e=>setOnboardingForm(prev=>({...prev,height:e.target.value}))} placeholder={onboardingForm.units==='imperial'?'5.9':'175'} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
                   </div>
                   <div>
-                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>Peso ({onboardingForm.units==='imperial'?'lbs':'kg'})</div>
+                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}}>{t.ui.weight} ({onboardingForm.units==='imperial'?'lbs':'kg'})</div>
                     <input type="number" value={onboardingForm.weight} onChange={e=>setOnboardingForm(prev=>({...prev,weight:e.target.value}))} placeholder={onboardingForm.units==='imperial'?'150':'68'} style={{width:'100%',padding:'12px 14px',background:'#121820',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'12px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
                   </div>
                 </div>
@@ -3090,19 +3090,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                     <Logo iconOnly size={40} />
                   </div>
                   <div>
-                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.6)'}}>CÓMO FUNCIONA</div>
+                    <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.6)'}}>{t.ui.howItWorks}</div>
                     <div style={{fontSize:'20px',fontWeight:'900',color:'#0a0e14'}}>MiraFut Scouting</div>
                   </div>
                 </div>
-                <div style={{fontSize:'13px',color:'#0a0e14',lineHeight:'1.5',fontWeight:'600'}}>No te prometemos que te van a descubrir. Te ayudamos a convertirte en el jugador que merece ser descubierto — y después trabajamos para acercarte a esa oportunidad.</div>
+                <div style={{fontSize:'13px',color:'#0a0e14',lineHeight:'1.5',fontWeight:'600'}}>{t.ui.scoutingIntro}</div>
               </div>
 
-              {[
-                {n:'1',title:'Crea tu perfil de jugador',desc:'Agrega tu posición, datos físicos, país y objetivo. Un perfil completo tiene mucha más visibilidad ante scouts.'},
-                {n:'2',title:'Comparte tus jugadas',desc:'Sube fotos y videos de tus mejores momentos. Los scouts buscan activamente jugadores con contenido real.'},
-                {n:'3',title:'Conecta con la comunidad',desc:'Participa en debates, recibe apoyo 24/7 y conecta con jugadores de más de 8 países.'},
-                {n:'4',title:'Sé descubierto',desc:'Scouts y agentes navegan la plataforma buscando talento. Tu perfil es tu carta de presentación profesional.'}
-              ].map((s,i) => (
+              {t.ui.scoutingSteps.map(([title, desc], i) => ({ n: String(i + 1), title, desc })).map((s,i) => (
                 <div key={i} style={{display:'flex',gap:'12px',marginBottom:'16px'}}>
                   <div style={{width:'36px',height:'36px',borderRadius:'10px',background:'#00E676',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',fontWeight:'900',color:'#0a0e14',flexShrink:0}}>{s.n}</div>
                   <div>
@@ -3113,14 +3108,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               ))}
 
               <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',borderLeft:'3px solid #00E676',marginBottom:'16px'}}>
-                <div style={{fontSize:'13px',color:'#ECEFF4',fontWeight:'600'}}>"El talento sin fronteras merece oportunidades sin fronteras"</div>
-                <div style={{fontSize:'11px',color:'#556677',marginTop:'4px'}}>— Equipo MiraFut</div>
+                <div style={{fontSize:'13px',color:'#ECEFF4',fontWeight:'600'}}>{t.ui.quote}</div>
+                <div style={{fontSize:'11px',color:'#556677',marginTop:'4px'}}>{t.ui.quoteBy}</div>
               </div>
 
               <button onClick={() => { setShowScouting(false); setShowAuthPrompt(true); }} style={{width:'100%',padding:'13px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                Crear mi perfil ahora 🚀
+                {t.ui.createProfileNow}
               </button>
-              <div onClick={() => setShowScouting(false)} style={{textAlign:'center',marginTop:'10px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>Cerrar</div>
+              <div onClick={() => setShowScouting(false)} style={{textAlign:'center',marginTop:'10px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>{t.ui.close}</div>
             </div>
           </div>
         )}
@@ -3130,32 +3125,32 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <div className="modal-bg show" onClick={() => setShowSorteo(false)}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div className="modal-hdr">
-                <div className="modal-title">🎁 Sorteo del mes</div>
+                <div className="modal-title">{t.ui.giveawayTitle}</div>
                 <button className="modal-close" onClick={() => setShowSorteo(false)}><X size={18} /></button>
               </div>
               <div style={{background:'linear-gradient(135deg,#00E676,#00C853)',borderRadius:'14px',padding:'16px',marginBottom:'12px',position:'relative',overflow:'hidden'}}>
-                <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.5)',marginBottom:'4px'}}>SORTEO DEL MES</div>
-                <div style={{fontSize:'18px',fontWeight:'900',color:'#0a0e14',marginBottom:'4px'}}>{sorteo?.premio || 'Premio del mes'} ⚽</div>
-                <div style={{fontSize:'12px',color:'rgba(0,0,0,0.6)',marginBottom:'12px'}}>{sorteo?.descripcion || 'Participa en el debate y entra al sorteo'}</div>
+                <div style={{fontSize:'10px',fontWeight:'800',letterSpacing:'2px',color:'rgba(0,0,0,0.5)',marginBottom:'4px'}}>{t.ui.giveawayBadge}</div>
+                <div style={{fontSize:'18px',fontWeight:'900',color:'#0a0e14',marginBottom:'4px'}}>{sorteo?.premio || t.ui.giveawayPrize} ⚽</div>
+                <div style={{fontSize:'12px',color:'rgba(0,0,0,0.6)',marginBottom:'12px'}}>{sorteo?.descripcion || t.ui.giveawayDefaultDesc}</div>
                 <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
-                  <div style={{background:'rgba(0,0,0,0.15)',borderRadius:'20px',padding:'5px 12px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>⏱ {sorteo ? Math.max(0, Math.ceil((new Date(sorteo.ends_at) - new Date()) / (1000*60*60*24))) : 0} días restantes</div>
-                  <div style={{background:'rgba(0,0,0,0.15)',borderRadius:'20px',padding:'5px 12px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} participantes</div>
+                  <div style={{background:'rgba(0,0,0,0.15)',borderRadius:'20px',padding:'5px 12px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>⏱ {sorteo ? Math.max(0, Math.ceil((new Date(sorteo.ends_at) - new Date()) / (1000*60*60*24))) : 0} {t.ui.daysLeft}</div>
+                  <div style={{background:'rgba(0,0,0,0.15)',borderRadius:'20px',padding:'5px 12px',fontSize:'11px',fontWeight:'700',color:'#0a0e14'}}>{debateVotes.length} {t.ui.participants}</div>
                 </div>
               </div>
               <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'10px'}}>
-                <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>Premio de este mes</div>
+                <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'8px'}}>{t.ui.prizeThisMonth}</div>
                 {sorteo?.imagen_url && <img src={sorteo.imagen_url} style={{width:'100%',maxHeight:'160px',objectFit:'contain',borderRadius:'10px',marginBottom:'10px'}} />}
                 <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
                   {!sorteo?.imagen_url && <div style={{width:'48px',height:'48px',borderRadius:'12px',background:'rgba(0,230,118,0.1)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Shirt size={24} /></div>}
                   <div>
-                    <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4'}}>{sorteo?.premio || 'Premio del mes'}</div>
+                    <div style={{fontSize:'14px',fontWeight:'700',color:'#ECEFF4'}}>{sorteo?.premio || t.ui.giveawayPrize}</div>
                     <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>{sorteo?.descripcion || ''}</div>
                   </div>
                 </div>
               </div>
               <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'10px'}}>
-                <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>Cómo participar</div>
-                {[{n:'1',t:'Vota en el debate de la semana'},{n:'2',t:'Deja un comentario con tu opinión'},{n:'3',t:'¡Espera el sorteo en vivo! 🎉'}].map((s,i) => (
+                <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>{t.ui.howToJoin}</div>
+                {t.ui.joinSteps.map((texto, i) => ({ n: String(i + 1), t: texto })).map((s,i) => (
                   <div key={i} style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'8px'}}>
                     <div style={{width:'26px',height:'26px',borderRadius:'8px',background:i<2?'#00E676':'rgba(0,230,118,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:'800',color:i<2?'#0a0e14':'#00E676',flexShrink:0}}>{s.n}</div>
                     <div style={{fontSize:'13px',color:i<2?'#ECEFF4':'#8899A6'}}>{s.t}</div>
@@ -3166,19 +3161,19 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                 <div style={{background:'rgba(0,230,118,0.08)',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'12px',padding:'12px',marginBottom:'10px',display:'flex',alignItems:'center',gap:'10px'}}>
                   <div style={{width:'32px',height:'32px',borderRadius:'8px',background:'#00E676',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px',flexShrink:0}}>✓</div>
                   <div>
-                    <div style={{fontSize:'13px',fontWeight:'700',color:'#00E676'}}>¡Estás participando!</div>
-                    <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>Votaste en el debate de esta semana</div>
+                    <div style={{fontSize:'13px',fontWeight:'700',color:'#00E676'}}>{t.ui.youAreIn}</div>
+                    <div style={{fontSize:'12px',color:'#556677',marginTop:'2px'}}>{t.ui.youVoted}</div>
                   </div>
                 </div>
               )}
               {debateVotes.length > 0 && (
                 <div style={{background:'#0a0e14',borderRadius:'12px',padding:'12px',marginBottom:'10px'}}>
-                  <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>Participantes ({debateVotes.length})</div>
+                  <div style={{fontSize:'10px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',marginBottom:'10px'}}>{t.ui.participantsTitle} ({debateVotes.length})</div>
                   <div style={{display:'flex',flexWrap:'wrap',gap:'6px'}}>
                     {debateVotes.map((v,i) => (
                       <div key={i} style={{display:'flex',alignItems:'center',gap:'6px',background:'#121820',borderRadius:'20px',padding:'4px 10px 4px 4px'}}>
                         <div style={{width:'22px',height:'22px',borderRadius:'50%',background:'rgba(0,230,118,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'9px',fontWeight:'800',color:'#00E676'}}>{v.profiles?.full_name?.substring(0,2).toUpperCase()||'??'}</div>
-                        <span style={{fontSize:'11px',color:'#ECEFF4',fontWeight:'600'}}>{v.profiles?.full_name?.split(' ')[0]||'Jugador'}</span>
+                        <span style={{fontSize:'11px',color:'#ECEFF4',fontWeight:'600'}}>{v.profiles?.full_name?.split(' ')[0]||t.ui.player}</span>
                       </div>
                     ))}
                   </div>
@@ -3186,7 +3181,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               )}
               {session && userVote === null && (
                 <button onClick={() => { setShowSorteo(false); }} style={{width:'100%',padding:'12px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'14px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif',marginBottom:'10px'}}>
-                  Ir al debate para participar <Vote size={14} style={{display:"inline",verticalAlign:"-2px",marginLeft:"4px"}} />
+                  {t.ui.goToDebate} <Vote size={14} style={{display:"inline",verticalAlign:"-2px",marginLeft:"4px"}} />
                 </button>
               )}
             </div>
@@ -3304,30 +3299,30 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           <div className="modal-bg show" onClick={() => { setShowContact(false); setContactSent(false); }}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
               <div className="modal-hdr">
-                <div className="modal-title"><Mail size={15} style={{marginRight:6,verticalAlign:"-3px"}} />Cuéntanos tu historia</div>
+                <div className="modal-title"><Mail size={15} style={{marginRight:6,verticalAlign:"-3px"}} />{t.ui.contactTitle}</div>
                 <button className="modal-close" onClick={() => { setShowContact(false); setContactSent(false); }}><X size={18} /></button>
               </div>
               {contactSent ? (
                 <div style={{textAlign:'center',padding:'24px 0'}}>
                   <div style={{fontSize:'48px',marginBottom:'12px'}}>🎉</div>
-                  <div style={{fontSize:'18px',fontWeight:'800',color:'#ECEFF4',marginBottom:'8px'}}>¡Mensaje enviado!</div>
-                  <div style={{fontSize:'14px',color:'#556677'}}>Nos pondremos en contacto contigo pronto.</div>
+                  <div style={{fontSize:'18px',fontWeight:'800',color:'#ECEFF4',marginBottom:'8px'}}>{t.ui.contactSent}</div>
+                  <div style={{fontSize:'14px',color:'#556677'}}>{t.ui.contactSentText}</div>
                 </div>
               ) : (
                 <div>
-                  <p style={{fontSize:'13px',color:'#556677',marginBottom:'16px',lineHeight:'1.5'}}>Queremos conocerte. Cuéntanos tu historia y te haremos un seguimiento personalizado.</p>
-                  {[{label:'Nombre completo',key:'name',type:'text',placeholder:'Tu nombre'},{label:'Email',key:'email',type:'email',placeholder:'tu@email.com'},{label:'País',key:'country',type:'text',placeholder:'Tu país'},{label:'Posición',key:'position',type:'text',placeholder:'Delantero, Mediocampista...'}].map(f => (
+                  <p style={{fontSize:'13px',color:'#556677',marginBottom:'16px',lineHeight:'1.5'}}>{t.ui.contactIntro}</p>
+                  {[{label:t.ui.contactName,key:'name',type:'text',placeholder:t.ui.contactNamePh},{label:t.ui.contactEmail,key:'email',type:'email',placeholder:'tu@email.com'},{label:t.ui.contactCountry,key:'country',type:'text',placeholder:t.ui.contactCountryPh},{label:t.ui.contactPosition,key:'position',type:'text',placeholder:t.ui.contactPositionPh}].map(f => (
                     <div key={f.key} style={{marginBottom:'12px'}}>
                       <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'5px'}}>{f.label}</div>
                       <input type={f.type} value={contactForm[f.key]} onChange={e => setContactForm(p=>({...p,[f.key]:e.target.value}))} placeholder={f.placeholder} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif'}} />
                     </div>
                   ))}
                   <div style={{marginBottom:'16px'}}>
-                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'5px'}}>Tu historia</div>
-                    <textarea value={contactForm.story} onChange={e => setContactForm(p=>({...p,story:e.target.value}))} placeholder="Cuéntanos sobre ti, tus sueños, tu trayectoria..." rows={4} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none'}} />
+                    <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'5px'}}>{t.ui.contactStory}</div>
+                    <textarea value={contactForm.story} onChange={e => setContactForm(p=>({...p,story:e.target.value}))} placeholder={t.ui.contactStoryPh} rows={4} style={{width:'100%',padding:'10px 12px',background:'#0a0e14',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',color:'#ECEFF4',fontSize:'14px',outline:'none',fontFamily:'Outfit,sans-serif',resize:'none'}} />
                   </div>
                   <button onClick={sendContactForm} disabled={contactSending} style={{width:'100%',padding:'13px',background:'#00E676',border:'none',borderRadius:'12px',color:'#0a0e14',fontSize:'15px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                    {contactSending ? 'Enviando...' : 'Enviar mi historia 🚀'}
+                    {contactSending ? t.ui.sending : t.ui.sendStory}
                   </button>
                 </div>
               )}
