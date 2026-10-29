@@ -1,5 +1,11 @@
 import { supabase } from './supabaseClient';
+import { recuperarMemoriaTecnica, prepararContextoMemoria, prepararObservacionTecnica, guardarObservacionTecnica, actualizarEstadoObservacionTecnica , registrarSeguimientoDificultad} from './coachLearningMemory';
+
 import { solicitaEntrenamiento as detectarSolicitud } from './solicitaEntrenamiento';
+import { actualizarHistorialSesiones } from './historialSesiones';
+import { pedidoDeSesion, contextoParaEnviar } from './pedidoSesion';
+import { nuevoIdMensaje } from './idMensaje';
+import { pideObservacion, dosDificilesSeguidos as sonDosDificilesSeguidos } from './feedbackSesion';
 
 // Analytics minimos para Beta 1: un evento = una fila en la tabla `events`.
 // Nunca pasar contenido de usuario (texto de posts, mensajes, objetivo escrito,
@@ -217,6 +223,8 @@ export default function App() {
   const [sessionInProgress, setSessionInProgress] = useState(false);
   const [awaitingTrainingContext, setAwaitingTrainingContext] = useState(false);
   const [awaitingSessionFeedback, setAwaitingSessionFeedback] = useState(false);
+  const [awaitingTechnicalObservation, setAwaitingTechnicalObservation] = useState(false);
+  const [pendingDifficultyFollowUp, setPendingDifficultyFollowUp] = useState(null);
   const [awaitingFinalReflection, setAwaitingFinalReflection] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -285,6 +293,7 @@ export default function App() {
   });
   const didMountTabRef = useRef(false);
   const isPoppingRef = useRef(false);
+  const feedbackSavingRef = useRef(false);
 
   // Boton atras del celular: navega entre Inicio/Coach/Chat/Perfil en vez de salir de la app
   useEffect(() => {
@@ -332,6 +341,8 @@ export default function App() {
   const pendingTabRef = useRef('home');
   const agent = SPECIALISTS.find(s => s.id === currentAgent);
   const t = useMemo(() => translations[lang], [lang]);
+  // Texto de un especialista en el idioma actual (nombre, descripcion o saludo).
+  const textoEspecialista = (s, campo) => t.specialists?.[s?.id]?.[campo] || s?.[campo] || '';
   // Solo cambia el texto visible; el valor guardado (POR/DEF/MED/DEL) no se toca
   const posLabel = (p) => (p && t['pos' + p]) || p;
   // Unico punto para cambiar el idioma: actualiza la UI y lo guarda para la proxima visita.
@@ -441,7 +452,7 @@ export default function App() {
       const targetCerrado = weeklyGoal.sessions_target;
       setTimeout(() => {
         setAiMessages(m => [...m, {
-          id: Date.now(),
+          id: nuevoIdMensaje(),
           from: 'coach',
           type: 'text',
           text: lang === 'en'
@@ -451,7 +462,7 @@ export default function App() {
         }]);
         setTimeout(() => {
           setAiMessages(m => [...m, {
-            id: Date.now() + 1,
+            id: nuevoIdMensaje(),
             from: 'coach',
             type: 'suggestions',
             options: ['Sí, mejoré mucho', 'Algo, sigo trabajando', 'Todavía no lo noto'],
@@ -467,7 +478,7 @@ export default function App() {
       setTimeout(() => {
         setAiMessages(m => [...m,
           {
-            id: Date.now(),
+            id: nuevoIdMensaje(),
             from: 'coach',
             type: 'text',
             text: lang === 'en'
@@ -476,7 +487,7 @@ export default function App() {
             time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'})
           },
           {
-            id: Date.now() + 1,
+            id: nuevoIdMensaje(),
             from: 'coach',
             type: 'suggestions',
             options: ['Muy bien', 'Bien, pero me costó', 'Difícil'],
@@ -938,6 +949,13 @@ export default function App() {
     // will be handled in nav click
   }
 
+  // Respuestas que procesa la memoria del Coach sin pasar por la IA:
+  // se muestran en el chat como cualquier mensaje y se vacia el cuadro de texto.
+  const mostrarRespuestaJugador = (texto) => {
+    setAiMessages(m => [...m, { id: nuevoIdMensaje(), from: 'me', type: 'text', text: t.suggestionLabels?.[texto] || texto, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+    setAiInput('');
+  };
+
   const sendAI = async (displayText) => {
     if (displayText === '✓ Terminé mi sesión' && weeklyGoal) {
       completeSession();
@@ -960,21 +978,219 @@ export default function App() {
       return;
     }
 
+    // Confirmacion explicita sobre una dificultad anterior.
+    if (pendingDifficultyFollowUp && !detectarSolicitud(displayText, !!weeklyGoal)) {
+      const respuesta = displayText.trim().toLowerCase();
+      const estados = {
+        "sigo igual": "active",
+        "igual": "active",
+        "same": "active",
+        "estoy mejorando": "improving",
+        "mejorando": "improving",
+        "improving": "improving",
+        "ya lo supere": "resolved",
+        "ya lo superé": "resolved",
+        "superada": "resolved",
+        "resolved": "resolved"
+      };
+      const omitir = /^(omitir|skip)$/i.test(respuesta);
+      const nuevoEstado = estados[respuesta];
+
+      if (omitir || nuevoEstado) {
+        mostrarRespuestaJugador(displayText);
+        if (omitir) {
+          setPendingDifficultyFollowUp(null);
+        } else {
+          const resultado = await actualizarEstadoObservacionTecnica(
+            supabase,
+            session?.user?.id,
+            pendingDifficultyFollowUp.id,
+            nuevoEstado
+          );
+          if (!resultado.error) {
+            setPendingDifficultyFollowUp(null);
+          }
+          setAiMessages(m => [...m, {
+            id: nuevoIdMensaje(),
+            from: "coach",
+            type: "text",
+            text: resultado.error
+              ? (lang === "en" ? "I could not save your update. Please try again." : "No pude guardar tu actualización. Inténtalo nuevamente.")
+              : (lang === "en" ? "Thanks. I have updated your progress." : "Gracias. He actualizado tu progreso."),
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          }]);
+        }
+        return;
+      }
+    }
+
+    // Respuesta opcional sobre una dificultad tecnica.
+    if (awaitingTechnicalObservation && !detectarSolicitud(displayText, !!weeklyGoal)) {
+      setAwaitingTechnicalObservation(false);
+      mostrarRespuestaJugador(displayText);
+
+      const observacion = displayText.trim();
+      const omitir = /^(omitir|skip)$/i.test(observacion);
+
+      if (!omitir) {
+        const nota = prepararObservacionTecnica(
+          observacion,
+          'difficulty',
+          {
+            goal: weeklyGoal?.goal,
+            weekly_goal_id: weeklyGoal?.id,
+            session_number: weeklyGoal?.sessions_done
+          }
+        );
+
+        if (nota) {
+          const resultado = await guardarObservacionTecnica(
+            supabase,
+            session.user.id,
+            nota
+          );
+
+          if (resultado.error) {
+            console.warn('No se pudo guardar la observacion:', resultado.error);
+          }
+        }
+      }
+
+      setAiMessages(m => [...m, {
+        id: nuevoIdMensaje(),
+        from: 'coach',
+        type: 'text',
+        text: omitir
+          ? (lang === 'en'
+              ? 'No problem. We can continue whenever you are ready.'
+              : 'Sin problema. Podemos continuar cuando quieras.')
+          : (lang === 'en'
+              ? 'Thanks for sharing. We will keep working on your development.'
+              : 'Gracias por contármelo. Seguiremos trabajando en tu desarrollo.'),
+        time: new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      }]);
+
+      return;
+    }
+
     // Respuesta de "como te fue" tras completar una sesion intermedia
     if (awaitingSessionFeedback && weeklyGoal) {
-      setAwaitingSessionFeedback(false);
+      if (feedbackSavingRef.current) return;
+      feedbackSavingRef.current = true;
+
       const feedbackText = displayText;
       const nuevoFeedback = [...(weeklyGoal.session_feedback || []), feedbackText];
+
       try {
-        await supabase.from('weekly_goals').update({ session_feedback: nuevoFeedback }).eq('id', weeklyGoal.id);
+        const { error } = await supabase
+          .from('weekly_goals')
+          .update({ session_feedback: nuevoFeedback })
+          .eq('id', weeklyGoal.id);
+
+        if (error) throw error;
       } catch (e) {
+        ;
         console.error('Error guardando session_feedback:', e);
+        setAiMessages(m => [...m, {
+          id: nuevoIdMensaje(),
+          from: 'coach',
+          type: 'text',
+          text: lang === 'en'
+            ? 'I could not save your feedback. Please try sending it again.'
+            : 'No pude guardar tu respuesta. Por favor, intenta enviarla nuevamente.',
+          time: new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        }]);
+        feedbackSavingRef.current = false;
+        return;
       }
+
+      feedbackSavingRef.current = false;
+      setAwaitingSessionFeedback(false);
       setWeeklyGoal(g => g ? { ...g, session_feedback: nuevoFeedback } : g);
       // feedbackOnly=true: que el Coach SOLO reconozca la respuesta, sin generar
       // la proxima sesion todavia. El jugador tiene que tocar "Iniciar" a proposito.
-      await enviarMensajeCoach(feedbackText, feedbackText, true);
-      return;
+      await enviarMensajeCoach(feedbackText, feedbackText, true, false, nuevoFeedback);
+
+      // "Difícil" y "Bien, pero me costó" piden la observacion; solo dos "Difícil" bajan la carga.
+      const dosDificilesSeguidos = sonDosDificilesSeguidos(nuevoFeedback);
+      if (pideObservacion(feedbackText) && !dosDificilesSeguidos) {
+        setAwaitingTechnicalObservation(true);
+        setAiMessages(m => [...m, {
+          id: nuevoIdMensaje(),
+          from: 'coach',
+          type: 'text',
+          text: lang === 'en'
+            ? 'What was the hardest part of this session? You can tell me briefly or tap Skip.'
+            : '¿Qué fue lo que más te costó en esta sesión? Puedes contármelo brevemente o tocar Omitir.',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }, {
+          id: nuevoIdMensaje(),
+          from: 'coach',
+          type: 'suggestions',
+          options: ['Omitir'],
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+      } else if (session?.user?.id) {
+        const memoria = await recuperarMemoriaTecnica(
+          supabase, session.user.id
+        );
+
+        if (!memoria.error) {
+          const anterior = (memoria.data || []).find(n =>
+            n.id &&
+            n.note_type === 'difficulty' &&
+            n.status !== 'resolved' &&
+n.last_follow_up_goal_id !== weeklyGoal.id &&
+            (n.weekly_goal_id !== weeklyGoal.id || (n.session_number != null && Number(n.session_number) < Number(weeklyGoal.sessions_done)))
+          );
+
+          if (anterior) {
+const registro = await registrarSeguimientoDificultad(
+  supabase,
+  session.user.id,
+  anterior.id,
+  weeklyGoal.id
+);
+
+if (registro.error) {
+  console.warn('No se pudo registrar el seguimiento:', registro.error);
+} else {
+            setPendingDifficultyFollowUp({
+              id: anterior.id,
+              observation: anterior.observation
+            });
+
+            setAiMessages(m => [...m, {
+              id: nuevoIdMensaje(),
+              from: 'coach',
+              type: 'text',
+              text: lang === 'en'
+                ? `Previously you mentioned: "${anterior.observation}". How is it going now?`
+                : `Anteriormente mencionaste: «${anterior.observation}». ¿Cómo te va ahora?`,
+              time: new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            }, {
+              id: nuevoIdMensaje(),
+              from: 'coach',
+              type: 'suggestions',
+              options: ['Sigo igual', 'Estoy mejorando', 'Ya lo superé', 'Omitir'],
+              time: new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            }]);
+          }
+        }
+      }
+     } return;
     }
 
     // El jugador esta respondiendo si entrena solo/acompañado y que material tiene.
@@ -992,17 +1208,20 @@ export default function App() {
         console.error('Error guardando training_context:', e);
       }
       setWeeklyGoal(g => g ? { ...g, training_context: contextText } : g);
-      await enviarMensajeCoach(contextText, contextText, false, true);
+      // El jugador ve su respuesta; la API recibe el pedido explicito de la sesion y el
+      // contexto recien guardado (weeklyGoal todavia no lo tiene en esta misma funcion).
+      const pedido = pedidoDeSesion({ numero: weeklyGoal.sessions_done + 1, objetivo: weeklyGoal.goal, conoceContexto: true });
+      await enviarMensajeCoach(contextText, pedido, false, true, null, contextText);
       return;
     }
 let promptText;
 const solicitaEntrenamiento = detectarSolicitud(displayText, !!weeklyGoal);
 
 if (solicitaEntrenamiento) {
+setPendingDifficultyFollowUp(null);
+      setAwaitingTechnicalObservation(false);
       const yaConoceContexto = !!weeklyGoal.training_context;
-      promptText = yaConoceContexto
-        ? 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Genera la sesion directamente con progresion respecto a las sesiones anteriores, no preguntes por material ni si entreno solo, ya lo sabes.'
-        : 'Quiero hacer la sesion ' + (weeklyGoal.sessions_done + 1) + ' de mi objetivo: ' + weeklyGoal.goal + '. Antes de darme la sesion, preguntame si entreno solo o con alguien y que material tengo disponible.';
+      promptText = pedidoDeSesion({ numero: weeklyGoal.sessions_done + 1, objetivo: weeklyGoal.goal, conoceContexto: yaConoceContexto });
       if (!yaConoceContexto) setAwaitingTrainingContext(true);
     } else if (displayText === 'Hoy no puedo' && weeklyGoal) {
       promptText = 'Hoy no puedo entrenar ' + weeklyGoal.goal + '. Responde con comprension y recuerda cuantas sesiones quedan.';
@@ -1013,7 +1232,7 @@ if (solicitaEntrenamiento) {
     await enviarMensajeCoach(displayText, promptText, false, solicitaEntrenamiento);
   };
 
-  const enviarMensajeCoach = async (textoVisible, promptText, feedbackOnly = false, solicitaEntrenamiento = false) => {
+  const enviarMensajeCoach = async (textoVisible, promptText, feedbackOnly = false, solicitaEntrenamiento = false, feedbackActualizado = null, contextoActualizado = null) => {
     if (requireAuth()) return;
     if (!textoVisible.trim()) return;
 
@@ -1024,32 +1243,49 @@ if (solicitaEntrenamiento) {
     }
 
     const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-    setAiMessages(m => [...m, { id:Date.now(), from:"me", type:"text", text: t.suggestionLabels?.[textoVisible] || textoVisible, time:now }]);
+    setAiMessages(m => [...m, { id:nuevoIdMensaje(), from:"me", type:"text", text: t.suggestionLabels?.[textoVisible] || textoVisible, time:now }]);
     setAiInput("");
     setThinking(true);
 
     try {
-      const feedbackArr = weeklyGoal?.session_feedback || [];
+      const feedbackArr = feedbackActualizado ?? weeklyGoal?.session_feedback ?? [];
       const perfilConObjetivo = weeklyGoal ? {
         ...(userProfile||{}),
         weekly_goal: weeklyGoal.goal,
         sessions_done: weeklyGoal.sessions_done,
         sessions_target: weeklyGoal.sessions_target,
-        training_context: weeklyGoal.training_context || '',
+        training_context: contextoParaEnviar(contextoActualizado, weeklyGoal),
         sessions_log: JSON.stringify(weeklyGoal.sessions_log || []),
         last_session_feedback: feedbackArr.length > 0 ? feedbackArr[feedbackArr.length - 1] : '',
-        dos_dificiles_seguidos: feedbackArr.slice(-2).length === 2 && feedbackArr.slice(-2).every(f => /dif[ií]cil/i.test(f))
+        dos_dificiles_seguidos: sonDosDificilesSeguidos(feedbackArr)
       } : userProfile;
+      // Recuperar observaciones anteriores sin interrumpir el Coach.
+      let contextoMemoria = '';
+      try {
+        const resultadoMemoria = await recuperarMemoriaTecnica(supabase, session.user.id);
+        if (!resultadoMemoria.error) {
+          contextoMemoria = prepararContextoMemoria(resultadoMemoria.data);
+        }
+      } catch (errorMemoria) {
+        console.warn('Memoria del Coach no disponible:', errorMemoria);
+      }
+
+      const perfilConMemoria = {
+        ...(perfilConObjetivo || {}),
+        coach_learning_memory: contextoMemoria
+      };
+
       const historial = aiMessages.filter(m => m.type === 'text' && m.from !== 'suggestions').slice(-6).map(m => m.from === 'me' ? 'Jugador: ' + m.text : 'Coach: ' + m.text).join(' | ');
       const mensajeConContexto = historial ? historial + ' | Jugador: ' + promptText : promptText;
-      const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConObjetivo, feedbackOnly, lang, solicitaEntrenamiento);
+      const coachData = await sendMessageToCoach(mensajeConContexto, currentAgent, perfilConMemoria, feedbackOnly, lang, solicitaEntrenamiento);
       const response = coachData.reply;
       const isTrainingResponse = weeklyGoal && !weeklyGoal.completed && esRespuestaDeSesion(coachData, feedbackOnly);
 
       if (isTrainingResponse && weeklyGoal) {
         // Guardamos el bloque limpio de ejercicios (sin la frase de honestidad ni el saludo)
         // para poder reutilizarlo textual si el jugador dice "Dificil" en la proxima sesion.
-        const nuevoLog = [...(weeklyGoal.sessions_log || []), coachData.sessionBlock];
+        // Una entrada por sesion: si se vuelve a pedir la misma sesion, reemplaza la no completada.
+        const nuevoLog = actualizarHistorialSesiones(weeklyGoal.sessions_log, coachData.sessionBlock, weeklyGoal.sessions_done);
         try {
           await supabase.from('weekly_goals').update({ sessions_log: nuevoLog }).eq('id', weeklyGoal.id);
         } catch (e) {
@@ -1063,7 +1299,7 @@ if (solicitaEntrenamiento) {
       }
 
       setAiMessages(m => [...m, {
-        id:Date.now()+1,
+        id:nuevoIdMensaje(),
         from:currentAgent,
         type:"text",
         text:response,
@@ -1072,7 +1308,7 @@ if (solicitaEntrenamiento) {
     } catch (error) {
       console.error('Error with AI Coach:', error);
       setAiMessages(m => [...m, { 
-        id:Date.now()+1, 
+        id:nuevoIdMensaje(), 
         from:currentAgent, 
         type:"text", 
         text:"Lo siento, hubo un error. Por favor intenta de nuevo.", 
@@ -1087,7 +1323,7 @@ if (solicitaEntrenamiento) {
     setCurrentAgent(id);
     setShowSpecialists(false);
     const a = SPECIALISTS.find(s => s.id === id);
-    setAiMessages(m => [...m, { id:Date.now(), from:id, type:"handoff", text:a.intro, time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
+    setAiMessages(m => [...m, { id:nuevoIdMensaje(), from:id, type:"handoff", text:textoEspecialista(a, 'intro'), time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
   };
 
   const uploadAvatar = async (file) => {
@@ -1713,8 +1949,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
             <div className="ch-info" onClick={() => setShowSpecialists(true)}>
               <div className="ch-av" style={{ background:`${agent.color}20`, color:agent.color, display:"flex", alignItems:"center", justifyContent:"center" }}>{agent.Icon && <agent.Icon size={18} />}</div>
               <div style={{flex:1}}>
-                <div className="ch-name">{agent.name} <span style={{fontSize:11,color:'#556677'}}>▾</span></div>
-                <div className="ch-role">{agent.desc} · En línea</div>
+                <div className="ch-name">{textoEspecialista(agent, 'name')} <span style={{fontSize:11,color:'#556677'}}>▾</span></div>
+                <div className="ch-role">{textoEspecialista(agent, 'desc')} · {t.coachOnline}</div>
               </div>
             </div>
             <button className="hb">⋯</button>
@@ -2201,18 +2437,18 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
           {tab === "coach" && (
             <div className="coach-screen">
               {currentAgent === "psicologia" && (
-                <div className="safety-banner"><span><Lock size={16} /></span><div><strong>Espacio seguro.</strong> Lo que hablemos es confidencial.</div></div>
+                <div className="safety-banner"><span><Lock size={16} /></span><div><strong>{t.psychologyBannerTitle}</strong> {t.psychologyBannerText}</div></div>
               )}
               
               {currentAgent === "nutricion" && (
-                <div className="safety-banner" style={{background:'rgba(255,183,77,0.08)',borderColor:'rgba(255,183,77,0.2)'}}><span><AlertTriangle size={16} /></span><div><strong>Consejo nutricional general.</strong> Para planes personalizados o condiciones médicas específicas, consulta un nutricionista certificado.</div></div>
+                <div className="safety-banner" style={{background:'rgba(255,183,77,0.08)',borderColor:'rgba(255,183,77,0.2)'}}><span><AlertTriangle size={16} /></span><div><strong>{t.nutritionBannerTitle}</strong> {t.nutritionBannerText}</div></div>
               )}
 
               <div className="ai-msgs">
                 {aiMessages.map(m => {
                   const ma = SPECIALISTS.find(s => s.id === m.from);
                   if (m.type === "handoff") {
-                    return <div key={m.id} className="handoff"><div className="handoff-lbl"><div className="handoff-line"/><span>{ma.name} se unió</span><div className="handoff-line"/></div><div className="handoff-intro">"{m.text}"</div></div>;
+                    return <div key={m.id} className="handoff"><div className="handoff-lbl"><div className="handoff-line"/><span>{textoEspecialista(ma, 'name')} {t.specialistJoined}</span><div className="handoff-line"/></div><div className="handoff-intro">"{m.text}"</div></div>;
                   }
                   if (m.type === "suggestions") {
                     const esUltimoMensaje = aiMessages.length > 0 && m.id === aiMessages[aiMessages.length - 1].id;
@@ -2220,7 +2456,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   }
                   if (m.type === "specialist-card") {
                     const sp = SPECIALISTS.find(s => s.id === m.specialist);
-                    return <div key={m.id} className="spec-sug"><div className="spec-sug-h"><div className="spec-sug-i" style={{background:`${sp.color}20`,color:sp.color,display:"flex",alignItems:"center",justifyContent:"center"}}>{sp.Icon && <sp.Icon size={16} />}</div><div><div className="spec-sug-n">{sp.name}</div><div className="spec-sug-r">{sp.desc}</div></div></div><button className="spec-sug-b" style={{background:sp.color,color:'#0a0e14'}} onClick={()=>switchAgent(m.specialist)}>Conectar con {sp.name} →</button></div>;
+                    return <div key={m.id} className="spec-sug"><div className="spec-sug-h"><div className="spec-sug-i" style={{background:`${sp.color}20`,color:sp.color,display:"flex",alignItems:"center",justifyContent:"center"}}>{sp.Icon && <sp.Icon size={16} />}</div><div><div className="spec-sug-n">{textoEspecialista(sp, 'name')}</div><div className="spec-sug-r">{textoEspecialista(sp, 'desc')}</div></div></div><button className="spec-sug-b" style={{background:sp.color,color:'#0a0e14'}} onClick={()=>switchAgent(m.specialist)}>{t.connectWith} {textoEspecialista(sp, 'name')} →</button></div>;
                   }
                   const exVisual = (m.from !== 'me' && !visualsV2) ? detectExerciseVisual(m.text) : null;
                   return (
@@ -2272,19 +2508,19 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                       {sessionInProgress ? (
                         <button onClick={completeSession} style={{background:'#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>✓ {lang === 'en' ? 'Finished my session' : 'Terminé mi sesión'}</button>
                       ) : (
-                        <button onClick={() => { if (!awaitingSessionFeedback) sendAI('Sí, vamos'); }} disabled={awaitingSessionFeedback} title={awaitingSessionFeedback ? 'Responde arriba como te fue para continuar' : ''} style={{background:awaitingSessionFeedback ? 'rgba(0,230,118,0.3)' : '#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:awaitingSessionFeedback ? 'not-allowed' : 'pointer',fontFamily:'Outfit,sans-serif',opacity:awaitingSessionFeedback ? 0.6 : 1}}>▶ {lang === 'en' ? 'Start' : 'Iniciar'} {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
+                        <button onClick={() => { if (!awaitingSessionFeedback) sendAI('Sí, vamos'); }} disabled={awaitingSessionFeedback} title={awaitingSessionFeedback ? t.answerAboveToContinue : ''} style={{background:awaitingSessionFeedback ? 'rgba(0,230,118,0.3)' : '#00E676',border:'none',borderRadius:'10px',padding:'6px 12px',fontSize:'12px',fontWeight:'700',color:'#0a0e14',cursor:awaitingSessionFeedback ? 'not-allowed' : 'pointer',fontFamily:'Outfit,sans-serif',opacity:awaitingSessionFeedback ? 0.6 : 1}}>▶ {lang === 'en' ? 'Start' : 'Iniciar'} {weeklyGoal.sessions_done + 1}/{weeklyGoal.sessions_target}</button>
                       )}
                     </div>
                   ) : (
                     <button onClick={() => setShowWeeklyGoal(true)} style={{width:'100%',padding:'8px',background:'transparent',border:'1px dashed rgba(0,230,118,0.3)',borderRadius:'12px',color:'#00E676',fontSize:'12px',fontWeight:'600',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
-                      🎯 Establecer objetivo de la semana
+                      {t.setWeeklyGoalButton}
                     </button>
                   )}
                 </div>
               )}
               <div className="ai-input">
                 <div className="ai-ibox">
-                  <textarea className="ai-field" placeholder={`${t.writeToPrefix} ${agent.name}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
+                  <textarea className="ai-field" placeholder={`${t.writeToPrefix} ${textoEspecialista(agent, 'name')}...`} value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI(aiInput);}}} rows={1}/>
                 </div>
                 {aiInput.trim() && (
                   <button className="ai-send" style={{background:'#00E676',color:'#0a0e14'}} onClick={()=>sendAI(aiInput)}>→</button>
@@ -2294,14 +2530,14 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               <div className="drawer-bg" style={{display:showSpecialists?"flex":"none"}} onClick={()=>setShowSpecialists(false)}>
                 <div className="drawer" onClick={e=>e.stopPropagation()}>
                   <div className="drawer-handle"/>
-                  <div className="drawer-title">Elige con quién hablar</div>
-                  <div className="drawer-sub">Tu equipo de apoyo</div>
+                  <div className="drawer-title">{t.chooseSpecialistTitle}</div>
+                  <div className="drawer-sub">{t.chooseSpecialistSub}</div>
                   <div className="spec-grid">
                     {SPECIALISTS.map(s=>(
                       <div key={s.id} className={`spec-card ${currentAgent===s.id?'active':''}`} style={{color:s.color}} onClick={()=>switchAgent(s.id)}>
                         <div className="spec-emoji" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>{s.Icon && <s.Icon size={22} style={{color:s.color}} />}</div>
-                        <div className="spec-name">{s.name}</div>
-                        <div className="spec-desc">{s.desc}</div>
+                        <div className="spec-name">{textoEspecialista(s, 'name')}</div>
+                        <div className="spec-desc">{textoEspecialista(s, 'desc')}</div>
                       </div>
                     ))}
                   </div>

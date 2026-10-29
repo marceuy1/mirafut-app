@@ -2,7 +2,11 @@
 // Ejecutar:  npx esbuild tests/coachSesion.test.js --bundle --platform=node --outfile=/tmp/coachSesion.cjs && node /tmp/coachSesion.cjs
 // No llama a OpenAI: `fetch` está simulado.
 import assert from 'node:assert/strict';
-import handler, { analizarBloqueSesion, extraerBloqueReutilizable } from '../api/chat.js';
+import handler, { analizarBloqueSesion, extraerBloqueReutilizable, mensajeSeguro, mensajeTrasFeedback, categoriaFeedback } from '../api/chat.js';
+import { actualizarHistorialSesiones, sesionesCompletadas, numeroDeSesion } from '../src/historialSesiones.js';
+import { contarCabeceos, limitarCabeceos, notaCabeceos } from '../scripts/cabeceos.mjs';
+import { aumentoDeReps, esAumentoPequenoVerificado } from '../scripts/progresar_sesion_coach.mjs';
+import { leerCarga as leerCargaT } from '../scripts/verificar_progresion_coach.mjs';
 
 let passed = 0, failed = 0;
 const pendientes = [];
@@ -51,7 +55,9 @@ async function llamar(body, openai) {
   const fetchOrig = globalThis.fetch, logOrig = console.log;
   globalThis.fetch = async (url, opts) => {
     llamadas.push({ url, body: JSON.parse(opts.body) });
-    return { json: async () => openai };
+    // `openai` puede ser una lista: una respuesta distinta por llamada (la ultima se repite).
+    const r = Array.isArray(openai) ? openai[Math.min(llamadas.length - 1, openai.length - 1)] : openai;
+    return { ok: true, status: 200, json: async () => r };
   };
   console.log = (...a) => logs.push(a.join(' '));
   const res = { code: 200, payload: null, status(c) { this.code = c; return this; }, json(p) { this.payload = p; return this; } };
@@ -189,7 +195,7 @@ test('handler ES completo: sessionBlock, meta y log', async () => {
   assert.deepEqual(r.res.payload.meta, { completa: true, faltantes: [], finishReason: 'stop' });
   assert.equal(r.eventos.length, 1);
   const e = r.eventos[0];
-  assert.deepEqual(Object.keys(e).sort(), ['chars', 'completa', 'completion_tokens', 'evt', 'faltantes', 'finish_reason', 'lang', 'prompt_tokens'].sort());
+  assert.deepEqual(Object.keys(e).sort(), ['chars', 'completa', 'completion_tokens', 'evt', 'faltantes', 'finish_reason', 'lang', 'progresion_motivo', 'progresion_observation', 'prompt_tokens'].sort());
   assert.equal(e.evt, 'coach_session_gen'); assert.equal(e.lang, 'es'); assert.equal(e.finish_reason, 'stop');
   assert.equal(e.completion_tokens, 540); assert.equal(e.prompt_tokens, 2400); assert.equal(e.completa, true);
 });
@@ -222,7 +228,8 @@ test('handler: el registro no contiene datos personales, mensajes ni contenido d
 });
 test('handler: feedbackOnly no registra evento de sesión', async () => {
   const r = await llamar(body({ extra: { feedbackOnly: true } }), openaiOK('Gracias por contarme. ¿Listo para la próxima?'));
-  assert.equal(r.eventos.length, 0); assert.equal(r.res.payload.sessionBlock, null);
+  assert.equal(r.eventos.length, 0); assert.equal(r.res.payload.sessionBlock, '');
+  assert.equal(r.llamadas.length, 0);
 });
 test('handler: max_tokens sigue en 650 (no se cambia en esta fase) y no hay reintentos', async () => {
   const r = await llamar(body(), openaiOK(sesionES(1), 'length'));
@@ -282,9 +289,114 @@ test('Difícil: sesión anterior EN incompleta -> NO se reutiliza', async () => 
   const r = await llamar(dificil([sesionEN(1, { ejercicios: 2 })], {}, 'en'), openaiOK(sesionEN(2)));
   assert.equal(r.llamadas.length, 1); assert.ok(!r.res.payload.reply.startsWith('Understood.'));
 });
-test('Dos «Difícil» seguidos: simplifica por IA (no reutiliza)', async () => {
-  const r = await llamar(dificil([sesionES(1)], { dos_dificiles_seguidos: true }), openaiOK(sesionES(2)));
-  assert.equal(r.llamadas.length, 1);
+// Dos «Difícil» seguidos: primero adaptación local verificada; si no es posible, mensaje seguro
+// (la sesión de recuperación está desactivada). Nunca se pide la sesión a OpenAI ni se entrega una no verificable.
+// Sesión con el formato nuevo: Reps entero, instrucciones sin cantidades de repeticiones.
+function sesionAdaptable(n, lang = 'es', o = {}) {
+  const r = o.reps || [5, 4, 5];
+  const como = o.como || (lang === 'en' ? 'Move sideways between two markers 3 meters apart, keeping low.' : 'Desplázate de lado entre dos marcas a 3 metros, con el cuerpo bajo.');
+  const ej = (i) => lang === 'en'
+    ? `${i}. Exercise ${i} footwork — ${5 + i} min\n   Sets: 3 | Reps: ${r[i - 1]} | Rest: 30 sec\n   How: ${como}\n   Technical focus: head up.\n`
+    : `${i}. Ejercicio ${i} de pies — ${5 + i} min\n   Series: 3 | Reps: ${r[i - 1]} | Descanso: 30 seg\n   Como: ${como}\n   Foco tecnico: cabeza arriba.\n`;
+  const head = lang === 'en' ? `Session ${n} — Footwork — 20 min\n\n` : `Sesion ${n} — Pies — 20 min\n\n`;
+  return head + [1, 2, 3].map(ej).join('\n') + (lang === 'en' ? '\nCoach Tip: stay low.' : '\nCoach Tip: mantente bajo.');
+}
+const dosDificiles = (log, lang = 'es', extra = {}) => dificil(log, { dos_dificiles_seguidos: true, ...extra }, lang);
+const repsDe = (t) => [...t.matchAll(/Reps:\s*(\d+)/g)].map(m => Number(m[1]));
+
+test('Dos «Difícil» ES: adapta localmente, verifica la reducción y NO llama a OpenAI', async () => {
+  const r = await llamar(dosDificiles([sesionAdaptable(1)]), openaiOK('NO DEBE USARSE'));
+  assert.equal(r.llamadas.length, 0);
+  const b = r.res.payload.sessionBlock;
+  assert.ok(b.startsWith('Sesion 2'));
+  assert.deepEqual(repsDe(b), [3, 3, 3]);
+  assert.ok(r.res.payload.reply.includes('no hace falta compensarlas'));
+});
+test('Dos «Difícil» EN: adapta localmente con etiquetas en inglés', async () => {
+  const r = await llamar(dosDificiles([sesionAdaptable(1, 'en')], 'en'), openaiOK('NO'));
+  assert.equal(r.llamadas.length, 0);
+  assert.ok(r.res.payload.sessionBlock.startsWith('Session 2'));
+  assert.ok(r.res.payload.reply.includes('no need to make up'));
+  assert.ok(!/Descanso|Como:|Foco tecnico/.test(r.res.payload.sessionBlock));
+});
+test('Dos «Difícil»: la adaptación solo cambia Reps (no series, descansos, minutos ni instrucciones)', async () => {
+  const previa = sesionAdaptable(1);
+  const r = await llamar(dosDificiles([previa]), openaiOK('NO'));
+  const a = previa.split('\n'), b = r.res.payload.sessionBlock.split('\n');
+  assert.equal(a.length, b.length);
+  const cambiadas = b.map((l, i) => [a[i], l]).filter(([x, y]) => x !== y);
+  assert.ok(cambiadas.every(([x, y]) => /^Sesion /.test(x) || x.replace(/Reps: \d+/, '') === y.replace(/Reps: \d+/, '')));
+});
+test('Dos «Difícil»: sesión anterior con "Reps: 5 to each side" -> mensaje seguro, sin sesión ni OpenAI', async () => {
+  const previa = sesionAdaptable(1, 'en').replace('Reps: 5 |', 'Reps: 5 to each side |');
+  const r = await llamar(dosDificiles([previa], 'en'), openaiOK(sesionEN(2)));
+  assert.equal(r.llamadas.length, 0);
+  assert.equal(r.res.payload.sessionBlock, '');
+  assert.ok(r.res.payload.reply.includes("won't give you a training plan I can't verify"));
+  assert.ok(!/try requesting your session again/i.test(r.res.payload.reply));
+});
+test('Dos «Difícil»: instrucciones con cantidades ("6 toques") -> no adapta, mensaje seguro', async () => {
+  const r = await llamar(dosDificiles([sesionES(1)]), openaiOK(sesionES(2)));
+  assert.equal(r.llamadas.length, 0);
+  assert.equal(r.res.payload.sessionBlock, '');
+  assert.ok(r.res.payload.reply.includes('prefiero no darte un entrenamiento sin verificar'));
+});
+test('Dos «Difícil»: instrucción que obliga a llenar el tiempo -> no adapta', async () => {
+  const previa = sesionAdaptable(1, 'en', { como: 'Keep moving sideways for the whole time without stopping.' });
+  const r = await llamar(dosDificiles([previa], 'en'), openaiOK('NO'));
+  assert.equal(r.res.payload.sessionBlock, '');
+});
+test('Dos «Difícil»: todo en 1 repetición -> no inventa reducción, mensaje seguro', async () => {
+  const r = await llamar(dosDificiles([sesionAdaptable(1, 'es', { reps: [1, 1, 1] })]), openaiOK('NO'));
+  assert.equal(r.res.payload.sessionBlock, '');
+});
+test('Plan B desactivado: nunca entrega la sesión de recuperación', async () => {
+  const r = await llamar(dosDificiles([sesionES(1)]), openaiOK('NO'));
+  assert.ok(!/Recuperación activa|Active recovery/.test(r.res.payload.reply));
+});
+test('Seguridad: dolor en el mensaje -> no hay sesión (ni adaptada) y no llama a OpenAI', async () => {
+  const s = dosDificiles([sesionAdaptable(1)]);
+  s.message = 'Coach: ¿Cómo te fue? | Jugador: me duele la rodilla | Jugador: Sí, vamos';
+  const r = await llamar(s, openaiOK('NO'));
+  assert.equal(r.llamadas.length, 0);
+  assert.equal(r.res.payload.sessionBlock, '');
+  assert.ok(r.res.payload.reply.includes('hoy no es momento de entrenar'));
+});
+test('Seguridad: un solo «Difícil» con malestar -> tampoco reutiliza la sesión', async () => {
+  const s = dificil([sesionES(1)], {}, 'en');
+  s.message = 'Player: my ankle feels weird | Player: Yes, let\'s go';
+  const r = await llamar(s, openaiOK('NO'));
+  assert.equal(r.res.payload.sessionBlock, '');
+  assert.ok(r.res.payload.reply.includes('today is not a day to train'));
+});
+test('Seguridad: malestar en una nota de memoria activa -> no hay sesión', async () => {
+  const s = dosDificiles([sesionAdaptable(1)], 'es', { coach_learning_memory: 'Dificultad reportada (activa) [referencia: x]: me duele el tobillo al girar' });
+  const r = await llamar(s, openaiOK('NO'));
+  assert.equal(r.res.payload.sessionBlock, '');
+});
+test('Seguridad: una nota resuelta no bloquea', async () => {
+  const s = dosDificiles([sesionAdaptable(1)], 'es', { coach_learning_memory: 'Dificultad reportada (resuelta) [referencia: x]: me dolía el tobillo' });
+  const r = await llamar(s, openaiOK('NO'));
+  assert.ok(r.res.payload.sessionBlock.startsWith('Sesion 2'));
+});
+test('Seguridad: los consejos del Coach ("si te duele, para") no se toman como reporte', async () => {
+  const s = dosDificiles([sesionAdaptable(1)]);
+  s.message = 'Coach: Si algo te duele, detente. | Jugador: Sí, vamos';
+  const r = await llamar(s, openaiOK('NO'));
+  assert.ok(r.res.payload.sessionBlock.startsWith('Sesion 2'));
+});
+test('Prompt: plantilla EN sin etiquetas en español y ES sin etiquetas en inglés', async () => {
+  const en = await llamar(body({ lang: 'en' }), openaiOK(sesionEN(1)));
+  const pe = en.llamadas[0].body.messages[0].content;
+  const plantillaEn = pe.slice(pe.indexOf('FORMATO DE RESPUESTA'), pe.indexOf('Coach Tip:', pe.indexOf('FORMATO DE RESPUESTA')));
+  assert.ok(/Sets: X \| Reps: X \| Rest: X sec/.test(plantillaEn) && /How:/.test(plantillaEn) && /Technical focus:/.test(plantillaEn));
+  assert.ok(!/Descanso|Como:|Foco tecnico:/.test(plantillaEn));
+  const es = await llamar(body(), openaiOK(sesionES(1)));
+  const ps = es.llamadas[0].body.messages[0].content;
+  const plantillaEs = ps.slice(ps.indexOf('FORMATO DE RESPUESTA'), ps.indexOf('Coach Tip:', ps.indexOf('FORMATO DE RESPUESTA')));
+  assert.ok(/Series: X \| Reps: X \| Descanso: X seg/.test(plantillaEs) && /Como:/.test(plantillaEs));
+  assert.ok(!/Sets:|Rest:|How:|Technical focus/.test(plantillaEs));
+  assert.ok(pe.includes('UN SOLO numero entero') && ps.includes('UN SOLO numero entero'));
 });
 test('Difícil con frase de honestidad: orden honestidad + reconocimiento + bloque (sin cambios)', async () => {
   const r = await llamar(dificil([sesionES(1)], { weekly_goal: 'Mejorar mi marcación' }), openaiOK('NO'));
@@ -318,6 +430,238 @@ test('Pregunta técnica después de Difícil: no repite la sesión', async () =>
 
   assert.equal(r.res.payload.sessionBlock, null,
     'Una explicación técnica no debe convertirse en sesión');
+});
+
+// =====================================================================================
+// Historial: sesiones generadas y no completadas, repetidas o que no son sesiones
+// =====================================================================================
+const conReps = (texto, reps) => texto.replace(/Reps: \d+/g, 'Reps: ' + reps);
+// Variante sin cantidades en las instrucciones (condicion para la adaptacion local).
+const adaptable = (texto) => texto.replaceAll(' 6 toques entre ellos', ' entre ellos').replaceAll(' 6 touches between them', ' between them');
+const sES = (n) => adaptable(sesionES(n)), sEN = (n) => adaptable(sesionEN(n)).replaceAll('Key focus:', 'Technical focus:');
+const promptDe = (r) => JSON.stringify(r.llamadas[0]?.body?.messages || []);
+
+test('Dos Difícil: la sesión anterior es la última COMPLETADA, no la última generada', async () => {
+  // La sesión 3 ya se generó una vez (reducida) pero no se completó: no debe volver a reducirse.
+  const log = [sES(1), sES(2), conReps(sES(3), 6)];
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Difícil', dos_dificiles_seguidos: true } }), openaiOK('NO DEBE USARSE'));
+  assert.equal(r.llamadas.length, 0);
+  assert.ok(r.res.payload.sessionBlock.startsWith('Sesion 3'));
+  assert.deepEqual(repsDe(r.res.payload.sessionBlock), [6, 6, 6]); // 8 × 0,75 a partir de la sesión 2
+});
+test('Pedir la misma sesión varias veces no acumula la reducción ni agranda el historial (ES y EN)', async () => {
+  for (const [lang, ses] of [['es', sES], ['en', sEN]]) {
+    let log = [ses(1), ses(2)];
+    const bloques = [];
+    for (let i = 0; i < 3; i++) {
+      const r = await llamar(body({ lang, perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Difícil', dos_dificiles_seguidos: true } }), openaiOK('NO DEBE USARSE'));
+      bloques.push(r.res.payload.sessionBlock);
+      log = actualizarHistorialSesiones(log, r.res.payload.sessionBlock, 2); // lo que guarda la app
+    }
+    assert.equal(bloques[0], bloques[1], lang);
+    assert.equal(bloques[1], bloques[2], lang);
+    assert.deepEqual(repsDe(bloques[2]), [6, 6, 6], lang);
+    assert.equal(log.length, 3, lang);
+  }
+});
+test('Un Difícil: repite la última completada aunque haya una sesión 3 generada y sin terminar', async () => {
+  const log = [sesionES(1), sesionES(2), conReps(sesionES(3), 2)];
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Difícil' } }), openaiOK('NO DEBE USARSE'));
+  assert.equal(r.llamadas.length, 0);
+  assert.equal(r.res.payload.sessionBlock, renumeradaVieja(sesionES(2), 3));
+});
+test('Dos Difícil sin una sesión anterior válida (datos viejos): mensaje seguro, sin IA', async () => {
+  const log = [sesionES(1), 'Buena pregunta sobre el timing: mira al pasador antes de moverte.'];
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Difícil', dos_dificiles_seguidos: true } }), openaiOK('NO DEBE USARSE'));
+  assert.equal(r.llamadas.length, 0);
+  assert.equal(r.res.payload.sessionBlock, '');
+  assert.equal(r.res.payload.reply, mensajeSeguro('es', false));
+});
+test('La IA recibe solo las sesiones completadas, una por número y sin textos que no son sesiones', async () => {
+  const log = [sesionES(1), conReps(sesionES(1), 7), 'Respuesta suelta del Coach sobre el timing.', sesionES(2), conReps(sesionES(3), 9)];
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Bien, pero me costó' } }), openaiOK(sesionES(3)));
+  const prompt = promptDe(r);
+  assert.equal((prompt.match(/Sesion 1: /g) || []).length, 1);
+  assert.equal((prompt.match(/Sesion 2: /g) || []).length, 1);
+  assert.ok(!/Sesion 3: /.test(prompt));
+  assert.ok(!prompt.includes('Respuesta suelta del Coach'));
+  assert.ok(prompt.includes('Reps: 7')); // de la sesión 1 se usa la última versión guardada
+});
+test('actualizarHistorialSesiones: reemplaza la sesión no completada y descarta lo que no es sesión', () => {
+  const s1 = sesionES(1), s2 = sesionES(2), s3a = sesionES(3), s3b = conReps(sesionES(3), 4);
+  assert.deepEqual(actualizarHistorialSesiones([s1, s2], s3a, 2), [s1, s2, s3a]);
+  assert.deepEqual(actualizarHistorialSesiones([s1, s2, s3a], s3b, 2), [s1, s2, s3b]);
+  assert.deepEqual(actualizarHistorialSesiones([s1, 'texto suelto', s2, null], s3a, 2), [s1, s2, s3a]);
+  assert.deepEqual(actualizarHistorialSesiones(undefined, s1, 0), [s1]);
+  assert.deepEqual(actualizarHistorialSesiones([s1, s2], s1, 0), [s1]);
+});
+test('sesionesCompletadas y numeroDeSesion', () => {
+  assert.equal(numeroDeSesion(sesionEN(3)), 3);
+  assert.equal(numeroDeSesion('Sesión 12 — x'), 12);
+  assert.equal(numeroDeSesion('sin encabezado'), null);
+  assert.equal(numeroDeSesion(null), null);
+  const r = sesionesCompletadas([sesionES(2), sesionES(1), conReps(sesionES(2), 5), sesionES(3)], 2);
+  assert.deepEqual(r.map(x => x.numero), [1, 2]);
+  assert.deepEqual(repsDe(r[1].bloque), [5, 5, 5]);
+});
+
+// =====================================================================================
+// Reconocimiento fijo tras "como te fue": sin IA y sin preguntas
+// =====================================================================================
+const tras = (feedback, lang, dos = false) => body({ lang, extra: { feedbackOnly: true, solicitaEntrenamiento: false },
+  perfil: { sessions_done: 2, sessions_log: JSON.stringify([sesionES(1), sesionES(2)]), last_session_feedback: feedback, dos_dificiles_seguidos: dos } });
+test('Tras "cómo te fue": mensaje fijo, sin llamar a la IA y sin preguntas (ES y EN)', async () => {
+  const casos = [['Muy bien', false, 'muy_bien'], ['Bien, pero me costó', false, 'bien_costo'], ['Difícil', false, 'dificil'], ['Difícil', true, 'dos_dificiles'], ['me fue normal', false, 'otro']];
+  for (const lang of ['es', 'en']) for (const [fb, dos, cat] of casos) {
+    const r = await llamar(tras(fb, lang, dos), openaiOK('NO DEBE USARSE. ¿Qué parte te costó?'));
+    const etiqueta = `${lang} ${fb} ${dos}`;
+    assert.equal(r.llamadas.length, 0, etiqueta);
+    assert.equal(categoriaFeedback(fb, dos), cat, etiqueta);
+    assert.equal(r.res.payload.reply, mensajeTrasFeedback(lang, fb, dos), etiqueta);
+    assert.ok(!/[?¿]/.test(r.res.payload.reply), 'sin preguntas: ' + etiqueta);
+    assert.equal(r.res.payload.sessionBlock, '', etiqueta);
+  }
+});
+test('Mensajes tras feedback: idioma correcto y el de un "Difícil" no manda a Iniciar (sigue la pregunta con Omitir)', () => {
+  assert.ok(mensajeTrasFeedback('en', 'Difícil', true).includes('tap Start'));
+  assert.ok(mensajeTrasFeedback('es', 'Difícil', true).includes('toca Iniciar'));
+  assert.ok(!/Iniciar|Start/.test(mensajeTrasFeedback('es', 'Difícil', false)));
+  assert.ok(!/Iniciar|Start/.test(mensajeTrasFeedback('en', 'Difícil', false)));
+  assert.ok(!/Iniciar|Start/.test(mensajeTrasFeedback('es', 'Bien, pero me costó', false)));
+  assert.ok(!/[áéíóúñ¡¿]/.test(mensajeTrasFeedback('en', 'Muy bien', false)));
+});
+
+test('API: una app vieja que marca dos difíciles con "Bien, pero me costó" al final no baja la carga', async () => {
+  const log = [sesionES(1), sesionES(2)];
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Bien, pero me costó', dos_dificiles_seguidos: true } }), openaiOK(sesionES(3)));
+  assert.equal(r.llamadas.length, 1); // sigue el camino normal (progresion moderada por la IA)
+  assert.ok(!/SIMPLIFICAR/.test(promptDe(r)));
+  const fb = await llamar(tras('Bien, pero me costó', 'es', true), openaiOK('NO DEBE USARSE'));
+  assert.equal(fb.res.payload.reply, mensajeTrasFeedback('es', 'Bien, pero me costó', false));
+});
+
+// =====================================================================================
+// Limite de cabeceos segun la edad (toda sesion entregada pasa por el limite)
+// =====================================================================================
+const conCabeceo = (n, lang = 'es') => (lang === 'en' ? sesionEN(n) : sesionES(n))
+  .replace(lang === 'en' ? 'dribble 6 touches between them.' : 'conduce el balón 6 toques entre ellos.',
+           lang === 'en' ? 'jump to head it back to your hands.' : 'salta y cabecea la pelota de vuelta a tus manos.');
+test('Cabeceos: 13 años, la IA propone cabeceos con salto → se reemplazan y se avisa (ES y EN)', async () => {
+  for (const lang of ['es', 'en']) {
+    const r = await llamar(body({ lang, perfil: { age: '13' } }), openaiOK(conCabeceo(1, lang)));
+    assert.equal(contarCabeceos(r.res.payload.sessionBlock), 0, lang);
+    assert.ok(r.res.payload.reply.includes(notaCabeceos(lang)), lang);
+    assert.ok(r.res.payload.reply.includes(r.res.payload.sessionBlock), lang);
+    assert.ok(JSON.stringify(r.llamadas[0].body.messages).includes('REGLA DE CABECEO'), lang);
+  }
+});
+test('Cabeceos: 16 años, se limita a 10 por semana contando las sesiones ya hechas', async () => {
+  const r = await llamar(body({ perfil: { age: '16' } }), openaiOK(conCabeceo(1)));
+  assert.equal(contarCabeceos(r.res.payload.sessionBlock), 10);
+  // Repetir tras "Difícil" una sesión con 10 cabeceos ya hechos: no queda margen.
+  const previa = limitarCabeceos(conCabeceo(1).slice(conCabeceo(1).indexOf('Sesion')), { edad: 16 }).bloque;
+  const r2 = await llamar(body({ perfil: { age: '16', sessions_done: 1, sessions_log: JSON.stringify([previa]), last_session_feedback: 'Difícil' } }), openaiOK('NO DEBE USARSE'));
+  assert.equal(r2.llamadas.length, 0);
+  assert.equal(contarCabeceos(r2.res.payload.sessionBlock), 0);
+});
+test('Cabeceos: sesión sin cabeceo no cambia', async () => {
+  const r = await llamar(body({ perfil: { age: '13' } }), openaiOK(sesionES(1)));
+  assert.ok(!r.res.payload.reply.includes(notaCabeceos('es')));
+});
+
+// =====================================================================================
+// Edad: desde la fecha de nacimiento; si es desconocida, la regla mas prudente
+// =====================================================================================
+test('Edad desconocida: sesión de 15 min, sin edad inventada y límite de cabeceos de menores de 14', async () => {
+  const r = await llamar(body({ perfil: { age: undefined, birth_date: undefined } }), openaiOK(conCabeceo(1)));
+  const prompt = promptDe(r);
+  assert.ok(prompt.includes('FORMATO DE RESPUESTA (15 min total; edad del jugador: edad no confirmada)'));
+  assert.ok(!/\b16 anos\b/.test(prompt));
+  assert.equal(contarCabeceos(r.res.payload.sessionBlock), 0); // con salto: no permitido sin edad confirmada
+});
+test('Edad: la fecha de nacimiento manda sobre el número guardado al registrarse', async () => {
+  const hace20 = new Date(); hace20.setUTCFullYear(hace20.getUTCFullYear() - 20); hace20.setUTCDate(hace20.getUTCDate() - 2);
+  const r = await llamar(body({ perfil: { age: '13', birth_date: hace20.toISOString().slice(0, 10) } }), openaiOK(conCabeceo(1)));
+  assert.ok(promptDe(r).includes('FORMATO DE RESPUESTA (25 min total; edad del jugador: 20 anos)'));
+  assert.equal(contarCabeceos(r.res.payload.sessionBlock), 10); // 20 años: límite de 10
+});
+
+// =====================================================================================
+// "Muy bien": progresion calculada por codigo (mismos ejercicios, +20 % de repeticiones)
+// =====================================================================================
+const muyBien = (log, lang = 'es', extra = {}) => body({ lang, perfil: { sessions_done: log.length, sessions_log: JSON.stringify(log), last_session_feedback: 'Muy bien', ...extra } });
+test('Muy bien: mismos ejercicios con un poco más de repeticiones, sin IA (ES y EN)', async () => {
+  for (const [lang, ses, sesion] of [['es', sES, 'Sesion'], ['en', sEN, 'Session']]) {
+    const previa = ses(1);
+    const r = await llamar(muyBien([previa], lang), openaiOK('NO DEBE USARSE'));
+    assert.equal(r.llamadas.length, 0, lang);
+    const b = r.res.payload.sessionBlock;
+    assert.ok(b.startsWith(sesion + ' 2'), lang);
+    assert.deepEqual(repsDe(b), [10, 10, 10], lang); // 8 + 2
+    assert.ok(esAumentoPequenoVerificado(previa.slice(previa.indexOf(sesion)), b), lang);
+    assert.equal(leerCargaT(b).every(c => c.series === 3 && c.descanso === 30), true, lang);
+  }
+});
+test('Muy bien: pedir la misma sesión dos veces no acumula el aumento', async () => {
+  let log = [sES(1)];
+  const r1 = await llamar(muyBien(log), openaiOK('NO DEBE USARSE'));
+  log = actualizarHistorialSesiones(log, r1.res.payload.sessionBlock, 1);
+  const r2 = await llamar(body({ perfil: { sessions_done: 1, sessions_log: JSON.stringify(log), last_session_feedback: 'Muy bien' } }), openaiOK('NO DEBE USARSE'));
+  assert.equal(r1.res.payload.sessionBlock, r2.res.payload.sessionBlock);
+});
+test('Muy bien: si no se puede subir con seguridad, se repite la sesión (nunca la IA sin control)', async () => {
+  // La sesión tiene cantidades en las instrucciones ("6 toques"): no se puede subir la carga.
+  const r = await llamar(muyBien([sesionES(1)]), openaiOK('NO DEBE USARSE'));
+  assert.equal(r.llamadas.length, 0);
+  assert.deepEqual(repsDe(r.res.payload.sessionBlock), [8, 8, 8]);
+  assert.ok(r.res.payload.sessionBlock.startsWith('Sesion 2'));
+});
+test('Muy bien: el tope de repeticiones no se supera', () => {
+  assert.equal(aumentoDeReps(1), 2); assert.equal(aumentoDeReps(5), 6); assert.equal(aumentoDeReps(10), 12);
+  assert.equal(aumentoDeReps(19), 20); assert.equal(aumentoDeReps(20), 20);
+});
+test('Muy bien: el verificador rechaza aumentos grandes, cambios de series o descanso', () => {
+  const a = sES(1).slice(sES(1).indexOf('Sesion'));
+  assert.equal(esAumentoPequenoVerificado(a, a), false); // sin aumento
+  assert.equal(esAumentoPequenoVerificado(a, a.replace(/Reps: 8/g, 'Reps: 16')), false);
+  assert.equal(esAumentoPequenoVerificado(a, a.replace(/Series: 3/, 'Series: 4').replace(/Reps: 8/g, 'Reps: 9')), false);
+  assert.equal(esAumentoPequenoVerificado(a, a.replace(/Descanso: 30/, 'Descanso: 15').replace(/Reps: 8/g, 'Reps: 9')), false);
+  assert.equal(esAumentoPequenoVerificado(a, a.replace(/Reps: 8/g, 'Reps: 9')), true);
+});
+test('Muy bien con cabeceos: el aumento respeta el límite semanal', async () => {
+  const previa = limitarCabeceos(adaptable(conCabeceo(1)).slice(adaptable(conCabeceo(1)).indexOf('Sesion')), { edad: 16 }).bloque;
+  const r = await llamar(muyBien([previa], 'es', { age: '16' }), openaiOK('NO DEBE USARSE'));
+  assert.equal(contarCabeceos(previa), 10);
+  assert.equal(contarCabeceos(r.res.payload.sessionBlock), 0); // ya hizo los 10 de la semana
+  assert.ok(r.res.payload.reply.includes(notaCabeceos('es')));
+});
+
+// =====================================================================================
+// La IA responde sin sesion cuando se pidio una: un reintento y, si no, mensaje fijo
+// =====================================================================================
+const PREGUNTA_IA = 'Great to hear you have the basics! What specific aspects of reading the game do you want to improve this week?';
+test('Sin sesión en la respuesta: se reintenta una vez y se entrega la sesión del reintento', async () => {
+  const r = await llamar(body({ lang: 'en' }), [openaiOK(PREGUNTA_IA), openaiOK(sesionEN(1))]);
+  assert.equal(r.llamadas.length, 2);
+  assert.ok(r.llamadas[1].body.messages[0].content.includes('REGLA PRIORITARIA'));
+  assert.ok(r.res.payload.sessionBlock.startsWith('Session 1'));
+  assert.ok(!r.res.payload.reply.includes(PREGUNTA_IA));
+});
+test('Sin sesión tampoco en el reintento: mensaje fijo, sin la pregunta de la IA (ES y EN)', async () => {
+  for (const lang of ['es', 'en']) {
+    const r = await llamar(body({ lang }), openaiOK(PREGUNTA_IA));
+    assert.equal(r.llamadas.length, 2, lang);
+    assert.equal(r.res.payload.sessionBlock, '', lang);
+    assert.ok(!r.res.payload.reply.includes(PREGUNTA_IA), lang);
+    assert.ok(r.res.payload.reply.includes(lang === 'en' ? 'Tap Start' : 'Toca Iniciar'), lang);
+  }
+});
+test('Sin contexto confirmado o sin pedido de sesión: la pregunta de la IA se respeta y no hay reintento', async () => {
+  const r1 = await llamar(body({ perfil: { training_context: '' } }), openaiOK('¿Entrenas solo o con alguien?'));
+  assert.equal(r1.llamadas.length, 1);
+  assert.equal(r1.res.payload.reply, '¿Entrenas solo o con alguien?');
+  const r2 = await llamar(body({ extra: { solicitaEntrenamiento: false } }), openaiOK('El timing se mejora mirando al pasador.'));
+  assert.equal(r2.llamadas.length, 1);
 });
 // ---------- ejecutor ----------
 (async () => {
