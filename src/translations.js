@@ -223,6 +223,9 @@ export const translations = {
     disclaimerAccept: 'Entiendo y acepto',
     weeklyGoalBadge: '🎯 OBJETIVO ESTA SEMANA',
     writeToPrefix: 'Escríbele a',
+    onboardingUsernameTaken: 'Ese nombre de usuario ya está en uso. Elige otro o déjalo como está.',
+    onboardingUsernameInvalid: 'El nombre de usuario debe tener al menos 3 letras o números.',
+    onboardingSaveError: 'No pudimos guardar tu perfil. Revisa tu conexión e inténtalo de nuevo.',
   },
   en: {
     exerciseVisual: {
@@ -448,6 +451,9 @@ export const translations = {
     disclaimerAccept: 'I understand and agree',
     weeklyGoalBadge: "🎯 THIS WEEK'S GOAL",
     writeToPrefix: 'Message',
+    onboardingUsernameTaken: 'That username is already taken. Choose another one or leave it as it is.',
+    onboardingUsernameInvalid: 'Your username must have at least 3 letters or numbers.',
+    onboardingSaveError: "We couldn't save your profile. Check your connection and try again.",
     suggestionLabels: {
       'Todo bien': 'All good',
       'Vengo de entrenar': 'Just finished training',
