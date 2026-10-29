@@ -1,6 +1,7 @@
 // ============ CEREBRO METODOLOGICO DE MIRAFUT ==========
 import { observarProgresion } from '../scripts/observar_progresion_coach.mjs';
 import { adaptarSesionCoach } from '../scripts/adaptar_sesion_coach.mjs';
+import { progresarSesionCoach } from '../scripts/progresar_sesion_coach.mjs';
 import { leerCarga } from '../scripts/verificar_progresion_coach.mjs';
 import { hayRiesgoMalestar } from '../scripts/senalesMalestar.mjs';
 import { sesionesCompletadas } from '../src/historialSesiones.js';
@@ -381,6 +382,32 @@ export default async function handler(req, res) {
     }
     console.warn(JSON.stringify({ evt: 'coach_session_withheld', motivo: 'adaptacion_no_verificable' }));
     return res.status(200).json({ reply: mensajeSeguro(lang, false), sessionBlock: '', meta: { completa: false, faltantes: ['adaptacion_no_verificable'], finishReason: null } });
+  }
+
+  // ------ PROGRESION TRAS "MUY BIEN", CALCULADA POR CODIGO ------
+  // La IA no verifica cuanto sube la carga. Con "Muy bien" se toman los mismos ejercicios de la
+  // ultima sesion completada y se suben un poco las repeticiones (verificado). Si eso no es posible,
+  // se repite la misma sesion (consolidar) en vez de dejar que la IA suba la carga sin control.
+  const esMuyBien = categoriaFeedback(perfil?.last_session_feedback, false) === 'muy_bien';
+  if (solicitaEntrenamiento && !feedbackOnly && esMuyBien && sesionAnteriorCompletada && perfil?.weekly_goal && !objetivoCompletado) {
+    const progresada = progresarSesionCoach(sesionAnteriorCompletada, numeroSesionCorrecta);
+    if (progresada && analizarBloqueSesion(progresada).completa) {
+      const nota = lang === 'en'
+        ? 'Great work last session! Today we keep the same exercises with a few more repetitions. Keep good technique on every one.\n\n'
+        : '¡Buen trabajo en la sesión anterior! Hoy mantenemos los mismos ejercicios con algunas repeticiones más. Cuida la técnica en cada una.\n\n';
+      console.info(JSON.stringify({ evt: 'coach_session_progressed_locally' }));
+      return res.status(200).json(conLimiteCabeceos({ reply: fraseHonestidad + nota + progresada, sessionBlock: progresada, meta: { completa: true, faltantes: [], finishReason: null } }));
+    }
+    const repetida = extraerBloqueReutilizable(sesionAnteriorCompletada);
+    if (repetida) {
+      const bloque = repetida.replace(/(Sesi[oó]n|Session)\s*\d+/i, (_, palabra) =>
+        palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase() + ' ' + numeroSesionCorrecta);
+      const nota = lang === 'en'
+        ? 'Great work last session! Today we repeat the same exercises to lock in what you learned. Focus on doing each one a little better.\n\n'
+        : '¡Buen trabajo en la sesión anterior! Hoy repetimos los mismos ejercicios para afianzar lo aprendido. Concéntrate en hacer cada uno un poco mejor.\n\n';
+      console.info(JSON.stringify({ evt: 'coach_session_consolidated_after_good' }));
+      return res.status(200).json(conLimiteCabeceos({ reply: fraseHonestidad + nota + bloque, sessionBlock: bloque, meta: { completa: true, faltantes: [], finishReason: null } }));
+    }
   }
 
   // ------ CONSOLIDACION GARANTIZADA POR CODIGO ------

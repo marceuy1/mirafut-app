@@ -5,6 +5,8 @@ import assert from 'node:assert/strict';
 import handler, { analizarBloqueSesion, extraerBloqueReutilizable, mensajeSeguro, mensajeTrasFeedback, categoriaFeedback } from '../api/chat.js';
 import { actualizarHistorialSesiones, sesionesCompletadas, numeroDeSesion } from '../src/historialSesiones.js';
 import { contarCabeceos, limitarCabeceos, notaCabeceos } from '../scripts/cabeceos.mjs';
+import { aumentoDeReps, esAumentoPequenoVerificado } from '../scripts/progresar_sesion_coach.mjs';
+import { leerCarga as leerCargaT } from '../scripts/verificar_progresion_coach.mjs';
 
 let passed = 0, failed = 0;
 const pendientes = [];
@@ -475,7 +477,7 @@ test('Dos Difícil sin una sesión anterior válida (datos viejos): mensaje segu
 });
 test('La IA recibe solo las sesiones completadas, una por número y sin textos que no son sesiones', async () => {
   const log = [sesionES(1), conReps(sesionES(1), 7), 'Respuesta suelta del Coach sobre el timing.', sesionES(2), conReps(sesionES(3), 9)];
-  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Muy bien' } }), openaiOK(sesionES(3)));
+  const r = await llamar(body({ perfil: { sessions_done: 2, sessions_log: JSON.stringify(log), last_session_feedback: 'Bien, pero me costó' } }), openaiOK(sesionES(3)));
   const prompt = promptDe(r);
   assert.equal((prompt.match(/Sesion 1: /g) || []).length, 1);
   assert.equal((prompt.match(/Sesion 2: /g) || []).length, 1);
@@ -580,6 +582,56 @@ test('Edad: la fecha de nacimiento manda sobre el número guardado al registrars
   const r = await llamar(body({ perfil: { age: '13', birth_date: hace20.toISOString().slice(0, 10) } }), openaiOK(conCabeceo(1)));
   assert.ok(promptDe(r).includes('FORMATO DE RESPUESTA (25 min total; edad del jugador: 20 anos)'));
   assert.equal(contarCabeceos(r.res.payload.sessionBlock), 10); // 20 años: límite de 10
+});
+
+// =====================================================================================
+// "Muy bien": progresion calculada por codigo (mismos ejercicios, +20 % de repeticiones)
+// =====================================================================================
+const muyBien = (log, lang = 'es', extra = {}) => body({ lang, perfil: { sessions_done: log.length, sessions_log: JSON.stringify(log), last_session_feedback: 'Muy bien', ...extra } });
+test('Muy bien: mismos ejercicios con un poco más de repeticiones, sin IA (ES y EN)', async () => {
+  for (const [lang, ses, sesion] of [['es', sES, 'Sesion'], ['en', sEN, 'Session']]) {
+    const previa = ses(1);
+    const r = await llamar(muyBien([previa], lang), openaiOK('NO DEBE USARSE'));
+    assert.equal(r.llamadas.length, 0, lang);
+    const b = r.res.payload.sessionBlock;
+    assert.ok(b.startsWith(sesion + ' 2'), lang);
+    assert.deepEqual(repsDe(b), [10, 10, 10], lang); // 8 + 2
+    assert.ok(esAumentoPequenoVerificado(previa.slice(previa.indexOf(sesion)), b), lang);
+    assert.equal(leerCargaT(b).every(c => c.series === 3 && c.descanso === 30), true, lang);
+  }
+});
+test('Muy bien: pedir la misma sesión dos veces no acumula el aumento', async () => {
+  let log = [sES(1)];
+  const r1 = await llamar(muyBien(log), openaiOK('NO DEBE USARSE'));
+  log = actualizarHistorialSesiones(log, r1.res.payload.sessionBlock, 1);
+  const r2 = await llamar(body({ perfil: { sessions_done: 1, sessions_log: JSON.stringify(log), last_session_feedback: 'Muy bien' } }), openaiOK('NO DEBE USARSE'));
+  assert.equal(r1.res.payload.sessionBlock, r2.res.payload.sessionBlock);
+});
+test('Muy bien: si no se puede subir con seguridad, se repite la sesión (nunca la IA sin control)', async () => {
+  // La sesión tiene cantidades en las instrucciones ("6 toques"): no se puede subir la carga.
+  const r = await llamar(muyBien([sesionES(1)]), openaiOK('NO DEBE USARSE'));
+  assert.equal(r.llamadas.length, 0);
+  assert.deepEqual(repsDe(r.res.payload.sessionBlock), [8, 8, 8]);
+  assert.ok(r.res.payload.sessionBlock.startsWith('Sesion 2'));
+});
+test('Muy bien: el tope de repeticiones no se supera', () => {
+  assert.equal(aumentoDeReps(1), 2); assert.equal(aumentoDeReps(5), 6); assert.equal(aumentoDeReps(10), 12);
+  assert.equal(aumentoDeReps(19), 20); assert.equal(aumentoDeReps(20), 20);
+});
+test('Muy bien: el verificador rechaza aumentos grandes, cambios de series o descanso', () => {
+  const a = sES(1).slice(sES(1).indexOf('Sesion'));
+  assert.equal(esAumentoPequenoVerificado(a, a), false); // sin aumento
+  assert.equal(esAumentoPequenoVerificado(a, a.replace(/Reps: 8/g, 'Reps: 16')), false);
+  assert.equal(esAumentoPequenoVerificado(a, a.replace(/Series: 3/, 'Series: 4').replace(/Reps: 8/g, 'Reps: 9')), false);
+  assert.equal(esAumentoPequenoVerificado(a, a.replace(/Descanso: 30/, 'Descanso: 15').replace(/Reps: 8/g, 'Reps: 9')), false);
+  assert.equal(esAumentoPequenoVerificado(a, a.replace(/Reps: 8/g, 'Reps: 9')), true);
+});
+test('Muy bien con cabeceos: el aumento respeta el límite semanal', async () => {
+  const previa = limitarCabeceos(adaptable(conCabeceo(1)).slice(adaptable(conCabeceo(1)).indexOf('Sesion')), { edad: 16 }).bloque;
+  const r = await llamar(muyBien([previa], 'es', { age: '16' }), openaiOK('NO DEBE USARSE'));
+  assert.equal(contarCabeceos(previa), 10);
+  assert.equal(contarCabeceos(r.res.payload.sessionBlock), 0); // ya hizo los 10 de la semana
+  assert.ok(r.res.payload.reply.includes(notaCabeceos('es')));
 });
 // ---------- ejecutor ----------
 (async () => {
