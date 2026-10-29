@@ -122,13 +122,11 @@ function AuthInline({ onSuccess, onClose, postLoginTab, startInSignUp, lang, onS
           setError(tl.authFormMinAge);
           return;
         }
-        const accountType = edadCalc < 18 ? 'teen' : 'adult';
-        const { data, error: err } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+        // La base de datos crea el perfil (edad y tipo de cuenta incluidos) a partir de estos datos.
+        const { data, error: err } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, birth_date: birthDate } } });
         if (err) throw err;
         if (data.user) {
-          const { error: profileErr } = await supabase.from('profiles').upsert([{ id: data.user.id, username: email.split('@')[0], email, full_name: fullName, avatar_url: null, bio: '', age: edadCalc, birth_date: birthDate, account_type: accountType, country: '', city: '', position: '', verified: false, followers_count: 0, following_count: 0 }]);
-          if (profileErr) console.error('Error guardando perfil:', profileErr);
-          else trackEvent(data.user.id, 'signup_completed');
+          trackEvent(data.user.id, 'signup_completed');
           fetch('/api/send-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
