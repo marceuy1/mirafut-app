@@ -50,6 +50,7 @@ async function trackEvent(userId, eventName, metadata = null) {
   }
 }
 import { translations, getLanguage } from './translations';
+import { datosOnboarding, motivoErrorOnboarding } from './onboardingPerfil';
 import ExerciseVisual from './ExerciseVisual';
 import { detectExerciseVisual } from './exerciseVisualDetect';
 import CoachMessageWithVisuals from './CoachMessageWithVisuals';
@@ -255,6 +256,8 @@ export default function App() {
   const [contactSending, setContactSending] = useState(false);
   const [contactSent, setContactSent] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
+  const [onboardingError, setOnboardingError] = useState(null);
+  const [onboardingSaving, setOnboardingSaving] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [wantsSignUp, setWantsSignUp] = useState(true);
   const [postAuthTab, setPostAuthTab] = useState('home');
@@ -761,11 +764,13 @@ export default function App() {
       loadLikes();
       loadChatList();
       setShowAuthPrompt(false);
-      supabase.from('profiles').select('position, onboarding_seen, full_name').eq('id', session.user.id).single().then(({ data }) => {
+      supabase.from('profiles').select('position, onboarding_seen, full_name, username').eq('id', session.user.id).single().then(({ data }) => {
         const skipped = localStorage.getItem('onboarding_skipped_' + session.user.id);
         if (!data?.onboarding_seen && !skipped) {
           // El nombre ya se pidio en el registro: precargarlo (sin pisar lo que el usuario ya escribio)
           if (data?.full_name) setOnboardingForm(prev => ({ ...prev, full_name: prev.full_name || data.full_name }));
+          // Mostrar el username actual (lo creo la base al registrarse): el jugador puede dejarlo o cambiarlo.
+          if (data?.username) setOnboardingForm(prev => ({ ...prev, username: prev.username || data.username }));
           setShowOnboarding(true); setOnboardingStep(1);
         }
       });
@@ -1437,24 +1442,22 @@ setPendingDifficultyFollowUp(null);
   };
 
   const saveOnboarding = async () => {
-    if (!session) return;
-    await supabase.from('profiles').update({
-      full_name: onboardingForm.full_name || null,
-      username: onboardingForm.username || null,
-      bio: onboardingForm.bio || null,
-      country: onboardingForm.country || null,
-      city: onboardingForm.city || null,
-      position: onboardingForm.position || null,
-      height: onboardingForm.height || null,
-      weight: onboardingForm.weight || null,
-      units: onboardingForm.units || 'metric',
-      club: onboardingForm.club || null,
-      level: onboardingForm.level || null,
-      training_freq: onboardingForm.training_freq || null,
-      dominant_foot: onboardingForm.dominant_foot || null,
-      goal: onboardingForm.goal || null,
-    }).eq('id', session.user.id);
-    await supabase.from('profiles').update({onboarding_seen: true}).eq('id', session.user.id);
+    if (!session || onboardingSaving) return;
+    setOnboardingError(null);
+    const { datos, error: errorDatos } = datosOnboarding(onboardingForm);
+    if (errorDatos) { setOnboardingError(errorDatos); setOnboardingStep(1); return; }
+    setOnboardingSaving(true);
+    // Un solo guardado (incluye onboarding_seen) y se revisa el resultado: si falla,
+    // el formulario queda abierto con el motivo, en vez de cerrarse perdiendo los datos.
+    const { error } = await supabase.from('profiles').update(datos).eq('id', session.user.id);
+    setOnboardingSaving(false);
+    if (error) {
+      console.error('Error guardando onboarding:', error);
+      const motivo = motivoErrorOnboarding(error);
+      setOnboardingError(motivo);
+      if (motivo === 'username_ocupado') setOnboardingStep(1);
+      return;
+    }
     trackEvent(session.user.id, 'onboarding_completed');
     setShowOnboarding(false);
     loadUserProfile(session.user.id);
@@ -2926,7 +2929,12 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </div>
             )}
             <div style={{marginTop:'auto',paddingTop:'20px'}}>
-              <button onClick={() => { if(onboardingStep < 3) setOnboardingStep(s=>s+1); else saveOnboarding(); }} style={{width:'100%',padding:'14px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'16px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
+              {onboardingError && (
+                <div style={{color:'#FF5252',fontSize:'13px',marginBottom:'10px',textAlign:'center'}}>
+                  {onboardingError === 'username_ocupado' ? t.onboardingUsernameTaken : onboardingError === 'username_invalido' ? t.onboardingUsernameInvalid : t.onboardingSaveError}
+                </div>
+              )}
+              <button disabled={onboardingSaving} onClick={() => { setOnboardingError(null); if(onboardingStep < 3) setOnboardingStep(s=>s+1); else saveOnboarding(); }} style={{width:'100%',padding:'14px',background:'#00E676',border:'none',borderRadius:'14px',color:'#0a0e14',fontSize:'16px',fontWeight:'800',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>
                 {onboardingStep < 3 ? t.continueBtn : t.startBtn}
               </button>
               <div onClick={() => { setShowOnboarding(false); if(session) { localStorage.setItem('onboarding_skipped_' + session.user.id, '1'); supabase.from('profiles').update({onboarding_seen: true}).eq('id', session.user.id); } }} style={{textAlign:'center',marginTop:'12px',fontSize:'12px',color:'#556677',cursor:'pointer'}}>

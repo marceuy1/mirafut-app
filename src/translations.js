@@ -241,6 +241,9 @@ export const translations = {
       tecnica: { name: 'Técnica', desc: 'Entrenamiento y táctica', intro: 'Envíame videos y te ayudo a mejorar.' },
       carrera: { name: 'Carrera', desc: 'Camino profesional', intro: 'Te ayudo con contratos, becas y oportunidades.' },
     },
+    onboardingUsernameTaken: 'Ese nombre de usuario ya está en uso. Elige otro o déjalo como está.',
+    onboardingUsernameInvalid: 'El nombre de usuario debe tener al menos 3 letras o números.',
+    onboardingSaveError: 'No pudimos guardar tu perfil. Revisa tu conexión e inténtalo de nuevo.',
   },
   en: {
     exerciseVisual: {
@@ -484,6 +487,9 @@ export const translations = {
       tecnica: { name: 'Technique', desc: 'Training and tactics', intro: 'Send me videos and I will help you improve.' },
       carrera: { name: 'Career', desc: 'Professional path', intro: 'I help you with contracts, scholarships and opportunities.' },
     },
+    onboardingUsernameTaken: 'That username is already taken. Choose another one or leave it as it is.',
+    onboardingUsernameInvalid: 'Your username must have at least 3 letters or numbers.',
+    onboardingSaveError: "We couldn't save your profile. Check your connection and try again.",
     suggestionLabels: {
       'Todo bien': 'All good',
       'Vengo de entrenar': 'Just finished training',
