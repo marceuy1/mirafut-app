@@ -341,6 +341,8 @@ export default function App() {
   const pendingTabRef = useRef('home');
   const agent = SPECIALISTS.find(s => s.id === currentAgent);
   const t = useMemo(() => translations[lang], [lang]);
+  // El pie dominante se guarda en espanol (Derecho/Izquierdo/Ambos): se muestra en el idioma actual.
+  const piePorIdioma = (v) => ({ Derecho: t.rightFoot, Izquierdo: t.leftFoot, Ambos: t.bothFeet }[v] || v);
   // Texto de un especialista en el idioma actual (nombre, descripcion o saludo).
   const textoEspecialista = (s, campo) => t.specialists?.[s?.id]?.[campo] || s?.[campo] || '';
   // Solo cambia el texto visible; el valor guardado (POR/DEF/MED/DEL) no se toca
@@ -1518,7 +1520,7 @@ setPendingDifficultyFollowUp(null);
       await supabase.from('blocks').delete().eq('blocker_id', session.user.id).eq('blocked_id', userId);
       setBlockedList(prev => prev.filter(id => id !== userId));
     } else {
-      if (!confirm('¿Bloquear a este usuario? No podrán enviarte mensajes ni vos a ellos.')) return;
+      if (!confirm(t.ui.blockConfirm)) return;
       await supabase.from('blocks').insert([{ blocker_id: session.user.id, blocked_id: userId }]);
       setBlockedList(prev => [...prev, userId]);
     }
@@ -2325,8 +2327,8 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
               </button>
               <button className="prof-btn sec" onClick={() => openChat({id: viewProfile.id, name: viewProfile.name, avatar_url: viewProfile.avatar_url, account_type: viewProfile.account_type})}>{t.ui.message}</button>
               <div style={{display:'flex',gap:'8px',marginTop:'8px'}}>
-                <button onClick={() => toggleBlock(viewProfile.id)} style={{flex:1,padding:'8px',background:'transparent',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#8899A6',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{blockedList.includes(viewProfile.id) ? 'Desbloquear' : 'Bloquear'}</button>
-                <button onClick={() => reportUser(viewProfile.id)} style={{flex:1,padding:'8px',background:'transparent',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#8899A6',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>Reportar</button>
+                <button onClick={() => toggleBlock(viewProfile.id)} style={{flex:1,padding:'8px',background:'transparent',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#8899A6',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{blockedList.includes(viewProfile.id) ? t.ui.unblock : t.ui.block}</button>
+                <button onClick={() => reportUser(viewProfile.id)} style={{flex:1,padding:'8px',background:'transparent',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#8899A6',fontSize:'12px',cursor:'pointer',fontFamily:'Outfit,sans-serif'}}>{RT.report}</button>
               </div>
               {!session && (
                 <div style={{marginTop:'12px',background:'linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,200,83,0.05))',border:'1px solid rgba(0,230,118,0.2)',borderRadius:'14px',padding:'14px',textAlign:'center'}}>
@@ -2341,7 +2343,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>{t.playerData}</div>
                   {viewProfile.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.ui.height}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.height} cm</div></div>}
                   {viewProfile.weight && viewProfile.account_type !== 'teen' && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.ui.weight}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.weight} kg</div></div>}
-                  {viewProfile.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>Pie dominante</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{viewProfile.dominant_foot}</div></div>}
+                  {viewProfile.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.dominantFoot}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{piePorIdioma(viewProfile.dominant_foot)}</div></div>}
                   {viewProfile.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.ui.position}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{posLabel(viewProfile.position)}</div></div>}
                 </div>
               )}
@@ -2563,7 +2565,7 @@ body,#root{font-family:'Outfit',sans-serif;background:#0a0e14;color:#ECEFF4;heig
                   <div style={{fontSize:'11px',color:'#556677',textTransform:'uppercase',letterSpacing:'1px',fontWeight:'700',gridColumn:'1/-1',marginBottom:'4px'}}>{t.playerData}</div>
                   {userProfile?.height && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.height}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.height} {userProfile.units==='imperial'?'ft':'cm'}</div></div>}
                   {userProfile?.weight && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.weight}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.weight} {userProfile.units==='imperial'?'lbs':'kg'}</div></div>}
-                  {userProfile?.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.dominantFoot}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{userProfile.dominant_foot}</div></div>}
+                  {userProfile?.dominant_foot && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.dominantFoot}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#ECEFF4'}}>{piePorIdioma(userProfile.dominant_foot)}</div></div>}
                   {userProfile?.position && <div style={{background:'#121820',borderRadius:'12px',padding:'10px'}}><div style={{fontSize:'10px',color:'#556677',marginBottom:'4px'}}>{t.positionLabel}</div><div style={{fontSize:'15px',fontWeight:'700',color:'#00E676'}}>{posLabel(userProfile.position)}</div></div>}
                 </div>
               )}

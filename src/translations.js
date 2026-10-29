@@ -297,7 +297,10 @@ export const translations = {
       "photoUploadError": "No se pudo subir la foto. Inténtalo de nuevo.",
       "dmAgeBlocked": "Por seguridad, los mensajes directos entre cuentas de adultos y de menores todavía no están disponibles.",
       "dmBlocked": "No puedes enviar mensajes a este usuario.",
-      "linkCopied": "¡Link copiado al portapapeles!"
+      "linkCopied": "¡Link copiado al portapapeles!",
+      "block": "Bloquear",
+      "unblock": "Desbloquear",
+      "blockConfirm": "¿Bloquear a este usuario? No podrá enviarte mensajes ni tú a él."
     },
     coachOnline: 'En línea',
     setWeeklyGoalButton: '🎯 Establecer objetivo de la semana',
@@ -619,7 +622,10 @@ export const translations = {
       "photoUploadError": "We couldn't upload the photo. Please try again.",
       "dmAgeBlocked": "For safety, direct messages between adult and minor accounts are not available yet.",
       "dmBlocked": "You can't send messages to this user.",
-      "linkCopied": "Link copied to clipboard!"
+      "linkCopied": "Link copied to clipboard!",
+      "block": "Block",
+      "unblock": "Unblock",
+      "blockConfirm": "Block this user? They won't be able to message you, and you won't be able to message them."
     },
     coachOnline: 'Online',
     setWeeklyGoalButton: "🎯 Set this week's goal",
