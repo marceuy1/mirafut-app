@@ -1,3 +1,4 @@
+import { cambioCantidadSeguro } from './comparar_instrucciones_seguras.mjs';
 
 import { observarProgresion } from './observar_progresion_coach.mjs';
 import {
@@ -43,12 +44,24 @@ export function adaptarSesionCoach(sesionAnterior, numeroSesion) {
 
   if (instrucciones.length !== 3) return null;
 
-  const cantidadEnInstrucciones =
-    /\b\d+\s*(?:repeticiones?|reps?|repetitions?|toques?|touches?|veces|times)\b/i;
+  // Las cantidades explícitas se adaptarán por ejercicio.
+  // Si no podemos demostrar un cambio seguro, rechazamos.
+  const patronCantidad =
+    /\b\d+\s*(?:repeticiones?|reps?|toques?|touches?|veces|times)\b/i;
 
-  if (instrucciones.some(linea =>
-    cantidadEnInstrucciones.test(linea)
-  )) {
+  if (instrucciones.some(linea => {
+    const coincidencias = [...linea.matchAll(
+      /\b\d+\s*(?:repeticiones?|reps?|toques?|touches?|veces|times)\b/gi
+    )];
+    return coincidencias.length > 1;
+  })) return null;
+
+  // Rechazar cantidades escritas con palabras que todavía
+  // no podemos actualizar de manera verificable.
+  const cantidadesEnPalabras =
+    /\b(?:un|una|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:repeticiones?|reps?|toques?|touches?|veces|times)\b/i;
+
+  if (instrucciones.some(linea => cantidadesEnPalabras.test(linea))) {
     return null;
   }
 
@@ -86,7 +99,54 @@ export function adaptarSesionCoach(sesionAnterior, numeroSesion) {
 
   if (indice !== 3) return null;
 
-  const sesionNumerada = adaptada.replace(
+  // Sincronizar las cantidades explícitas de cada instrucción.
+  const cargasNuevas = leerCarga(adaptada);
+  if (cargasNuevas.length !== 3) return null;
+
+  let indiceComo = 0;
+  let errorCantidad = false;
+
+  const adaptadaConInstrucciones = adaptada.replace(
+    /^([ \t]*(?:C[oó]mo|How):[^\n]*)/gmi,
+    (linea) => {
+      const i = indiceComo++;
+      if (i >= 3) {
+        errorCantidad = true;
+        return linea;
+      }
+
+      const anterior = cargas[i].repeticiones;
+      const nueva = cargasNuevas[i].repeticiones;
+
+      const patron = /\b\d+\s*(?:repeticiones?|reps?|toques?|touches?|veces|times)\b/gi;
+      const coincidencias = [...linea.matchAll(patron)];
+
+      if (coincidencias.length === 0) return linea;
+
+      if (coincidencias.length !== 1 ||
+          Number(coincidencias[0][0].match(/\d+/)[0]) !== anterior ||
+          nueva >= anterior) {
+        errorCantidad = true;
+        return linea;
+      }
+
+      const modificada = linea.replace(
+        patron,
+        texto => texto.replace(/^\d+/, String(nueva))
+      );
+
+      if (!cambioCantidadSeguro(linea, modificada, anterior, nueva)) {
+        errorCantidad = true;
+        return linea;
+      }
+
+      return modificada;
+    }
+  );
+
+  if (errorCantidad || indiceComo !== 3) return null;
+
+  const sesionNumerada = adaptadaConInstrucciones.replace(
     /^(\s*(?:Sesi[oó]n|Session)\s+)\d+/im,
     (_, inicio) => inicio + numeroSesion
   );

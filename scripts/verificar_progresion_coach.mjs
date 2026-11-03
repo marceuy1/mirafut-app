@@ -1,3 +1,4 @@
+import { cambioCantidadSeguro } from './comparar_instrucciones_seguras.mjs';
 export function analizarSesion(texto) {
   const ejercicios = [...texto.matchAll(/^\s*[1-3][.)]\s+.+[—–-]\s+\d+\s*(?:min(?:s)?|minutos?|minutes?)\b/gmi)];
   return { cantidad: ejercicios.length, completa: ejercicios.length === 3 };
@@ -66,7 +67,49 @@ export function mismasInstrucciones(anterior, nueva) {
   const extraer = p => p.split("\n").filter(l => /^\s*(Como|Cómo|How|Foco tecnico|Foco técnico|Technical focus):/i.test(l)).map(l => l.trim());
   return a.every((p, i) => {
     const x = extraer(p), y = extraer(b[i]);
-    return x.length === 2 && y.length === 2 && x.every((v, j) => v === y[j]);
+    if (x.length !== 2 || y.length !== 2) return false;
+
+    // El foco técnico debe permanecer idéntico.
+    if (x[1] !== y[1]) return false;
+
+    // Si las repeticiones bajan, no aceptar cantidades
+    // explícitas antiguas aunque la instrucción sea idéntica.
+    if (x[0] === y[0]) {
+      const cargaAnterior = leerCarga(p)[0];
+      const cargaNueva = leerCarga(b[i])[0];
+
+      if (!cargaAnterior || !cargaNueva) return false;
+
+      const patron = /\b\d+\s*(?:repeticiones?|reps?|toques?|touches?|veces|times)\b/gi;
+      const cantidades = [...x[0].matchAll(patron)];
+
+      if (cantidades.length > 1) return false;
+
+      if (cantidades.length === 1) {
+        const cantidadIndicada = Number(cantidades[0][0].match(/\d+/)[0]);
+
+        if (
+          cantidadIndicada !== cargaAnterior.repeticiones ||
+          cantidadIndicada !== cargaNueva.repeticiones
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    const cargaAnterior = leerCarga(p)[0];
+    const cargaNueva = leerCarga(b[i])[0];
+
+    if (!cargaAnterior || !cargaNueva) return false;
+
+    return cambioCantidadSeguro(
+      x[0],
+      y[0],
+      cargaAnterior.repeticiones,
+      cargaNueva.repeticiones
+    );
   });
 }
 
